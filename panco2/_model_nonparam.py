@@ -4,11 +4,10 @@ from scipy.interpolate import interp1d
 import astropy.units as u
 from astropy.constants import sigma_T, c, m_e
 from shell_pl import shell_pl
-from _model import Model
 import _utils
 import pdb
 
-sz_fact = (sigma_T / (m_e * c ** 2)).to(u.cm ** 3 / u.keV / u.kpc).value
+sz_fact = (sigma_T / (m_e * c**2)).to(u.cm**3 / u.keV / u.kpc).value
 del sigma_T, c, m_e
 
 
@@ -22,23 +21,10 @@ class ModelNonParam(Model):
     # ====  INITIALIZATIONS  =============================================== #
     # ---------------------------------------------------------------------- #
 
-    def __init__(self, cluster, **kwargs):
-        super().__init__(cluster, **kwargs)
-
-    # ---------------------------------------------------------------------- #
-
-    def __call__(self, par):
-        return super().__call__(par)
-
-    # ---------------------------------------------------------------------- #
-
-    def init_profiles_radii(
-        self,
+    def __init__(self,
         reso=3.0,
         npix=101,
-        center=(0, 0),
-        mode="500",
-        radius_tab=None,
+        r_bins=None,
         n_bins=6,
         **kwargs
     ):
@@ -46,22 +32,20 @@ class ModelNonParam(Model):
         Initialize the radii arrays necessary to compute profiles.
 
         Args:
-            reso (float): pixel size in arcsec,
-
-            npix (int): number of pixels,
-
-            center (tuple): pixel offset of the point at which you want
+        reso : float 
+            pixel size in arcsec,
+        npix : int 
+            number of pixels,
+        center : tuple 
+            pixel offset of the point at which you want
                 your profiles to be computed (not to be confused with
                 coords_center from ``panco_params.py``)
-
-            mode (str) : "500" or "tot", which Y to use for large scale constraints
-
-            radius_tab ((array) or None): the radial binning of the
+        r_bins : array or None)
+            the radial binning of the
                 profile you want to fit if you already defined it.
-
-            n_bins (int): if ``radius_tab`` is None, the number of bins to
-                have on your pressure profile between the NIKA2 beam and R_500.
         """
+
+        super().__init__(cluster, **kwargs)
 
         d_a = self.cluster.d_a.value
         R_500 = self.cluster.R_500_kpc
@@ -73,25 +57,29 @@ class ModelNonParam(Model):
             0.5 * d_a * np.tan(18.0 * u.arcsec.to("rad"))
         )  # 1st bin: NIKA2 2mm HWHM
 
-        if radius_tab is None:
+        if r_bins is None:
             # HWHM, then log-spaced from 3HWHM to R_500 with n bins
-            self.radius_tab = np.concatenate(
+            self.r_bins = np.concatenate(
                 (
                     [rad_tab_min],
-                    np.logspace(np.log10(3 * rad_tab_min), np.log10(R_500), n_bins),
+                    np.logspace(
+                        np.log10(3 * rad_tab_min), np.log10(R_500), n_bins
+                    ),
                 )
             )
             # Add (2*R_500, 5*R_500) at the end
-            self.radius_tab = np.append(self.radius_tab, [2 * R_500])
+            self.r_bins = np.append(self.r_bins, [2 * R_500])
         else:
-            self.radius_tab = radius_tab
+            self.r_bins = r_bins
 
-        self.radius_tab_cm = self.radius_tab * u.kpc.to("cm")
-        self.nbins = self.radius_tab.size
+        self.r_bins_cm = self.r_bins * u.kpc.to("cm")
+        self.nbins = self.r_bins.size
 
         # ===== Radii arrays ===== #
         # 1D radius in the sky plane, only half the map
-        theta_x = np.arange(0, int(npix / 2) + 1) * reso_rad  # angle, in radians
+        theta_x = (
+            np.arange(0, int(npix / 2) + 1) * reso_rad
+        )  # angle, in radians
         r_x = d_a * np.tan(theta_x)  # distance, in kpc
 
         # 2D (x, y) radius in the sky plane to compute compton map
@@ -115,7 +103,7 @@ class ModelNonParam(Model):
             r_max_integ_Y = 5.0 * R_500
 
         r_integ_Y = [0.0]
-        r_integ_Y += [r for r in self.radius_tab if r < (r_max_integ_Y - 1.0)]
+        r_integ_Y += [r for r in self.r_bins if r < (r_max_integ_Y - 1.0)]
         r_integ_Y += [r_max_integ_Y]
         r_integ_Y = np.array(r_integ_Y)
 
@@ -131,13 +119,18 @@ class ModelNonParam(Model):
 
     # ---------------------------------------------------------------------- #
 
+    def __call__(self, par):
+        return super().__call__(par)
+
+    # ---------------------------------------------------------------------- #
+
     def dict_to_params(self, dic):
         """
         Given a dict describing a parameter vector, returns a vector.
         """
         params = [dic["P" + str(i)] for i in range(self.nbins)]
         params.append(dic["calib"])
-        if self.fit_zl:
+        if self.zero_level:
             params.append(dic["zero"])
         if self.do_ps:
             for f in dic["ps_fluxes"]:
@@ -159,7 +152,7 @@ class ModelNonParam(Model):
         self.indices = {"P" + str(i): i for i in range(self.nbins)}
         self.indices["calib"] = np.max(list(self.indices.values())) + 1
 
-        if self.fit_zl:
+        if self.zero_level:
             self.indices["zero"] = np.max(list(self.indices.values())) + 1
             self.param_names.append("Zero")
         i = np.max(list(self.indices.values()))  # Last atributed index
@@ -180,7 +173,7 @@ class ModelNonParam(Model):
         """
         params = self.dict_to_params(par)
         press = np.array(params[self.indices_press])
-        return _utils.interp_powerlaw(self.radius_tab, press, r)
+        return _utils.interp_powerlaw(self.r_bins, press, r)
 
     # ---------------------------------------------------------------------- #
 
@@ -193,7 +186,7 @@ class ModelNonParam(Model):
 
         # ===== Pressure and radius bins ===== #
         p_bins = np.array(params[self.indices_press])
-        r_bins = self.radius_tab
+        r_bins = self.r_bins
         lr_bins = np.log(r_bins)
         lp_bins = np.log(p_bins)
 
@@ -224,7 +217,7 @@ class ModelNonParam(Model):
             kind="previous",
         )(r)
 
-        return -P_i * alpha_i * (R_i ** alpha_i) * r ** (-alpha_i - 1)
+        return -P_i * alpha_i * (R_i**alpha_i) * r ** (-alpha_i - 1)
 
     # ---------------------------------------------------------------------- #
 
@@ -237,20 +230,23 @@ class ModelNonParam(Model):
         params = self.dict_to_params(par)
         press = params[self.indices_press]
 
-        alphas = compute_slopes(self.radius_tab, press)
-        y_prof = compton_prof(self.radius_tab, press, self.init_prof["r_x"][1:], alphas)
+        alphas = compute_slopes(self.r_bins, press)
+        y_prof = compton_prof(
+            self.r_bins, press, self.init_prof["r_x"][1:], alphas
+        )
 
         Y_500_model = 0.0
         r_integ = self.init_prof["r_integ_Y"]
 
-        # You need another bin if your integration radius is outside radius_tab
-        if r_integ.max() > self.radius_tab.max():
+        # You need another bin if your integration radius is outside r_bins
+        if r_integ.max() > self.r_bins.max():
             press = np.concatenate(
                 (
                     press,
                     [
                         press[-1]
-                        * (r_integ.max() / self.radius_tab.max()) ** (-alphas[-1])
+                        * (r_integ.max() / self.r_bins.max())
+                        ** (-alphas[-1])
                     ],
                 )
             )
@@ -272,7 +268,9 @@ class ModelNonParam(Model):
         y_map = _utils.prof2map(
             y_prof, self.init_prof["r_x"][1:], self.init_prof["r_xy"]
         )
-        y_map_filt = gaussian_filter(y_map, 17.6 * 0.4247 / self.init_prof["reso"])
+        y_map_filt = gaussian_filter(
+            y_map, 17.6 * 0.4247 / self.init_prof["reso"]
+        )
 
         SZ_map = par["calib"] * y_map_filt
         return SZ_map, Y_500_model
@@ -283,20 +281,23 @@ class ModelNonParam(Model):
         params = self.dict_to_params(par)
         press = params[self.indices_press]
 
-        alphas = compute_slopes(self.radius_tab, press)
+        alphas = compute_slopes(self.r_bins, press)
 
         Y_500_model = 0.0
-        r_integ = self.init_prof["r_integ_Y"][self.init_prof["r_integ_Y"] < r_max]
+        r_integ = self.init_prof["r_integ_Y"][
+            self.init_prof["r_integ_Y"] < r_max
+        ]
         r_integ = np.concatenate((r_integ, [r_max]))
 
-        # You need another bin if your integration radius is outside radius_tab
-        if r_integ.max() > self.radius_tab.max():
+        # You need another bin if your integration radius is outside r_bins
+        if r_integ.max() > self.r_bins.max():
             press = np.concatenate(
                 (
                     press,
                     [
                         press[-1]
-                        * (r_integ.max() / self.radius_tab.max()) ** (-alphas[-1])
+                        * (r_integ.max() / self.r_bins.max())
+                        ** (-alphas[-1])
                     ],
                 )
             )
@@ -355,7 +356,11 @@ def compton_prof(r_bins, pressure_bins, radarr, alphas):
     for i in range(len(pressure_bins)):
         alpha_i = alphas[i]
         integrals[i] = shell_pl(
-            pressure_bins[i], alpha_i, r_bins_integ[i], r_bins_integ[i + 1], radarr
+            pressure_bins[i],
+            alpha_i,
+            r_bins_integ[i],
+            r_bins_integ[i + 1],
+            radarr,
         )
 
     integrals = integrals * sz_fact

@@ -30,17 +30,16 @@ class Model:
     # ====  INITIALIZATIONS  =============================================== #
     # ---------------------------------------------------------------------- #
 
-    def __init__(self, cluster, fit_zl=True, do_ps=False):
-        self.cluster = cluster
+    def __init__(self, zero_level=True, do_ps=False):
         self.sz_fact = (
-            (const.sigma_T / (const.m_e * const.c ** 2))
-            .to(u.cm ** 3 / u.keV / u.kpc)
+            (const.sigma_T / (const.m_e * const.c**2))
+            .to(u.cm**3 / u.keV / u.kpc)
             .value
         )
-        self.fit_zl = fit_zl
+        self.zero_level = zero_level
         self.do_ps = do_ps
 
-        if (self.fit_zl) and (self.do_ps):
+        if (self.zero_level) and (self.do_ps):
 
             def compute_model(par):
                 SZ_map, Y_500 = self.compute_model_SZ(par)
@@ -48,7 +47,7 @@ class Model:
                 model_map = self.convolve_tf(SZ_map + ps_map)
                 return model_map + par["zero"], Y_500
 
-        elif (not self.fit_zl) and (self.do_ps):
+        elif (not self.zero_level) and (self.do_ps):
 
             def compute_model(par):
                 SZ_map, Y_500 = self.compute_model_SZ(par)
@@ -56,14 +55,14 @@ class Model:
                 model_map = self.convolve_tf(SZ_map + ps_map)
                 return model_map, Y_500
 
-        elif (self.fit_zl) and (not self.do_ps):
+        elif (self.zero_level) and (not self.do_ps):
 
             def compute_model(par):
                 SZ_map, Y_500 = self.compute_model_SZ(par)
                 model_map = self.convolve_tf(SZ_map)
                 return model_map + par["zero"], Y_500
 
-        elif (not self.fit_zl) and (not self.do_ps):
+        elif (not self.zero_level) and (not self.do_ps):
 
             def compute_model(par):
                 SZ_map, Y_500 = self.compute_model_SZ(par)
@@ -143,7 +142,9 @@ class Model:
             if ps["SUBTRACT"] == 0:
                 nps += 1
                 ps_pos.append(skycoord_to_pixel(coords, wcs))
-                posterior_fluxes = np.load(path + ps["NAME"] + "_fluxes_dist.npy")
+                posterior_fluxes = np.load(
+                    path + ps["NAME"] + "_fluxes_dist.npy"
+                )
                 flux_avg = np.average(posterior_fluxes)
                 if fixed_error is None:
                     flux_std = np.std(posterior_fluxes)
@@ -231,15 +232,23 @@ class Model:
 
     # ---------------------------------------------------------------------- #
 
-    def init_transfer_function(self, tf_file, npix, pad, reso):
+    def init_transfer_function(self, tf_file, npix, pad, reso, beam_sigma_pix):
         """
         Initialize the transfer function convolutions.
 
-        Args:
-            tf_file (str) :
-                path to the ``.fits`` file with the transfer function.
-                This recognizes files from ``SZ_RDA`` and ``SZ_IMCM``.
-            npix (int) : size of the NIKA2 map.
+        Parameters
+        ==========
+        tf_file : str
+            path to the ``.fits`` file with the transfer function.
+            This recognizes files from ``SZ_RDA`` and ``SZ_IMCM``.
+        npix : int
+            size of the NIKA2 map.
+        pad : int
+            #TODO
+        reso : float
+            #TODO
+        beam_sigma_pix : float
+            Gaussian beam width sigma (/!\ NOT FWHM!)
         """
 
         # ===== Load the TF file ===== #
@@ -258,7 +267,9 @@ class Model:
                 karr = np.hypot(*np.meshgrid(k_vec, k_vec))
                 karr /= karr.max() * reso
 
-                interp = interp1d(tf_k, tf_tf, bounds_error=False, fill_value=tf_tf[-1])
+                interp = interp1d(
+                    tf_k, tf_tf, bounds_error=False, fill_value=tf_tf[-1]
+                )
                 tf_arr = interp(karr)
 
             elif do_new_tf:
@@ -270,7 +281,9 @@ class Model:
                 k_vec = np.fft.fftfreq(npix + 2 * pad, reso)
                 karr = np.hypot(*np.meshgrid(k_vec, k_vec))
 
-                interp = interp1d(tf_k, tf_tf, bounds_error=False, fill_value=tf_tf[-1])
+                interp = interp1d(
+                    tf_k, tf_tf, bounds_error=False, fill_value=tf_tf[-1]
+                )
                 tf_arr = interp(karr)
 
             self.init_tf = {"tf_arr": tf_arr, "pad": pad}
@@ -279,7 +292,9 @@ class Model:
         if tf_file is not None:
 
             def convolve_tf(in_map):
-                in_map_pad = np.pad(in_map, pad, mode="constant", constant_values=0.0)
+                in_map_pad = np.pad(
+                    in_map, pad, mode="constant", constant_values=0.0
+                )
                 in_map_fourier = np.fft.fft2(in_map_pad)
                 conv_in_map = np.real(np.fft.ifft2(in_map_fourier * tf_arr))
                 return conv_in_map[pad:-pad, pad:-pad]
@@ -290,6 +305,20 @@ class Model:
                 return in_map
 
         self.__convolve_tf = convolve_tf
+
+        # ===== Init beam convolution function ===== #
+
+        if beam_sigma_pix != 0.0:
+
+            def convolve_beam(in_map):
+                return gaussian_filter(in_map, beam_sigma_pix)
+
+        else:
+
+            def convolve_beam(in_map):
+                return in_map
+
+        self.__convolve_beam = convolve_beam
 
     # ---------------------------------------------------------------------- #
 
@@ -311,14 +340,17 @@ class Model:
                 value.
 
         Returns:
-            (astropy.units.Quantity) the input converted to distance 
+            (astropy.units.Quantity) the input converted to distance
                 or angle.
         """
         input_unit = to_convert.unit
         if input_unit.is_equivalent(u.rad):  # input is angle
             return np.tan(to_convert.to("rad").value) * self.cluster.d_a
         elif input_unit.is_equivalent(u.kpc):  # input is angle
-            return np.arctan((to_convert.to("kpc") / self.cluster.d_a).value) * u.rad
+            return (
+                np.arctan((to_convert.to("kpc") / self.cluster.d_a).value)
+                * u.rad
+            )
 
     # ---------------------------------------------------------------------- #
     # ====  MODEL COMPUTATION RELATED FUNCTIONS  =========================== #

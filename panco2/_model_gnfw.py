@@ -8,7 +8,7 @@ import _utils
 import pdb
 
 # ===== Prefactors ===== #
-sz_fact = (sigma_T / (m_e * c ** 2)).to(u.cm ** 3 / u.keV / u.kpc).value
+sz_fact = (sigma_T / (m_e * c**2)).to(u.cm**3 / u.keV / u.kpc).value
 dens_fact = G * 0.61 * m_p  # m3.s-2 ; mu=0.61, mean ICM molecular weight
 del sigma_T, c, m_e, G, m_p
 
@@ -78,7 +78,9 @@ class ModelGNFW(Model):
         self.reso_kpc = d_a * np.tan(reso_rad)
 
         # 1D radius in the sky plane, only half the map
-        theta_x = np.arange(0, int(npix / 2) + 1) * reso_rad  # angle, in radians
+        theta_x = (
+            np.arange(0, int(npix / 2) + 1) * reso_rad
+        )  # angle, in radians
         r_x = d_a * np.tan(theta_x)  # distance, in kpc
 
         # 1D LoS radius
@@ -106,7 +108,9 @@ class ModelGNFW(Model):
         elif mode == "tot":
             integ_Y = 1.796 * self.cluster.Y_500_kpc2
             err_integ_Y = 1.796 * self.cluster.err_Y_500_kpc2
-            r_integ_Y = np.logspace(np.log10(r_min_z), np.log10(5.0 * R_500), 50)
+            r_integ_Y = np.logspace(
+                np.log10(r_min_z), np.log10(5.0 * R_500), 50
+            )
 
         self.init_prof = {
             "reso": reso,
@@ -138,7 +142,7 @@ class ModelGNFW(Model):
             self.indices_gNFW = slice(0, 5)
 
         i = len(self.param_names)
-        if self.fit_zl:
+        if self.zero_level:
             self.indices["zero"] = i + 1
             self.param_names.append("Zero")
         i = len(self.param_names)  # Last atributed index
@@ -155,8 +159,15 @@ class ModelGNFW(Model):
         """
         Given a dict describing a parameter vector, returns a vector.
         """
-        params = [dic["P0"], dic["rp"], dic["a"], dic["b"], dic["c"], dic["calib"]]
-        if self.fit_zl:
+        params = [
+            dic["P0"],
+            dic["rp"],
+            dic["a"],
+            dic["b"],
+            dic["c"],
+            dic["calib"],
+        ]
+        if self.zero_level:
             params.append(dic["zero"])
         if self.do_ps:
             for f in dic["ps_fluxes"]:
@@ -242,8 +253,12 @@ class ModelGNFW(Model):
             self.init_prof["r_integ_Y"],
         )
 
-        y_map = _utils.prof2map(y_prof, self.init_prof["r_x"], self.init_prof["r_xy"])
-        y_map_filt = gaussian_filter(y_map, 17.6 * 0.4247 / self.init_prof["reso"])
+        y_map = _utils.prof2map(
+            y_prof, self.init_prof["r_x"], self.init_prof["r_xy"]
+        )
+        y_map_filt = gaussian_filter(
+            y_map, 17.6 * 0.4247 / self.init_prof["reso"]
+        )
 
         SZ_map = par["calib"] * y_map_filt
         return SZ_map, Y_500_model
@@ -251,7 +266,9 @@ class ModelGNFW(Model):
     # ---------------------------------------------------------------------- #
 
     def compute_integrated_SZ(self, par, r_max):
-        r_integ = self.init_prof["r_integ_Y"][self.init_prof["r_integ_Y"] < r_max]
+        r_integ = self.init_prof["r_integ_Y"][
+            self.init_prof["r_integ_Y"] < r_max
+        ]
         r_integ = np.concatenate((r_integ, [r_max]))
         Y_500_model = self.sz_fact * _utils.sph_integ_within(
             gNFW(
@@ -287,7 +304,7 @@ def gNFW(r, P0, rp, a, b, c):
     """
 
     x = r / rp
-    return P0 / ((x ** c) * (1.0 + x ** a) ** ((b - c) / a))
+    return P0 / ((x**c) * (1.0 + x**a) ** ((b - c) / a))
 
 
 # ---------------------------------------------------------------------- #
@@ -331,7 +348,9 @@ def compton_prof(P0, rp, a, b, c, r_xz, r_zz):
 # ---------------------------------------------------------------------- #
 
 
-def compton_map(P0, rp, a, b, c, r_x=None, r_xz=None, r_zz=None, r_xy=None, **kwargs):
+def compton_map(
+    P0, rp, a, b, c, r_x=None, r_xz=None, r_zz=None, r_xy=None, **kwargs
+):
     """
     Compton parameter map.
     See :
@@ -362,10 +381,12 @@ def d_gNFW_d_r(r, P0, rp, a, b, c):
     """
 
     x = r / rp
-    return -P0 * c * x ** (-c) * (x ** a + 1.0) ** (
+    return -P0 * c * x ** (-c) * (x**a + 1.0) ** (
         (-b + c) / a
-    ) / r + P0 * x ** a * x ** (-c) * (-b + c) * (x ** a + 1.0) ** ((-b + c) / a) / (
-        r * (x ** a + 1.0)
+    ) / r + P0 * x**a * x ** (-c) * (-b + c) * (x**a + 1.0) ** (
+        (-b + c) / a
+    ) / (
+        r * (x**a + 1.0)
     )
 
 
