@@ -12,17 +12,29 @@ del sigma_T, c, m_e
 
 
 class Model:
-    def __init__(self, zero_level=True):
+    def __init__(self, radii, zero_level=True):
+        self.radii = radii
         self.zero_level = zero_level
         self.indices = {}
 
     def par_vec2dic(self, vec):
         return {key: vec[self.indices[key]] for key in self.indices.keys()}
 
+    def convolve_beam(self, in_map):
+        return in_map
+
+    def convolve_tf(self, in_map):
+        return in_map
+
+    def filter_map(self, in_map):
+        filt_map_tf = self.convolve_tf(in_map)
+        filt_map_tot = self.convolve_beam(filt_map_tf)
+        return filt_map_tot
+
 
 class ModelBinned(Model):
-    def __init__(self, r_bins, zero_level=True):
-        super().__init__(zero_level=zero_level)
+    def __init__(self, r_bins, radii, zero_level=True):
+        super().__init__(radii, zero_level=zero_level)
         self.r_bins = r_bins
         self.n_bins = len(r_bins)
         self.indices_press = range(self.n_bins)
@@ -75,9 +87,16 @@ class ModelBinned(Model):
 
         return totals
 
-    def compton_map(self, par_vec, radii):
+    def compton_map(self, par_vec):
         P_i = par_vec[self.indices_press]
         alphas = self.compute_slopes(P_i)
-        y_prof = self.compton_prof(P_i, radii["r_x"][1:], alphas)
-        y_map = _utils.prof2map(y_prof, radii["r_x"][1:], radii["r_xy"])
+        y_prof = self.compton_prof(P_i, self.radii["r_x"][1:], alphas)
+        y_map = _utils.prof2map(
+            y_prof, self.radii["r_x"][1:], self.radii["r_xy"]
+        )
         return y_map
+
+    def sz_map(self, par_vec):
+        y_map = self.compton_map(par_vec)
+        sz_map_filt = self.filter_map(y_map) * par_vec[self.indices["conv"]]
+        return sz_map_filt + par_vec[self.indices["zero"]]
