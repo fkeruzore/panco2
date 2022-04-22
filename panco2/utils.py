@@ -3,8 +3,58 @@ from scipy.interpolate import interp1d, UnivariateSpline
 import astropy.units as u
 from astropy.constants import sigma_T, c, m_e
 
-sz_fact = (sigma_T / (m_e * c ** 2)).to(u.cm ** 3 / u.keV / u.kpc).value
+sz_fact = (sigma_T / (m_e * c**2)).to(u.cm**3 / u.keV / u.kpc).value
 del sigma_T, c, m_e
+
+
+def gNFW(r, P0, rp, a, b, c):
+    """
+    gNFW pressure profile.
+
+    Inputs :
+    --------
+    - r : radii (can be a scalar or a ndarray),
+    - P0, rp, a, b, c : parameters
+
+    Outputs :
+    ---------
+    - pressure evaluated at each radius (same shape as the input r)
+    """
+
+    x = r / rp
+    return P0 / ((x**c) * (1.0 + x**a) ** ((b - c) / a))
+
+
+# ---------------------------------------------------------------------- #
+
+
+def d_gNFW_d_r(r, P0, rp, a, b, c):
+    """
+    Analytical derivative of the gNFW pressure profile
+
+    Inputs :
+    --------
+    - r : radii (can be a scalar or a ndarray),
+    - P0, rp, a, b, c : parameters
+
+    Outputs :
+    ---------
+    - dp/dr evaluated at each radius (same shape as the input r)
+    """
+
+    x = r / rp
+    return -P0 * c * x ** (-c) * (x**a + 1.0) ** (
+        (-b + c) / a
+    ) / r + P0 * x**a * x ** (-c) * (-b + c) * (x**a + 1.0) ** (
+        (-b + c) / a
+    ) / (
+        r * (x**a + 1.0)
+    )
+
+
+# ---------------------------------------------------------------------- #
+# ---------------------------------------------------------------------- #
+# ---------------------------------------------------------------------- #
 
 
 def adim(qty):
@@ -21,7 +71,9 @@ def adim(qty):
     """
     out = qty.decompose()
     if out.unit != u.dimensionless_unscaled:
-        raise Exception("Tried to simplify a dimensionned unit : " + str(qty.unit))
+        raise Exception(
+            "Tried to simplify a dimensionned unit : " + str(qty.unit)
+        )
     else:
         return out.value
 
@@ -130,7 +182,7 @@ def sph_integ_within(prof, r, axis=0):
 
     """
 
-    return 4.0 * np.pi * np.trapz(r ** 2 * prof, r, axis=axis)
+    return 4.0 * np.pi * np.trapz(r**2 * prof, r, axis=axis)
 
 
 # ---------------------------------------------------------------------- #

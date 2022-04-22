@@ -10,6 +10,7 @@ import emcee
 from iminuit import Minuit
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter
+import scipy.stats as ss
 import sys
 import os
 import shutil
@@ -19,8 +20,10 @@ import time
 import argparse
 from multiprocessing import Pool
 import pdb
-from _cluster import Cluster
+from cluster import Cluster
 import model
+from filtering import Filter
+import utils
 
 
 class PressureProfileFitter:
@@ -101,6 +104,7 @@ class PressureProfileFitter:
         self.pix_size = pix_size  # arcsec
         self.coords_center = coords_center
         self.map_size = map_size  # arcmin
+        self.inv_covmat = None
 
     # ---------------------------------------------------------------------- #
 
@@ -113,7 +117,6 @@ class PressureProfileFitter:
     def dump_to_file(self, file_name):
         with open(file_name, "wb") as f:
             f.write(dill.dumps(self))
-
 
     # ---------------------------------------------------------------------- #
 
@@ -198,39 +201,17 @@ class PressureProfileFitter:
             i.e. the largest 1D mode is 1/(pixel size).
         """
 
-        # Transfer function filtering
-        if (k is not None) and (tf_k is not None):
-            # Compute the modes covered in the map
-            npix = self.sz_map.shape[0]
-            k_vec = np.fft.fftfreq(npix + 2 * pad, self.pix_size)
-            karr = np.hypot(*np.meshgrid(k_vec, k_vec))
-
-            interp = interp1d(k, tf_k, bounds_error=False, fill_value=tf_k[-1])
-            tf_arr = interp(karr)
-
-            self.transfer_function = {"k": karr, "tf_k": tf_arr}
-            self.pad_pix = int(pad / self.pix_size)
-
-            def convolve_tf(in_map):
-                in_map_pad = np.pad(
-                    in_map, self.pad_pix, mode="constant", constant_values=0.0
-                )
-                in_map_fourier = np.fft.fft2(in_map_pad)
-                conv_in_map = np.real(np.fft.ifft2(in_map_fourier * tf_arr))
-                return conv_in_map[pad:-pad, pad:-pad]
-
-            self.model.convolve_tf = convolve_tf
-
-        # Beam convolution
-        if beam_fwhm != 0.0:
-            beam_sigma_pix = (
-                beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
-            )
-
-            def convolve_beam(x):
-                return gaussian_filter(x, beam_sigma_pix)
-
-            self.model.convolve_beam = convolve_beam
+        beam_sigma_pix = (
+            beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
+        )
+        self.model.filter = Filter(
+            self.sz_map.shape[0],
+            self.pix_size,
+            beam_sigma_pix=beam_sigma_pix,
+            tf_k=tf_k,
+            k=k,
+            pad=pad,
+        )
 
     # ---------------------------------------------------------------------- #
 
@@ -242,7 +223,7 @@ class PressureProfileFitter:
         integ_Y=None,
     ):
 
-        self.model_type = model_type.lower()
+        model_type = model_type.lower()
         d_a = self.cluster.d_a
         npix = self.sz_map.shape[0]
 
@@ -266,7 +247,7 @@ class PressureProfileFitter:
         self.radii = {"r_x": r_x, "r_xy": r_xy, "theta_x": theta_x}
 
         # If gNFW, we need to define the line of sight
-        if self.model_type == "gnfw":
+        if model_type == "gnfw":
             # 1D LoS radius
             r_z = np.logspace(-3.0, np.log10(5 * self.cluster.R_500), 500)
 
@@ -284,8 +265,202 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def run_mcmc(self, max_steps):
-        pass
+    def define_priors(
+        self,
+        P_bins=None,
+        gNFW_params=None,
+        conv=ss.norm(0.0, 0.1),
+        zero=ss.norm(0.0, 0.1),
+    ):
+        """
+
+        Parameters
+        ----------
+        P_bins : ss.distributions or list of ss.distributions
+            Priors on the pressure bins in binned profile mode.
+            If only one distribution, all bins will have the same
+            prior. If a list, the length should be the number of bins.
+        gNFW_params : #TODO
+        conv : ss.distributions instance
+            Prior on the conversion coefficient.
+            Defaults to N(0, 1).
+        zero : ss.distributions instance
+            Prior on the zero level of the map.
+            Defaults to N(0, 1).
+
+        Raises
+        ------
+        Exception :
+
+        Notes
+        -----
+        To create distributions, use the `scipy.stats` module.
+
+        Examples
+        --------
+        - Normal distribution with mean 0 and spread 1:
+
+            import scipy.stats as ss
+            prior_on_parameter = ss.norm(0.0, 1.0)
+
+
+        - Uniform distribution between 0 and 1:
+
+            import scipy.stats as ss
+            prior_on_parameter = ss.uniform(0.0, 1.0)
+
+        """
+        priors = {}
+
+        # Pressure profile parameters
+        if self.model.type == "binned":
+            if isinstance(P_bins, (list, tuple, np.ndarray)):
+                if len(P_bins) == self.model.n_bins:
+                    for i, P in enumerate(P_bins):
+                        priors[f"P_{i}"] = P
+                else:
+                    raise Exception(
+                        "`P_bins` is a list but has the wrong length"
+                    )
+            elif isinstance(P_bins, ss.distributions.rv_frozen):
+                for i in range(self.model.n_bins):
+                    priors[f"P_{i}"] = P_bins
+            else:
+                raise Exception(
+                    f"Invalid priors for `P_bins` in a binned model: {P_bins}"
+                )
+
+        elif self.model.type == "gnfw":
+            pass  # TODO
+
+        # Conversion coefficient
+        priors["conv"] = conv
+
+        # Zero level
+        priors["zero"] = zero
+
+        self.model.priors = priors
+
+    # ---------------------------------------------------------------------- #
+
+    def log_lhood(self, par_vec):
+        mod = self.model.sz_map(par_vec)
+        sqrtll = (self.sz_map - mod) / self.sz_rms
+        ll = -0.5 * np.sum(sqrtll**2)
+        if np.isfinite(ll):
+            return ll
+        else:
+            return -np.inf
+
+    # ---------------------------------------------------------------------- #
+
+    def run_mcmc(
+        self,
+        n_chains,
+        max_steps,
+        n_threads,
+        n_burn=1e2,
+        n_check=1e3,
+        out_chains_file="./chains.npz",
+    ):
+        n_chains = int(n_chains)
+        max_steps = int(max_steps)
+        n_threads = int(n_threads)
+        n_burn = int(n_burn)
+        n_check = int(n_check)
+
+        # ==== Define MCMC starting point by random sampling the prior ==== #
+        starts = np.array(
+            [
+                [p.rvs(1)[0] for p in self.model.priors.values()]
+                for _ in range(n_chains)
+            ]
+        )
+
+        # Or not
+        # A10 = utils.gNFW(self.model.r_bins, *self.cluster.A10_params)
+        # starts = []
+        # for _ in range(n_chains):
+        #     P_start = np.random.lognormal(np.log(A10), 1.0),
+        #     nonP_start = [self.model.priors["conv"].rvs(1)[0]]
+        #     if self.model.zero_level:
+        #         nonP_start.append(self.model.priors["zero"].rvs(1)[0])
+        #     starts.append(np.append(P_start, nonP_start))
+
+        # Crash now if you want to crash
+        _ = log_post(starts[0], self.log_lhood, self.model.log_prior)
+
+        # ==== MCMC sampling ==== #
+        with Pool(processes=n_threads) as pool:
+            ti = time.time()
+            sampler = emcee.EnsembleSampler(
+                n_chains,
+                len(starts[0]),
+                log_post,
+                pool=pool,
+                moves=emcee.moves.DEMove(),
+                args=[self.log_lhood, self.model.log_prior],
+            )
+
+            # import pdb ; pdb.set_trace()
+
+            for sample in sampler.sample(
+                starts, iterations=max_steps, progress=True
+            ):
+
+                it = sampler.iteration
+                if it % n_check != 0.0:
+                    continue
+                # The following is only executed if it = n * ncheck
+                print(f"    {it} iterations")
+                # More here <===============================================
+
+            blobs = sampler.get_blobs()
+            ch = sampler.chain
+            chains = {}
+            for p, i in self.model.indices.items():
+                chains[p] = ch[:, :, i]
+            del ch
+            chains["lnprior"] = blobs[:, :, 0].T
+            chains["lnlike"] = blobs[:, :, 1].T
+
+        np.savez(out_chains_file, **chains)
+
+        return chains
+
+    # ---------------------------------------------------------------------- #
+
+    def write_sim_map(self, par_vec, out_file):
+        """
+        Write a FITS map with given parameter values
+
+        Parameters
+        ----------
+        par_vec : list or array
+            Vector in the parameter space.
+        out_file : str
+            Path to a FITS file to which the map will be written.
+            If the file already exists, it will be overwritten.
+
+        Notes
+        -----
+        The created FITS file contains the following extensions:
+        - HDU 0: primary, contains header and no data.
+        - HDU 1: SZMAP, contains the model map and header.
+        - HDU 2: RMS, contains the noise RMS map and header.
+        All maps are cropped identically to the data used for the
+        fit, and the headers are adjusted accordingly.
+        """
+        mod_map = self.model.sz_map(par_vec)
+        noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
+
+        header = self.wcs.to_header()
+        hdu0 = fits.PrimaryHDU(header=header)
+        hdu1 = fits.ImageHDU(data=mod_map + noise, header=header, name="SZMAP")
+        hdu2 = fits.ImageHDU(data=self.sz_rms, header=header, name="RMS")
+
+        hdulist = fits.HDUList(hdus=[hdu0, hdu1, hdu2])
+        hdulist.writeto(out_file, overwrite=True)
 
     # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #
@@ -305,4 +480,12 @@ class PressureProfileFitter:
     # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
+
+
+def log_post(par_vec, log_lhood, log_prior):
+    lprior = log_prior(par_vec)
+    if not np.isfinite(lprior):
+        llhood = -np.inf
+    else:
+        llhood = log_lhood(par_vec)
+    return llhood + lprior, lprior, llhood

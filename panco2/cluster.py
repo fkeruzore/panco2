@@ -2,7 +2,7 @@ import numpy as np
 import astropy.constants as const
 import astropy.units as u
 from astropy.cosmology import FlatLambdaCDM
-import _utils
+import utils
 
 
 class Cluster:
@@ -27,7 +27,7 @@ class Cluster:
 
     """
 
-    def __init__(self, z, M_500=None):
+    def __init__(self, z, M_500):
         """
 
         Parameters
@@ -53,7 +53,7 @@ class Cluster:
 
         # Prior information on characteristic quantities
         self.M_500 = M_500
-        self.R_500 = (3 * self.M_500 / (4 * np.pi * 500 * self.dens_crit)) ** (
+        self.R_500 = (3 * M_500 / (4 * np.pi * 500 * self.dens_crit)) ** (
             1.0 / 3.0
         )
         self.theta_500 = np.arctan(self.R_500 / self.d_a)
@@ -65,9 +65,9 @@ class Cluster:
             * self.E ** (8.0 / 3)
             * ((self.M_500 * h_70 / 3e14) ** (2.0 / 3.0 + 0.12))
             * (h_70) ** 2
-        ) # equation (13) of A10, slightly modified notation
+        )  # equation (13) of A10, slightly modified notation
 
-        self.A10_params = np.array( # equation (12) of A10
+        self.A10_params = np.array(  # equation (12) of A10
             [
                 8.403 * self.P_500,
                 self.R_500 / 1.177,
@@ -76,3 +76,12 @@ class Cluster:
                 0.3081,
             ]
         )
+
+    def arcsec2kpc(self, angle):
+        angle *= u.arcsec.to("rad")
+        dist = np.tan(angle) * self.d_a
+        return dist
+
+    def kpc2arcsec(self, dist):
+        angle = np.arctan(dist / self.d_a)
+        return angle * u.rad.to("arcsec")

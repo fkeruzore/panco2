@@ -4,8 +4,9 @@ from scipy.interpolate import interp1d
 import astropy.units as u
 from astropy.constants import sigma_T, c, m_e
 from shell_pl import shell_pl
-import _utils
+import utils
 import pdb
+from filtering import Filter
 
 sz_fact = (sigma_T / (m_e * c**2)).to(u.cm**3 / u.keV / u.kpc).value
 del sigma_T, c, m_e
@@ -16,25 +17,44 @@ class Model:
         self.radii = radii
         self.zero_level = zero_level
         self.indices = {}
+        self._priors = {}
+        self._type = "binned"
+        self._filter = Filter(101, 1.0)
+
+    @property
+    def type(self):
+        return self._type
 
     def par_vec2dic(self, vec):
         return {key: vec[self.indices[key]] for key in self.indices.keys()}
 
-    def convolve_beam(self, in_map):
-        return in_map
+    @property
+    def priors(self):
+        return self._priors
 
-    def convolve_tf(self, in_map):
-        return in_map
+    @priors.setter
+    def priors(self, value):
+        self._priors = value
 
-    def filter_map(self, in_map):
-        filt_map_tf = self.convolve_tf(in_map)
-        filt_map_tot = self.convolve_beam(filt_map_tf)
-        return filt_map_tot
+    @property
+    def filter(self):
+        return self._filter
+
+    @filter.setter
+    def filter(self, value):
+        self._filter = value
+
+    def log_prior(self, par_vec):
+        lp = [
+            self.priors[k].logpdf(par_vec[i]) for k, i in self.indices.items()
+        ]
+        return np.sum(lp)
 
 
 class ModelBinned(Model):
     def __init__(self, r_bins, radii, zero_level=True):
         super().__init__(radii, zero_level=zero_level)
+        self._type = "binned"
         self.r_bins = r_bins
         self.n_bins = len(r_bins)
         self.indices_press = range(self.n_bins)
@@ -46,7 +66,7 @@ class ModelBinned(Model):
 
     def pressure_profile(self, r, par_vec):
         P_i = par_vec[self.indices_press]
-        return _utils.interp_powerlaw(self.r_bins, P_i, r)
+        return utils.interp_powerlaw(self.r_bins, P_i, r)
 
     def compute_slopes(self, P_i):
         """
@@ -91,12 +111,12 @@ class ModelBinned(Model):
         P_i = par_vec[self.indices_press]
         alphas = self.compute_slopes(P_i)
         y_prof = self.compton_prof(P_i, self.radii["r_x"][1:], alphas)
-        y_map = _utils.prof2map(
+        y_map = utils.prof2map(
             y_prof, self.radii["r_x"][1:], self.radii["r_xy"]
         )
         return y_map
 
     def sz_map(self, par_vec):
         y_map = self.compton_map(par_vec)
-        sz_map_filt = self.filter_map(y_map) * par_vec[self.indices["conv"]]
+        sz_map_filt = self.filter(y_map) * par_vec[self.indices["conv"]]
         return sz_map_filt + par_vec[self.indices["zero"]]
