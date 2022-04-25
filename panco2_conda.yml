@@ -18,4 +18,3 @@ dependencies:
     - scipy
     - statsmodels
     - tqdm
-prefix: /home/fkeruzore/.miniconda3/envs/panco2
