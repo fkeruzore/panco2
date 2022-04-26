@@ -49,22 +49,6 @@ def mcmc_trace_plot(chains_clean, show_probs=True, filename=None):
     )
     cf = cc.plotter.plot_walks()
 
-    # fig, axs = plt.subplots(len(params), 1, figsize=(8, 0.75 * len(params)))
-
-    # for p, ax in zip(params, axs.flatten()):
-    #     sns.lineplot(
-    #         data=chains_clean,
-    #         x="step",
-    #         y=p,
-    #         hue="chain",
-    #         ax=ax,
-    #         legend=False,
-    #         palette="mako",
-    #     )
-
-    # fig.subplots_adjust(
-    #     left=0.15, right=0.95, bottom=0.05, top=0.95, hspace=0.2
-    # )
     cf.align_labels()
     if filename is not None:
         cf.savefig(filename)

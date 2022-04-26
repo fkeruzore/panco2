@@ -391,17 +391,17 @@ class PressureProfileFitter:
 
     def fastfit(self):
 
-        # start = np.array([p.rvs(1)[0] for p in self.model.priors.values()])
+        # Starting point for pressure = A10 universal pressure profile
         A10 = utils.gNFW(self.model.r_bins, *self.cluster.A10_params)
         P_start = np.random.lognormal(np.log(A10), 0.1)
+
+        # Starting point for the rest = mean of the priors
         nonP_start = [np.mean(self.model.priors["conv"].rvs(1000))]
         if self.model.zero_level:
             nonP_start.append(np.mean(self.model.priors["zero"].rvs(1000)))
         start = np.append(P_start, nonP_start)
 
-        # def tomin(par_vec):
-        #     return -2 * self.log_lhood(par_vec) / self.sz_map.size - 1.0
-
+        # Fast fit by minimizing -log posterior
         def tomin(par_vec):
             post, _, _ = log_post(
                 par_vec, self.log_lhood, self.model.log_prior
@@ -409,7 +409,6 @@ class PressureProfileFitter:
             return -2.0 * post
 
         f = minimize(tomin, x0=start)
-        #print(f)
 
         return f["x"]
 
@@ -451,8 +450,6 @@ class PressureProfileFitter:
                 moves=emcee.moves.DEMove(),
                 args=[self.log_lhood, self.model.log_prior],
             )
-
-            # import pdb ; pdb.set_trace()
 
             for sample in sampler.sample(
                 starts, iterations=max_steps, progress=True
