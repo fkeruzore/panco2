@@ -10,6 +10,7 @@ import emcee
 from iminuit import Minuit
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter
+from scipy.optimize import minimize
 import scipy.stats as ss
 import sys
 import os
@@ -354,6 +355,66 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
+    def write_sim_map(self, par_vec, out_file):
+        """
+        Write a FITS map with given parameter values
+
+        Parameters
+        ----------
+        par_vec : list or array
+            Vector in the parameter space.
+        out_file : str
+            Path to a FITS file to which the map will be written.
+            If the file already exists, it will be overwritten.
+
+        Notes
+        -----
+        The created FITS file contains the following extensions:
+        - HDU 0: primary, contains header and no data.
+        - HDU 1: SZMAP, contains the model map and header.
+        - HDU 2: RMS, contains the noise RMS map and header.
+        All maps are cropped identically to the data used for the
+        fit, and the headers are adjusted accordingly.
+        """
+        mod_map = self.model.sz_map(par_vec)
+        noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
+
+        header = self.wcs.to_header()
+        hdu0 = fits.PrimaryHDU(header=header)
+        hdu1 = fits.ImageHDU(data=mod_map + noise, header=header, name="SZMAP")
+        hdu2 = fits.ImageHDU(data=self.sz_rms, header=header, name="RMS")
+
+        hdulist = fits.HDUList(hdus=[hdu0, hdu1, hdu2])
+        hdulist.writeto(out_file, overwrite=True)
+
+    # ---------------------------------------------------------------------- #
+
+    def fastfit(self):
+
+        # start = np.array([p.rvs(1)[0] for p in self.model.priors.values()])
+        A10 = utils.gNFW(self.model.r_bins, *self.cluster.A10_params)
+        P_start = np.random.lognormal(np.log(A10), 0.1)
+        nonP_start = [np.mean(self.model.priors["conv"].rvs(1000))]
+        if self.model.zero_level:
+            nonP_start.append(np.mean(self.model.priors["zero"].rvs(1000)))
+        start = np.append(P_start, nonP_start)
+
+        # def tomin(par_vec):
+        #     return -2 * self.log_lhood(par_vec) / self.sz_map.size - 1.0
+
+        def tomin(par_vec):
+            post, _, _ = log_post(
+                par_vec, self.log_lhood, self.model.log_prior
+            )
+            return -2.0 * post
+
+        f = minimize(tomin, x0=start)
+        #print(f)
+
+        return f["x"]
+
+    # ---------------------------------------------------------------------- #
+
     def run_mcmc(
         self,
         n_chains,
@@ -369,23 +430,12 @@ class PressureProfileFitter:
         n_burn = int(n_burn)
         n_check = int(n_check)
 
-        # ==== Define MCMC starting point by random sampling the prior ==== #
-        starts = np.array(
-            [
-                [p.rvs(1)[0] for p in self.model.priors.values()]
-                for _ in range(n_chains)
-            ]
-        )
-
-        # Or not
-        # A10 = utils.gNFW(self.model.r_bins, *self.cluster.A10_params)
-        # starts = []
-        # for _ in range(n_chains):
-        #     P_start = np.random.lognormal(np.log(A10), 1.0),
-        #     nonP_start = [self.model.priors["conv"].rvs(1)[0]]
-        #     if self.model.zero_level:
-        #         nonP_start.append(self.model.priors["zero"].rvs(1)[0])
-        #     starts.append(np.append(P_start, nonP_start))
+        # Starting point from fast fit, with some shaking
+        start = self.fastfit()
+        starts = [
+            np.random.normal(start, 0.2 * np.abs(start))
+            for _ in range(n_chains)
+        ]
 
         # Crash now if you want to crash
         _ = log_post(starts[0], self.log_lhood, self.model.log_prior)
@@ -424,43 +474,10 @@ class PressureProfileFitter:
             chains["lnprior"] = blobs[:, :, 0].T
             chains["lnlike"] = blobs[:, :, 1].T
 
+        np.seterr(all="warn")
         np.savez(out_chains_file, **chains)
 
         return chains
-
-    # ---------------------------------------------------------------------- #
-
-    def write_sim_map(self, par_vec, out_file):
-        """
-        Write a FITS map with given parameter values
-
-        Parameters
-        ----------
-        par_vec : list or array
-            Vector in the parameter space.
-        out_file : str
-            Path to a FITS file to which the map will be written.
-            If the file already exists, it will be overwritten.
-
-        Notes
-        -----
-        The created FITS file contains the following extensions:
-        - HDU 0: primary, contains header and no data.
-        - HDU 1: SZMAP, contains the model map and header.
-        - HDU 2: RMS, contains the noise RMS map and header.
-        All maps are cropped identically to the data used for the
-        fit, and the headers are adjusted accordingly.
-        """
-        mod_map = self.model.sz_map(par_vec)
-        noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
-
-        header = self.wcs.to_header()
-        hdu0 = fits.PrimaryHDU(header=header)
-        hdu1 = fits.ImageHDU(data=mod_map + noise, header=header, name="SZMAP")
-        hdu2 = fits.ImageHDU(data=self.sz_rms, header=header, name="RMS")
-
-        hdulist = fits.HDUList(hdus=[hdu0, hdu1, hdu2])
-        hdulist.writeto(out_file, overwrite=True)
 
     # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #

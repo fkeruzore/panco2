@@ -1,0 +1,50 @@
+lines.linewidth    : 1.0
+lines.linestyle   : -
+
+font.family          : serif
+font.style           : normal
+font.variant         : normal
+font.weight          : normal
+font.serif           : Times New Roman, Times, Bitstream Vera Serif
+font.sans-serif      : Helvetica, Arial
+text.usetex          : True
+text.latex.preamble : \usepackage{txfonts}
+mathtext.rm   : Times New Roman
+mathtext.default : rm
+
+axes.facecolor      : white
+axes.edgecolor      : black
+axes.linewidth       : 1.0
+axes.grid           : False
+axes.titlesize      : large
+axes.labelsize      : medium
+axes.labelweight    : normal
+axes.labelcolor     : black
+axes.axisbelow      : False
+axes.formatter.limits : -7, 7
+axes.xmargin        : 0
+axes.ymargin        : 0
+
+xtick.major.size     : 5
+xtick.minor.size     : 2.5
+xtick.major.width    : 1.0
+xtick.minor.width    : 1.0
+xtick.direction      : in
+
+ytick.major.size     : 5
+ytick.minor.size     : 2.5
+ytick.major.width    : 1.0
+ytick.minor.width    : 1.0
+ytick.direction      : in
+
+grid.color       :   0.5
+grid.linestyle   :   :
+grid.linewidth   :   0.5
+grid.alpha       :   1
+
+legend.fancybox      : False
+legend.numpoints      : 1
+legend.fontsize      : large
+legend.frameon        : False
+
+savefig.format       : pdf

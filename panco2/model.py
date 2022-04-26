@@ -28,6 +28,16 @@ class Model:
     def par_vec2dic(self, vec):
         return {key: vec[self.indices[key]] for key in self.indices.keys()}
 
+    def par_dic2vec(self, dic):
+        vec = np.zeros(len(dic))
+        for p, i in self.indices.items():
+            vec[i] = dic[p]
+        return vec
+
+    @property
+    def params(self):
+        return list(self.indices.keys())
+
     @property
     def priors(self):
         return self._priors
