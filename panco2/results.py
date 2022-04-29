@@ -267,6 +267,47 @@ def plot_results(ppf, chains_clean, truth_vec=None):
     return fig
 
 
+def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
+    n, tau = ppf.autocorr
+    dtau = np.abs(np.ediff1d(tau)) / tau[1:]
+
+    fig, axs = plt.subplots(2, 1)
+    axs[0].plot(n, tau, "o-")
+    axs[1].semilogy(n[1:], dtau, "o-")
+    xlims = np.array(axs[0].get_xlim())
+    for ax in axs.flatten():
+        ax.set_xlim(*xlims)
+
+    if min_autocorr_times is not None:
+        ylims = np.array(axs[0].get_ylim())
+        axs[0].set_ylim(*ylims)
+        axs[0].fill_between(
+            xlims,
+            ylims[0],
+            xlims / min_autocorr_times,
+            color="tab:green",
+            alpha=0.2,
+        )
+
+    if max_delta_tau is not None:
+        ylims = np.array(axs[1].get_ylim())
+        axs[1].set_ylim(*ylims)
+        axs[1].fill_between(
+            xlims,
+            ylims[0],
+            max_delta_tau,
+            color="tab:green",
+            alpha=0.2,
+        )
+
+    axs[0].set_xticklabels([])
+    axs[0].set_ylabel(r"Integrated autocorrelation time $\tau_i$")
+    axs[1].set_ylabel(r"$|\tau_{i - 1} - \tau_{i}| \; / \; \tau_{i}$")
+    axs[1].set_xlabel(r"MCMC step $i$")
+
+    return fig, axs
+
+
 def ax_bothticks(ax):
     """
     Add ticks on the top and right axis

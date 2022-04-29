@@ -83,6 +83,7 @@ class PressureProfileFitter:
 
         # If asked, map_size the NIKA2 map in a smaller FoV
         if map_size is not None:
+            self.map_size = map_size  # arcmin
             # Ensure the number of pixels will be odd after map_sizeping
             new_npix = int(map_size * 60 / pix_size)
             if new_npix % 2 == 0.0:
@@ -103,11 +104,11 @@ class PressureProfileFitter:
             self.sz_map = hdulist[hdu_data].data
             self.sz_rms = hdulist[hdu_rms].data
             self.wcs = wcs
+            self.map_size = self.sz_map.shape[0] * pix_size / 60
 
         hdulist.close()
         self.pix_size = pix_size  # arcsec
         self.coords_center = coords_center
-        self.map_size = map_size  # arcmin
         self.inv_covmat = None
 
     # ---------------------------------------------------------------------- #
@@ -121,6 +122,17 @@ class PressureProfileFitter:
     def dump_to_file(self, file_name):
         with open(file_name, "wb") as f:
             f.write(dill.dumps(self))
+
+    # ---------------------------------------------------------------------- #
+
+    def default_radial_binning(self, bin2_arcsec):
+        pix_kpc = self.cluster.arcsec2kpc(self.pix_size)
+        map_kpc = self.cluster.arcsec2kpc(self.map_size * 60 / 2)
+        beam_kpc = self.cluster.arcsec2kpc(bin2_arcsec)
+        beam_pix = beam_kpc / pix_kpc
+        r_bins = np.array([pix_kpc * (beam_pix**i) for i in range(100)])
+        r_bins = r_bins[: int(np.max(np.where(r_bins < map_kpc)) + 2)]
+        return r_bins
 
     # ---------------------------------------------------------------------- #
 
@@ -428,15 +440,58 @@ class PressureProfileFitter:
         n_chains,
         max_steps,
         n_threads,
-        n_burn=1e2,
         n_check=1e3,
+        max_delta_tau=1e-2,
+        min_autocorr_times=100,
         out_chains_file="./chains.npz",
     ):
+        """
+        Runs MCMC sampling of the posterior distribution.
+
+        Parameters
+        ----------
+        n_chains : int
+            Number of emcee walkers.
+        max_steps : int
+            Maximum number of steps in the Markov chains.
+            The final number of points can be lower if
+            convergence is accepted before `max_steps` is
+            reached -- see Notes.
+        n_threads : int
+            Number of parallel threads to use.
+        n_check : int
+            Number of steps between two convergence checks.
+        max_delta_tau : float
+            Maximum relative difference of the autocorrelation
+            length between two convergence checks to end sampling.
+        min_autocorr_times : int
+            Minimum ratio between the chains length and the
+            autocorrelation length to end samlling.
+        out_chains_file : str
+            Path to a `.npz` file in which the chains
+            will be stored.
+
+        Returns
+        -------
+        chains : dict
+            Markov chains. Each key is a parameter, and the
+            values are 2D arrays of shape (n_chains, n_steps).
+
+        Notes
+        -----
+        - The convergence check are performed every `n_check` steps.
+          Convergence is accepted if:
+          * In the last two checks, the mean autocorrelation time
+            had a relative variation smaller than `max_delta_tau`
+            compared to the previous step.
+          * The chain is longer than `min_autocorr_times` times
+            the current mean autocorrelation time.
+        """
         n_chains = int(n_chains)
         max_steps = int(max_steps)
         n_threads = int(n_threads)
-        n_burn = int(n_burn)
         n_check = int(n_check)
+        min_autocorr_times = int(min_autocorr_times)
 
         # Starting point from fast fit, with some shaking
         start = self.fastfit()
@@ -450,6 +505,9 @@ class PressureProfileFitter:
 
         # ==== MCMC sampling ==== #
         np.seterr(all="ignore")
+        old_tau = 0.0
+        tau_was_stable = False
+        all_taus = [[], []]
         with Pool(processes=n_threads) as pool:
             ti = time.time()
             sampler = emcee.EnsembleSampler(
@@ -469,8 +527,35 @@ class PressureProfileFitter:
                 if it % n_check != 0.0:
                     continue
                 # The following is only executed if it = n * ncheck
-                print(f"    {it} iterations")
-                # More here <===============================================
+                tau = sampler.get_autocorr_time(tol=0)
+                mean_tau = np.mean(tau)
+                all_taus[0].append(it)
+                all_taus[1].append(mean_tau)
+                dtau = np.abs(old_tau - mean_tau) / mean_tau
+                tau_is_stable = dtau < max_delta_tau
+                chain_is_long = it > (mean_tau * min_autocorr_times)
+
+                print(tau_is_stable, tau_was_stable, chain_is_long)
+                print(
+                    f"    {it} iterations = {it / mean_tau:.1f}*tau",
+                    f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
+                    end="\n"
+                )
+
+                if tau_is_stable and tau_was_stable and chain_is_long:
+                    print("    -> Convergence achieved")
+                    break
+
+                old_tau = mean_tau
+                tau_was_stable = tau_is_stable
+
+            rt = time.time() - ti
+            rt_h = int(rt / 3600)
+            rt_m = int((rt - (3600 * rt_h)) / 60)
+            rt_s = int(rt - (3600 * rt_h) - (60 * rt_m))
+            print(f"Running time: {rt_h:02}h{rt_m:02}m{rt_s:02}s")
+
+            self.autocorr = np.array(all_taus)
 
             blobs = sampler.get_blobs()
             ch = sampler.chain
