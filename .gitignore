@@ -133,4 +133,4 @@ dmypy.json
 *.pyc
 *.swp
 doc/latex
-tests/*/*npz
+tests/test*
