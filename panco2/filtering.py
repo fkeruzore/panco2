@@ -15,6 +15,9 @@ class Filter:
             self.has_beam = False
 
         if (k is not None) and (tf_k is not None):
+            if pad is None:
+                pad = 0.0
+            pad = int(pad / pix_size)
             self.has_tf = True
             # Compute the modes covered in the map
             k_vec = np.fft.fftfreq(npix + 2 * pad, pix_size)
@@ -24,7 +27,7 @@ class Filter:
             tf_arr = interp(karr)
 
             self.transfer_function = {"k": karr, "tf_k": tf_arr}
-            self.pad_pix = int(pad / pix_size)
+            self.pad_pix = pad
         else:
             self.has_tf = False
 

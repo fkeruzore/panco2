@@ -74,9 +74,12 @@ class PressureProfileFitter:
 
         # Coordinates of the enter if not specified
         if coords_center is None:
-            coords_center = SkyCoord(
-                head["CRVAL1"] * u.deg, head["CRVAL2"] * u.deg
-            )
+            pix_center = np.array([head[f"NAXIS{ii}"] // 2 for ii in (1, 2)])
+            ra, dec = wcs.all_pix2world([pix_center], 1)[0]
+            coords_center = SkyCoord(ra=ra * u.deg, dec=dec * u.deg)
+            # coords_center = SkyCoord(
+            #     head["CRVAL1"] * u.deg, head["CRVAL2"] * u.deg
+            # )
 
         # If asked, map_size the NIKA2 map in a smaller FoV
         if map_size is not None:
@@ -86,15 +89,15 @@ class PressureProfileFitter:
                 map_size += pix_size / 60.0
                 new_npix += 1
 
-            map_sizeped_map = Cutout2D(
+            cropped_map = Cutout2D(
                 hdulist[hdu_data].data, coords_center, new_npix, wcs=wcs
             )
-            self.sz_map = map_sizeped_map.data
-            map_sizeped_rms = Cutout2D(
+            self.sz_map = cropped_map.data
+            cropped_rms = Cutout2D(
                 hdulist[hdu_rms].data, coords_center, new_npix, wcs=wcs
             )
-            self.sz_rms = map_sizeped_rms.data
-            self.wcs = map_sizeped_map.wcs
+            self.sz_rms = cropped_rms.data
+            self.wcs = cropped_map.wcs
 
         else:
             self.sz_map = hdulist[hdu_data].data
@@ -202,6 +205,7 @@ class PressureProfileFitter:
             i.e. the largest 1D mode is 1/(pixel size).
         """
 
+        self.beam_fwhm = beam_fwhm
         beam_sigma_pix = (
             beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
         )
@@ -355,7 +359,7 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def write_sim_map(self, par_vec, out_file):
+    def write_sim_map(self, par_vec, out_file, filter_noise=True):
         """
         Write a FITS map with given parameter values
 
@@ -366,6 +370,9 @@ class PressureProfileFitter:
         out_file : str
             Path to a FITS file to which the map will be written.
             If the file already exists, it will be overwritten.
+        filter_noise : bool
+            If True, convolve the noise realization by your
+            filtering kernel.
 
         Notes
         -----
@@ -378,6 +385,8 @@ class PressureProfileFitter:
         """
         mod_map = self.model.sz_map(par_vec)
         noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
+        if filter_noise:
+            noise = self.model.filter(noise)
 
         header = self.wcs.to_header()
         hdu0 = fits.PrimaryHDU(header=header)
@@ -440,6 +449,7 @@ class PressureProfileFitter:
         _ = log_post(starts[0], self.log_lhood, self.model.log_prior)
 
         # ==== MCMC sampling ==== #
+        np.seterr(all="ignore")
         with Pool(processes=n_threads) as pool:
             ti = time.time()
             sampler = emcee.EnsembleSampler(

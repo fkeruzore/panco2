@@ -121,8 +121,9 @@ def mcmc_corner_plot(
         return cf
 
 
-def plot_profile(chains_clean, model, r_range, ax=None, label=None):
+def plot_profile(chains_clean, ppf, r_range, ax=None, label=None):
 
+    model = ppf.model
     if ax is None:
         fig, ax = plt.subplots()
 
@@ -136,13 +137,32 @@ def plot_profile(chains_clean, model, r_range, ax=None, label=None):
 
     perc = np.percentile(all_profs, [16.0, 50.0, 84.0], axis=0)
 
-    ax.fill_between(r_range, perc[0], perc[2], alpha=0.3, ls="--")
-    ax.plot(r_range, perc[1], "-", label=label)
+    ax.fill_between(r_range, perc[0], perc[2], alpha=0.3, ls="--", zorder=3)
+    ax.plot(r_range, perc[1], "-", label=label, zorder=4)
 
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel(r"$r \; [{\rm kpc}]$")
     ax.set_ylabel(r"$P_{\rm e}(r) \; [{\rm keV \cdot cm^{-3}}]$")
+
+    bg = ax.get_facecolor()
+    lines_toplot = {
+        "Beam HWHM": [ppf.cluster.arcsec2kpc(ppf.beam_fwhm / 2.0), "bottom"],
+        "Map size": [ppf.cluster.arcsec2kpc(ppf.map_size * 60.0 / 2.0), "top"],
+    }
+    for label, line in lines_toplot.items():
+        ax.axvline(line[0], 0, 1, color="k", ls=":", zorder=1)
+        # ax.text(
+        #     line[0],
+        #     0.05 if line[1] == "bottom" else 0.95,
+        #     label,
+        #     rotation=90,
+        #     ha="center",
+        #     va=line[1],
+        #     bbox={"facecolor": bg, "edgecolor": bg},
+        #     transform=ax.get_xaxis_transform(),
+        #     zorder=2,
+        # )
 
     return ax
 
@@ -172,15 +192,23 @@ def plot_data_model_residuals(
     maps_toplot = [
         gaussian_filter(m, smooth) for m in [ppf.sz_map, mod, ppf.sz_map - mod]
     ]
-    noise = gaussian_filter(ppf.sz_rms, smooth) / np.sqrt(
-        2 * np.pi * smooth**2
-    )
+    noise = ppf.sz_rms
+    if smooth != 0.0:
+        noise = gaussian_filter(noise, smooth) / np.sqrt(
+            2 * np.pi * smooth**2
+        )
     if par_dic["conv"] < 0:
         noise *= -1.0  # for negative SNR
-    if lims is None:
-        vmin, vmax = np.min(maps_toplot), np.max(maps_toplot)
-    else:
+
+    if isinstance(lims, (tuple, list, np.ndarray)):
         vmin, vmax = lims
+    elif isinstance(lims, str):
+        if lims == "sym":
+            vmin, vmax = np.min(maps_toplot), np.max(maps_toplot)
+            vmax = np.max(np.abs([vmin, vmax]))
+            vmin = -vmax
+    else:
+        vmin, vmax = np.min(maps_toplot), np.max(maps_toplot)
 
     if axs is None:
         axs = [fig.add_subplot(131 + i, projection=ppf.wcs) for i in range(3)]
@@ -191,7 +219,7 @@ def plot_data_model_residuals(
             vmin=vmin,
             vmax=vmax,
             interpolation="gaussian",
-            cmap="RdBu_r" if par_dic["conv"] < 0 else "RdBu",
+            cmap="RdBu_r",
         )
         ct = ax.contour(
             m / noise,
@@ -216,7 +244,7 @@ def plot_results(ppf, chains_clean, truth_vec=None):
         ppf,
         par_dic=par_dic_med,
         smooth=1.0,
-        lims=[-1.25e-3, 1.25e-3],
+        lims="sym",
         fig=fig,
         axs=axs_dmr,
     )
@@ -232,7 +260,7 @@ def plot_results(ppf, chains_clean, truth_vec=None):
             "k--",
             label="Truth",
         )
-    _ = plot_profile(chains_clean, ppf.model, r_plot, ax=ax, label="PANCO2")
+    _ = plot_profile(chains_clean, ppf, r_plot, ax=ax, label="PANCO2")
     ax.legend()
     ax_bothticks(ax)
 
