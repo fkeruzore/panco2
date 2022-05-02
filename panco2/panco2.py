@@ -282,12 +282,21 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
+    def add_point_sources(self, coords, beam_fwhm):
+        beam_sigma_pix = (
+            beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
+        )
+        self.model.add_point_sources(coords, self.wcs, beam_sigma_pix)
+
+    # ---------------------------------------------------------------------- #
+
     def define_priors(
         self,
         P_bins=None,
         gNFW_params=None,
         conv=ss.norm(0.0, 0.1),
         zero=ss.norm(0.0, 0.1),
+        ps_fluxes=[],
     ):
         """
 
@@ -304,10 +313,12 @@ class PressureProfileFitter:
         zero : ss.distributions instance
             Prior on the zero level of the map.
             Defaults to N(0, 1).
+        ps_fluxes : list of ss.distributions
+            Priors on the flux of each point source, in map units.
 
         Raises
         ------
-        Exception :
+        Exception : #TODO
 
         Notes
         -----
@@ -356,12 +367,19 @@ class PressureProfileFitter:
         # Zero level
         priors["zero"] = zero
 
+        # Point sources
+        if len(ps_fluxes) == self.model.n_ps:
+            for i, F in enumerate(ps_fluxes):
+                priors[f"F_{i+1}"] = F  # this is 1-indexed, is this evil?
+        else:
+            raise Exception("`ps_fluxes` is a list but has the wrong length")
+
         self.model.priors = priors
 
     # ---------------------------------------------------------------------- #
 
     def log_lhood(self, par_vec):
-        mod = self.model.sz_map(par_vec)
+        mod = self.model.sz_map(par_vec) + self.model.ps_map(par_vec)
         sqrtll = (self.sz_map - mod) / self.sz_rms
         ll = -0.5 * np.sum(sqrtll**2)
         if np.isfinite(ll):
@@ -395,7 +413,7 @@ class PressureProfileFitter:
         All maps are cropped identically to the data used for the
         fit, and the headers are adjusted accordingly.
         """
-        mod_map = self.model.sz_map(par_vec)
+        mod_map = self.model.sz_map(par_vec) + self.model.ps_map(par_vec)
         noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
         if filter_noise:
             noise = self.model.filter(noise)
@@ -420,6 +438,8 @@ class PressureProfileFitter:
         nonP_start = [np.mean(self.model.priors["conv"].rvs(1000))]
         if self.model.zero_level:
             nonP_start.append(np.mean(self.model.priors["zero"].rvs(1000)))
+        for i in range(self.model.n_ps):
+            nonP_start.append(np.mean(self.model.priors[f"F_{i+1}"].rvs(1000)))
         start = np.append(P_start, nonP_start)
 
         # Fast fit by minimizing -log posterior
@@ -539,7 +559,7 @@ class PressureProfileFitter:
                 print(
                     f"    {it} iterations = {it / mean_tau:.1f}*tau",
                     f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
-                    end="\n"
+                    end="\n",
                 )
 
                 if tau_is_stable and tau_was_stable and chain_is_long:

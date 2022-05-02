@@ -3,6 +3,7 @@ from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
 import astropy.units as u
 from astropy.constants import sigma_T, c, m_e
+from astropy.wcs.utils import skycoord_to_pixel
 from shell_pl import shell_pl
 import utils
 import pdb
@@ -17,22 +18,16 @@ class Model:
         self.radii = radii
         self.zero_level = zero_level
         self.indices = {}
+        self.n_ps = 0
         self._priors = {}
         self._type = "binned"
         self._filter = Filter(101, 1.0)
 
+    # ---------------------------------------------------------------------- #
+
     @property
     def type(self):
         return self._type
-
-    def par_vec2dic(self, vec):
-        return {key: vec[self.indices[key]] for key in self.indices.keys()}
-
-    def par_dic2vec(self, dic):
-        vec = np.zeros(len(dic))
-        for p, i in self.indices.items():
-            vec[i] = dic[p]
-        return vec
 
     @property
     def params(self):
@@ -54,11 +49,62 @@ class Model:
     def filter(self, value):
         self._filter = value
 
+    # ---------------------------------------------------------------------- #
+
+    def par_vec2dic(self, vec):
+        return {key: vec[self.indices[key]] for key in self.indices.keys()}
+
+    def par_dic2vec(self, dic):
+        vec = np.zeros(len(dic))
+        for p, i in self.indices.items():
+            vec[i] = dic[p]
+        return vec
+
+    # ---------------------------------------------------------------------- #
+
     def log_prior(self, par_vec):
         lp = [
             self.priors[k].logpdf(par_vec[i]) for k, i in self.indices.items()
         ]
         return np.sum(lp)
+
+    # ---------------------------------------------------------------------- #
+
+    def add_point_sources(self, coords, wcs, beam_sigma_pix):
+        n_pix = wcs.array_shape[0]
+        self.n_ps = len(coords)
+        self.ps_pix_pos = []
+        self.ps_xymaps = {"x": [], "y": []}
+
+        old_n_params = len(self.indices)
+        self.indices_ps = slice(old_n_params, old_n_params + self.n_ps)
+        for i, c in enumerate(coords):
+            pix_pos = skycoord_to_pixel(c, wcs)
+            self.ps_pix_pos.append(pix_pos)
+            xmap, ymap = np.meshgrid(
+                np.arange(n_pix) - pix_pos[0], np.arange(n_pix) - pix_pos[1]
+            )
+            self.ps_xymaps["x"].append(xmap)
+            self.ps_xymaps["y"].append(ymap)
+
+            self.indices[f"F_{i + 1}"] = old_n_params + i
+
+        self.ps_size = beam_sigma_pix
+
+    # ---------------------------------------------------------------------- #
+
+    def ps_map(self, par_vec):
+        fluxes = par_vec[self.indices_ps]
+        ps_map = np.zeros_like(self.radii["r_xy"])
+        for f, x, y in zip(fluxes, self.ps_xymaps["x"], self.ps_xymaps["y"]):
+            m = f * np.exp(
+                -0.5 * ((x / self.ps_size) ** 2 + (y / self.ps_size) ** 2)
+            )
+            ps_map += m
+        return ps_map
+
+
+# -------------------------------------------------------------------------- #
 
 
 class ModelBinned(Model):
@@ -67,7 +113,7 @@ class ModelBinned(Model):
         self._type = "binned"
         self.r_bins = r_bins
         self.n_bins = len(r_bins)
-        self.indices_press = range(self.n_bins)
+        self.indices_press = slice(0, self.n_bins)
         for i in range(self.n_bins):
             self.indices[f"P_{i}"] = i
         self.indices["conv"] = len(self.indices.keys())
