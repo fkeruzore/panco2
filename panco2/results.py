@@ -85,7 +85,7 @@ def mcmc_corner_plot(
             bar_shade=False,
         )
         lims = {
-            p: list(chains_clean[p].quantile([0.001, 0.999])) for p in params
+            p: list(chains_clean[p].quantile([0.01, 0.99])) for p in params
         }
     else:
         lims = None
@@ -175,6 +175,8 @@ def plot_data_model_residuals(
     fig=None,
     axs=None,
     lims=None,
+    cbar_label=None,
+    cmap="RdBu_r",
 ):
 
     if (par_dic is None) and (par_vec is None):
@@ -185,13 +187,44 @@ def plot_data_model_residuals(
     if (par_vec is not None) and (par_dic is None):
         par_dic = ppf.model.par_vec2dic(par_vec)
 
-    if fig is None:
-        fig = plt.figure(figsize=(12, 5))
+    do_ps = ppf.model.n_ps > 0
+    if do_ps:
+        if fig is None:
+            fig = plt.figure(figsize=(10, 8))
+        if axs is None:
+            axs = [
+                fig.add_subplot(i, projection=ppf.wcs)
+                for i in (334, 332, 333, 335, 336, 338, 339)
+            ]
+        mod_sz = ppf.model.sz_map(par_vec)
+        mod_ps = ppf.model.ps_map(par_vec)
+        maps_toplot = [
+            gaussian_filter(m, smooth)
+            for m in [
+                ppf.sz_map,
+                mod_sz,
+                ppf.sz_map - mod_sz,
+                mod_sz + mod_ps,
+                ppf.sz_map - mod_sz - mod_ps,
+                mod_ps,
+                ppf.sz_map - mod_ps,
+            ]
+        ]
 
-    mod = ppf.model.sz_map(par_vec)
-    maps_toplot = [
-        gaussian_filter(m, smooth) for m in [ppf.sz_map, mod, ppf.sz_map - mod]
-    ]
+    else:
+        if fig is None:
+            fig = plt.figure(figsize=(10, 5))
+        if axs is None:
+            axs = [
+                fig.add_subplot(131 + i, projection=ppf.wcs) for i in range(3)
+            ]
+
+        mod = ppf.model.sz_map(par_vec)
+        maps_toplot = [
+            gaussian_filter(m, smooth)
+            for m in [ppf.sz_map, mod, ppf.sz_map - mod]
+        ]
+
     noise = ppf.sz_rms
     if smooth != 0.0:
         noise = gaussian_filter(noise, smooth) / np.sqrt(
@@ -210,8 +243,6 @@ def plot_data_model_residuals(
     else:
         vmin, vmax = np.min(maps_toplot), np.max(maps_toplot)
 
-    if axs is None:
-        axs = [fig.add_subplot(131 + i, projection=ppf.wcs) for i in range(3)]
     for ax, m in zip(axs, maps_toplot):
         im = ax.imshow(
             m,
@@ -219,7 +250,7 @@ def plot_data_model_residuals(
             vmin=vmin,
             vmax=vmax,
             interpolation="gaussian",
-            cmap="RdBu_r",
+            cmap=cmap,
         )
         ct = ax.contour(
             m / noise,
@@ -231,40 +262,7 @@ def plot_data_model_residuals(
             ),
         )
     cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
-
-
-def plot_results(ppf, chains_clean, truth_vec=None):
-
-    par_dic_med = dict(chains_clean[ppf.model.params].median())
-
-    fig = plt.figure(figsize=(10, 8))
-
-    axs_dmr = [fig.add_subplot(331 + i, projection=ppf.wcs) for i in range(3)]
-    plot_data_model_residuals(
-        ppf,
-        par_dic=par_dic_med,
-        smooth=1.0,
-        lims="sym",
-        fig=fig,
-        axs=axs_dmr,
-    )
-
-    r_plot = np.logspace(
-        np.log10(ppf.model.r_bins.min()), np.log10(ppf.model.r_bins.max()), 100
-    )
-    ax = fig.add_subplot(212)
-    if truth_vec is not None:
-        ax.plot(
-            r_plot,
-            ppf.model.pressure_profile(r_plot, truth_vec),
-            "k--",
-            label="Truth",
-        )
-    _ = plot_profile(chains_clean, ppf, r_plot, ax=ax, label="PANCO2")
-    ax.legend()
-    ax_bothticks(ax)
-
-    return fig
+    cb.set_label(cbar_label)
 
 
 def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
