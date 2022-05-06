@@ -7,7 +7,7 @@ from astropy.wcs.utils import skycoord_to_pixel
 from shell_pl import shell_pl
 import utils
 import pdb
-from filtering import Filter
+from .filtering import Filter
 
 sz_fact = (sigma_T / (m_e * c**2)).to(u.cm**3 / u.keV / u.kpc).value
 del sigma_T, c, m_e

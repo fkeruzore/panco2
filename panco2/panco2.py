@@ -7,24 +7,19 @@ from astropy.wcs import WCS
 from astropy.nddata import Cutout2D
 from astropy.coordinates import SkyCoord
 import emcee
-from iminuit import Minuit
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter
 from scipy.optimize import minimize
 import scipy.stats as ss
 import sys
 import os
-import shutil
-import json
 import dill
 import time
-import argparse
 from multiprocessing import Pool
-import pdb
-from cluster import Cluster
-import model
-from filtering import Filter
-import utils
+from . import utils
+from . import model
+from .cluster import Cluster
+from .filtering import Filter
 
 
 class PressureProfileFitter:

@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.ndimage import gaussian_filter
-import seaborn as sns
 from chainconsumer import ChainConsumer
 from copy import copy
 
