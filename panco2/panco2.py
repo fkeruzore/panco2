@@ -16,10 +16,10 @@ import os
 import dill
 import time
 from multiprocessing import Pool
-from . import utils
-from . import model
-from .cluster import Cluster
-from .filtering import Filter
+import utils
+import model
+from cluster import Cluster
+from filtering import Filter
 
 
 class PressureProfileFitter:
@@ -185,6 +185,7 @@ class PressureProfileFitter:
         elif inv_covmat_file is not None:
             print("    Loading inverse covariance matrix...")
             self.inv_covmat = np.load(inv_covmat_file)
+        self.has_covmat = True
 
     # ---------------------------------------------------------------------- #
 
@@ -384,6 +385,18 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
+    def log_lhood_covmat(self, par_vec):
+        mod = self.model.sz_map(par_vec) + self.model.ps_map(par_vec)
+        diff = (self.sz_map - mod).flatten()
+        m2ll = diff @ self.inv_covmat @ diff
+        ll = -0.5 * np.sum(m2ll)
+        if np.isfinite(ll):
+            return ll
+        else:
+            return -np.inf
+
+    # ---------------------------------------------------------------------- #
+
     def write_sim_map(self, par_vec, out_file, filter_noise=True):
         """
         Write a FITS map with given parameter values
@@ -516,7 +529,10 @@ class PressureProfileFitter:
         ]
 
         # Crash now if you want to crash
-        _ = log_post(starts[0], self.log_lhood, self.model.log_prior)
+        log_lhood = (
+            self.log_lhood_covmat if self.has_covmat else self.log_lhood
+        )
+        _ = log_post(starts[0], log_lhood, self.model.log_prior)
 
         # ==== MCMC sampling ==== #
         np.seterr(all="ignore")
@@ -531,7 +547,7 @@ class PressureProfileFitter:
                 log_post,
                 pool=pool,
                 moves=emcee.moves.DEMove(),
-                args=[self.log_lhood, self.model.log_prior],
+                args=[log_lhood, self.model.log_prior],
             )
 
             for sample in sampler.sample(
