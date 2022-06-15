@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import scipy.special as sps
-from . import reduce_integrals as ri
+import reduce_integrals as ri
 
 # https://github.com/CharlesERomero/MCMC_ICM_PP/blob/master/integrations/shell_pl.py
 

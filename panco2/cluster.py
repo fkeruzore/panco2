@@ -2,7 +2,7 @@ import numpy as np
 import astropy.constants as const
 import astropy.units as u
 from astropy.cosmology import FlatLambdaCDM
-from . import utils
+import utils
 
 
 class Cluster:
