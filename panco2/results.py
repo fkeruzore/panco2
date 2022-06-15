@@ -120,7 +120,7 @@ def mcmc_corner_plot(
         return cf
 
 
-def plot_profile(chains_clean, ppf, r_range, ax=None, label=None):
+def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
 
     model = ppf.model
     if ax is None:
@@ -137,7 +137,7 @@ def plot_profile(chains_clean, ppf, r_range, ax=None, label=None):
     perc = np.percentile(all_profs, [16.0, 50.0, 84.0], axis=0)
 
     ax.fill_between(r_range, perc[0], perc[2], alpha=0.3, ls="--", zorder=3)
-    ax.plot(r_range, perc[1], "-", label=label, zorder=4)
+    ax.plot(r_range, perc[1], "-", label=label, zorder=4, **kwargs)
 
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -175,7 +175,9 @@ def plot_data_model_residuals(
     axs=None,
     lims=None,
     cbar_label=None,
+    cbar_fact=1.0,
     cmap="RdBu_r",
+    separate_ps_model=False,
 ):
 
     if (par_dic is None) and (par_vec is None):
@@ -187,7 +189,7 @@ def plot_data_model_residuals(
         par_dic = ppf.model.par_vec2dic(par_vec)
 
     do_ps = ppf.model.n_ps > 0
-    if do_ps:
+    if do_ps and separate_ps_model:
         if fig is None:
             fig = plt.figure(figsize=(10, 8))
         if axs is None:
@@ -198,7 +200,7 @@ def plot_data_model_residuals(
         mod_sz = ppf.model.sz_map(par_vec)
         mod_ps = ppf.model.ps_map(par_vec)
         maps_toplot = [
-            gaussian_filter(m, smooth)
+            gaussian_filter(m, smooth) * cbar_fact
             for m in [
                 ppf.sz_map,
                 mod_sz,
@@ -219,18 +221,20 @@ def plot_data_model_residuals(
             ]
 
         mod = ppf.model.sz_map(par_vec)
+        if do_ps:
+            mod += ppf.model.ps_map(par_vec)
         maps_toplot = [
-            gaussian_filter(m, smooth)
+            gaussian_filter(m, smooth) * cbar_fact
             for m in [ppf.sz_map, mod, ppf.sz_map - mod]
         ]
 
-    noise = ppf.sz_rms
+    noise = ppf.sz_rms * cbar_fact
     if smooth != 0.0:
         noise = gaussian_filter(noise, smooth) / np.sqrt(
             2 * np.pi * smooth**2
         )
-    if par_dic["conv"] < 0:
-        noise *= -1.0  # for negative SNR
+    #if par_dic["conv"] < 0:
+    #    noise *= -1.0  # for negative SNR
 
     if isinstance(lims, (tuple, list, np.ndarray)):
         vmin, vmax = lims
@@ -242,7 +246,7 @@ def plot_data_model_residuals(
     else:
         vmin, vmax = np.min(maps_toplot), np.max(maps_toplot)
 
-    for ax, m in zip(axs, maps_toplot):
+    for i, (ax, m) in enumerate(zip(axs, maps_toplot)):
         im = ax.imshow(
             m,
             origin="lower",
@@ -254,14 +258,20 @@ def plot_data_model_residuals(
         ct = ax.contour(
             m / noise,
             origin="lower",
-            cmap="binary",
+            linestyles="-",
+            colors="#00000077",
             linewidths=0.5,
-            levels=np.concatenate(
-                (np.arange(-20, -2, 1), np.arange(3, 20, 1))
-            ),
+            levels=np.concatenate((np.arange(-50, -2, 2), np.arange(3, 50, 2))),
         )
+        ax.set_xlabel("Right ascension (J2000)")
+        if i == 0:
+            ax.set_ylabel("Declination (J200)")
+        else:
+            ax.set_ylabel(" ")
+
     cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
     cb.set_label(cbar_label)
+    return fig, axs
 
 
 def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):

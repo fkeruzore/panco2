@@ -44,7 +44,6 @@ grid.alpha       :   1
 
 legend.fancybox      : False
 legend.numpoints      : 1
-legend.fontsize      : large
 legend.frameon        : False
 
 savefig.format       : pdf
