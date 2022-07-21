@@ -120,6 +120,15 @@ class ModelBinned(Model):
         if self.zero_level:
             self.indices["zero"] = len(self.indices.keys())
 
+    def init_integ_Y(self, r_max):
+        self.r_integ_Y = np.concatenate(
+            [
+                [0.0],
+                self.r_bins[self.r_bins < r_max],
+                [r_max, -1.0],
+            ]
+        )
+
     def pressure_profile(self, r, par_vec):
         P_i = par_vec[self.indices_press]
         return utils.interp_powerlaw(self.r_bins, P_i, r)
@@ -144,23 +153,22 @@ class ModelBinned(Model):
         See Romero et al. 2018.
         """
 
-        integrals = np.zeros((self.r_bins.shape[0], radarr.shape[0]))
         r_bins_integ = np.concatenate(([0.0], self.r_bins, [-1.0]))
 
         # Integrate
-        for i in range(len(P_i)):
-            alpha_i = alphas[i]
-            integrals[i] = shell_pl(
-                P_i[i],
-                alpha_i,
-                r_bins_integ[i],
-                r_bins_integ[i + 1],
-                radarr,
-            )
-
-        integrals = integrals * sz_fact
-        totals = np.sum(integrals, axis=0)
-
+        integrals = np.array(
+            [
+                shell_pl(
+                    P_i[i],
+                    alphas[i],
+                    r_bins_integ[i],
+                    r_bins_integ[i + 1],
+                    radarr,
+                )
+                for i in range(len(P_i))
+            ]
+        )
+        totals = np.sum(integrals * sz_fact, axis=0)
         return totals
 
     def compton_map(self, par_vec):
@@ -176,3 +184,19 @@ class ModelBinned(Model):
         y_map = self.compton_map(par_vec)
         sz_map_filt = self.filter(y_map) * par_vec[self.indices["conv"]]
         return sz_map_filt + par_vec[self.indices["zero"]]
+
+    def integ_Y(self, par_vec):
+        P_i = par_vec[self.indices_press]
+        alphas = self.compute_slopes(P_i)
+        integ_Y_pershell = [
+            P_i[i]
+            * self.r_integ_Y[i + 1] ** alphas[i]
+            / (3.0 - alphas[i])
+            * (
+                self.r_integ_Y[i + 1] ** (3.0 - alphas[i])
+                - self.r_integ_Y[i] ** (3.0 - alphas[i])
+            )
+            for i in range(len(self.r_integ_Y) - 2)
+        ]
+        integ_Y = 4.0 * np.pi * sz_fact * np.sum(integ_Y_pershell)
+        return integ_Y

@@ -105,6 +105,8 @@ class PressureProfileFitter:
         self.pix_size = pix_size  # arcsec
         self.coords_center = coords_center
         self.inv_covmat = None
+        self.has_covmat = False
+        self.has_integ_Y = False
 
     # ---------------------------------------------------------------------- #
 
@@ -286,6 +288,33 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
+    def add_integ_Y(self, Y, dY, r):
+        """
+        Add a constraint on the integrated Compton parameter
+        to the fit.
+
+        Parameters
+        ----------
+        Y : float [kpc2]
+            Integrated Compton parameter value
+        dY : float [kpc2]
+            Uncertainty on Y
+        r : float [kpc]
+            Radius within which the Compton parameter was integrated
+
+        Returns
+        -------
+
+
+        """
+        self.integ_Y = (Y, dY)
+        self.r_integ_Y = r
+        self.model.init_integ_Y(r)
+
+        self.has_integ_Y = True
+
+    # ---------------------------------------------------------------------- #
+
     def define_priors(
         self,
         P_bins=None,
@@ -366,7 +395,7 @@ class PressureProfileFitter:
         # Point sources
         if len(ps_fluxes) == self.model.n_ps:
             for i, F in enumerate(ps_fluxes):
-                priors[f"F_{i+1}"] = F  # this is 1-indexed, is this evil?
+                priors[f"F_{i+1}"] = F  #TODO this is 1-indexed, is this evil?
         else:
             raise Exception("`ps_fluxes` is a list but has the wrong length")
 
@@ -378,6 +407,12 @@ class PressureProfileFitter:
         mod = self.model.sz_map(par_vec) + self.model.ps_map(par_vec)
         sqrtll = (self.sz_map - mod) / self.sz_rms
         ll = -0.5 * np.sum(sqrtll**2)
+
+        if self.has_integ_Y:
+            Y = self.model.integ_Y(par_vec)
+            ll_integY = -0.5 * ((Y - self.integ_Y[0]) / self.integ_Y[1]) ** 2
+            ll += ll_integY
+
         if np.isfinite(ll):
             return ll
         else:
@@ -539,6 +574,12 @@ class PressureProfileFitter:
         old_tau = 0.0
         tau_was_stable = False
         all_taus = [[], []]
+        print(
+            "I'll check convergence every {n_check} steps, and "
+            + f"stop when the autocorrelation length `tau` has changed by "
+            + f"less than {100*max_delta_tau:.1f}% twice in a row, and the "
+            + f"chain is longer than {min_autocorr_times}*tau"
+        )
         with Pool(processes=n_threads) as pool:
             ti = time.time()
             sampler = emcee.EnsembleSampler(
