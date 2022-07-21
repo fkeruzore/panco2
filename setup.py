@@ -11,13 +11,10 @@ setup(
         "numpy",
         "astropy",
         "scipy",
-        "numba",
         "matplotlib",
         "pandas",
         "emcee",
-        "multiprocessing",
         "dill",
         "chainconsumer",
-        "copy",
     ],
 )
