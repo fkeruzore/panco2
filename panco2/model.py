@@ -4,10 +4,10 @@ from scipy.interpolate import interp1d
 import astropy.units as u
 from astropy.constants import sigma_T, c, m_e
 from astropy.wcs.utils import skycoord_to_pixel
-from shell_pl import shell_pl
-import utils
+from .shell_pl import shell_pl
+from . import utils
 import pdb
-from filtering import Filter
+from .filtering import Filter
 
 sz_fact = (sigma_T / (m_e * c**2)).to(u.cm**3 / u.keV / u.kpc).value
 del sigma_T, c, m_e
@@ -19,6 +19,7 @@ class Model:
         self.zero_level = zero_level
         self.indices = {}
         self.n_ps = 0
+        self.indices_ps = []
         self._priors = {}
         self._type = "binned"
         self._filter = Filter(101, 1.0)
@@ -96,7 +97,8 @@ class Model:
     def ps_map(self, par_vec):
         fluxes = par_vec[self.indices_ps]
         ps_map = np.zeros_like(self.radii["r_xy"])
-        for f, x, y in zip(fluxes, self.ps_xymaps["x"], self.ps_xymaps["y"]):
+        for i, f in enumerate(fluxes):
+            x, y =  self.ps_xymaps["x"][i], self.ps_xymaps["y"][i]
             m = f * np.exp(
                 -0.5 * ((x / self.ps_size) ** 2 + (y / self.ps_size) ** 2)
             )

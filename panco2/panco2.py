@@ -16,10 +16,10 @@ import os
 import dill
 import time
 from multiprocessing import Pool
-import utils
-import model
-from cluster import Cluster
-from filtering import Filter
+from . import utils
+from . import model
+from .cluster import Cluster
+from .filtering import Filter
 
 
 class PressureProfileFitter:
@@ -142,14 +142,13 @@ class PressureProfileFitter:
         file_noise_simus : str
             Path to a `fits` file in which each extension is a noise map.
             The covariance will be computed as the pixel-to-pixel
-                covariance of these maps.
+            covariance of these maps.
             The first extension must have a header that can be used to
-                create a `WCS` object to ensure the noise and data
-                pixels are the same.
+            create a `WCS` object to ensure the noise and data
+            pixels are the same.
         inv_covmat : str
             Path to a `npy` file containing an inverse covariance matrix.
             The matrix must be the same size and units as the data.
-
         """
 
         if (inv_covmat_file is None) and (file_noise_simus is None):
@@ -201,7 +200,7 @@ class PressureProfileFitter:
         beam_fwhm : float [arcsec], optional
             The FWHM of your gaussian beam.
             Can be set to 0 if you don't want beam confolution
-                (e.g. if the beam is already in the transfer function).
+            (e.g. if the beam is already in the transfer function).
         tf_k : array
             Filtering measurement.
         k : array [arcmin-1]
@@ -210,9 +209,9 @@ class PressureProfileFitter:
             Padding to be added to the sides of the map before convolution.
 
         Notes
-        -----
+        =====
         The convention used for `k` is the same as the `numpy` one,
-            i.e. the largest 1D mode is 1/(pixel size).
+        i.e. the largest 1D mode is 1/(pixel size).
         """
 
         self.beam_fwhm = beam_fwhm
@@ -301,11 +300,6 @@ class PressureProfileFitter:
             Uncertainty on Y
         r : float [kpc]
             Radius within which the Compton parameter was integrated
-
-        Returns
-        -------
-
-
         """
         self.integ_Y = (Y, dY)
         self.r_integ_Y = r
@@ -342,24 +336,27 @@ class PressureProfileFitter:
             Priors on the flux of each point source, in map units.
 
         Raises
-        ------
-        Exception : #TODO
+        ======
+        Exception
+            If something happens #TODO
 
         Notes
-        -----
+        =====
         To create distributions, use the `scipy.stats` module.
 
         Examples
-        --------
+        ========
         - Normal distribution with mean 0 and spread 1:
 
             import scipy.stats as ss
+
             prior_on_parameter = ss.norm(0.0, 1.0)
 
 
         - Uniform distribution between 0 and 1:
 
             import scipy.stats as ss
+
             prior_on_parameter = ss.uniform(0.0, 1.0)
 
         """
@@ -448,11 +445,15 @@ class PressureProfileFitter:
             filtering kernel.
 
         Notes
-        -----
+        =====
         The created FITS file contains the following extensions:
+
         - HDU 0: primary, contains header and no data.
+
         - HDU 1: SZMAP, contains the model map and header.
+
         - HDU 2: RMS, contains the noise RMS map and header.
+
         All maps are cropped identically to the data used for the
         fit, and the headers are adjusted accordingly.
         """
@@ -535,20 +536,23 @@ class PressureProfileFitter:
             will be stored.
 
         Returns
-        -------
+        =======
         chains : dict
             Markov chains. Each key is a parameter, and the
             values are 2D arrays of shape (n_chains, n_steps).
 
         Notes
-        -----
+        =====
         - The convergence check are performed every `n_check` steps.
           Convergence is accepted if:
+
           * In the last two checks, the mean autocorrelation time
             had a relative variation smaller than `max_delta_tau`
             compared to the previous step.
+
           * The chain is longer than `min_autocorr_times` times
             the current mean autocorrelation time.
+
         """
         n_chains = int(n_chains)
         max_steps = int(max_steps)
