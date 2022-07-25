@@ -450,24 +450,36 @@ class PressureProfileFitter:
 
         - HDU 0: primary, contains header and no data.
 
-        - HDU 1: SZMAP, contains the model map and header.
+        - HDU 1: TOTAL, contains the model map (SZ+PS+noise) and header.
 
-        - HDU 2: RMS, contains the noise RMS map and header.
+        - HDU 2: SZ, contains the SZ model map and header.
+
+        - HDU 3: PS, contains the PS model map and header.
+
+        - HDU 4: NOISE, contains the noise map realization and header.
+
+        - HDU 5: RMS, contains the noise RMS map and header.
 
         All maps are cropped identically to the data used for the
         fit, and the headers are adjusted accordingly.
         """
-        mod_map = self.model.sz_map(par_vec) + self.model.ps_map(par_vec)
+        mod_maps = (self.model.sz_map(par_vec),  self.model.ps_map(par_vec))
         noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
+        tot_map = mod_maps[0] + mod_maps[1] + noise
         if filter_noise:
             noise = self.model.filter(noise)
 
         header = self.wcs.to_header()
-        hdu0 = fits.PrimaryHDU(header=header)
-        hdu1 = fits.ImageHDU(data=mod_map + noise, header=header, name="SZMAP")
-        hdu2 = fits.ImageHDU(data=self.sz_rms, header=header, name="RMS")
+        hdus = [
+            fits.PrimaryHDU(header=header),
+            fits.ImageHDU(data=tot_map, header=header, name="TOTAL"),
+            fits.ImageHDU(data=mod_maps[0], header=header, name="SZ"),
+            fits.ImageHDU(data=mod_maps[1], header=header, name="PS"),
+            fits.ImageHDU(data=noise, header=header, name="NOISE"),
+            fits.ImageHDU(data=self.sz_rms, header=header, name="RMS"),
+        ]
 
-        hdulist = fits.HDUList(hdus=[hdu0, hdu1, hdu2])
+        hdulist = fits.HDUList(hdus=hdus)
         hdulist.writeto(out_file, overwrite=True)
 
     # ---------------------------------------------------------------------- #
