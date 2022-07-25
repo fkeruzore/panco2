@@ -579,7 +579,7 @@ class PressureProfileFitter:
         tau_was_stable = False
         all_taus = [[], []]
         print(
-            "I'll check convergence every {n_check} steps, and "
+            f"I'll check convergence every {n_check} steps, and "
             + f"stop when the autocorrelation length `tau` has changed by "
             + f"less than {100*max_delta_tau:.1f}% twice in a row, and the "
             + f"chain is longer than {min_autocorr_times}*tau"
