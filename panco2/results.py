@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.ndimage import gaussian_filter
@@ -6,22 +7,59 @@ from chainconsumer import ChainConsumer
 from copy import copy
 
 
-def load_chains(out_chains_file, burn, discard):
+def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
 
     f = np.load(out_chains_file)
-    chains_raw = {}
+    chains = {}
     p = f.files[0]
-    n_steps = f[p].shape[1]
+    n_chains, n_steps = f[p].shape
+
+    # 1) discard `burn` burn-in and keep 1 sample every `discard` steps
     keep = np.arange(burn, n_steps, discard)
+    n_steps2 = keep.size
     for p in f.files:
-        chains_raw[p] = f[p][:, keep]
+        chains[p] = f[p][:, keep]
+    if verbose:
+        print(
+            f"Raw length: {n_steps},",
+            f"clip {burn} as burn-in, discard {discard-1}/{discard} samples",
+            f" -> Final chains length: {n_steps2}",
+        )
+
+    # 2) discard chains always in the `clip_percent`% most extreme
+    lims = {
+        p: np.percentile(c, (clip_percent, 100 - clip_percent))
+        for p, c in chains.items()
+    }
+    is_ok = np.zeros(n_chains, dtype=bool)
+    for i in range(n_chains):
+        is_ok_perp = [
+            (np.mean(ch[i]) >= lims[p][0]) & (np.mean(ch[i]) <= lims[p][1])
+            for p, ch in chains.items()
+        ]
+        is_ok[i] = np.all(np.array(is_ok_perp, dtype=bool))
+    n_chains2 = is_ok.sum()
+    chains = {p: ch[is_ok, :] for p, ch in chains.items()}
+    if verbose:
+        print(
+            f"{n_chains} walkers,",
+            f"remove chains with the {clip_percent}% most extreme values",
+            f" -> {n_chains2} chains remaining",
+        )
+        print(
+            f"-> Final sampling size:",
+            f"{n_chains2} chains * {n_steps2} samples per chain",
+            f"= {n_chains2 * n_steps2} total samples",
+        )
+
+    # 3) store all in a dataframe
     i_chain, i_step = np.unravel_index(
-        np.arange(chains_raw[p].size), chains_raw[p].shape
+        np.arange(chains[p].size), chains[p].shape
     )
     chains_clean = {"chain": i_chain, "step": i_step * discard}
-    for p, chain in chains_raw.items():
+    for p, chain in chains.items():
         chains_clean[p] = chain.flatten()
-    del chains_raw
+    del chains
     chains_clean = pd.DataFrame(chains_clean)
     return pd.DataFrame(chains_clean)
 
@@ -120,6 +158,46 @@ def mcmc_corner_plot(
         return cf
 
 
+def mcmc_correlation_plot(chains_clean, ppf):
+    corrs = chains_clean[ppf.model.params].corr()
+    covs = chains_clean[ppf.model.params].cov()
+    corrs_arr = np.array(corrs)
+    covs_arr = np.array(covs)
+    i, j = np.meshgrid(
+        np.arange(corrs_arr.shape[0]), np.arange(corrs_arr.shape[0])
+    )
+    corrs_arr[i >= j] = np.nan
+    covs_arr[i < j] = np.nan
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    im1 = ax.matshow(corrs_arr, cmap="RdBu", vmin=-1.0, vmax=1.0)
+    cb1 = fig.colorbar(
+        im1, ax=ax, orientation="horizontal", pad=0.0, shrink=0.8
+    )
+    cb1.set_label(r"Correlation $\rho_{i, j}$")
+
+    covmax = np.max(np.nanmax(covs_arr), -np.nanmin(covs_arr))
+
+    norm = mpl.colors.SymLogNorm(
+        linthresh=1e-9, linscale=1e-9, vmin=-covmax, vmax=covmax, base=10
+    )
+    im2 = ax.matshow(covs_arr, cmap="PRGn", norm=norm)
+    cb2 = fig.colorbar(im2, ax=ax, pad=0.0)
+    cb2.set_ticks(
+        [-(10.0 ** (-i)) for i in range(0, 9, 2)]
+        + [0.0]
+        + [10.0 ** (-i) for i in range(0, 9, 2)]
+    )
+    cb2.set_label(r"Covariance $\Sigma^2_{i, j}$")
+
+    ax.set_xticks(np.arange(0, len(ppf.model.params)))
+    ax.set_yticks(np.arange(0, len(ppf.model.params)))
+    ax.set_xticklabels(ppf.model.params, rotation=60.0)
+    ax.set_yticklabels(ppf.model.params, rotation=30.0)
+    ax_bothticks(ax)
+    return fig, ax
+
+
 def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
 
     model = ppf.model
@@ -138,6 +216,14 @@ def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
 
     ax.fill_between(r_range, perc[0], perc[2], alpha=0.3, ls="--", zorder=3)
     ax.plot(r_range, perc[1], "-", label=label, zorder=4, **kwargs)
+    ax.plot(
+        model.r_bins,
+        model.pressure_profile(
+            model.r_bins, model.par_dic2vec(chains_clean.median())
+        ),
+        "o",
+        color="tab:blue",
+    )
 
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -150,7 +236,7 @@ def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
         "Map size": [ppf.cluster.arcsec2kpc(ppf.map_size * 60.0 / 2.0), "top"],
     }
     for label, line in lines_toplot.items():
-        ax.axvline(line[0], 0, 1, color="k", ls=":", zorder=1)
+        ax.axvline(line[0], 0, 1, color="k", ls="--", zorder=1)
         # ax.text(
         #     line[0],
         #     0.05 if line[1] == "bottom" else 0.95,
@@ -233,7 +319,7 @@ def plot_data_model_residuals(
         noise = gaussian_filter(noise, smooth) / np.sqrt(
             2 * np.pi * smooth**2
         )
-    #if par_dic["conv"] < 0:
+    # if par_dic["conv"] < 0:
     #    noise *= -1.0  # for negative SNR
 
     if isinstance(lims, (tuple, list, np.ndarray)):
@@ -261,7 +347,9 @@ def plot_data_model_residuals(
             linestyles="-",
             colors="#00000077",
             linewidths=0.5,
-            levels=np.concatenate((np.arange(-50, -2, 2), np.arange(3, 50, 2))),
+            levels=np.concatenate(
+                (np.arange(-50, -2, 2), np.arange(3, 50, 2))
+            ),
         )
         ax.set_xlabel("Right ascension (J2000)")
         if i == 0:
