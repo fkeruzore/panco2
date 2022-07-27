@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import pandas as pd
 from scipy.ndimage import gaussian_filter
 from chainconsumer import ChainConsumer
@@ -8,7 +9,6 @@ from copy import copy
 
 
 def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
-
     f = np.load(out_chains_file)
     chains = {}
     p = f.files[0]
@@ -158,44 +158,71 @@ def mcmc_corner_plot(
         return cf
 
 
-def mcmc_correlation_plot(chains_clean, ppf):
+def plot_corr_cov_matrices(chains_clean, ppf):
+    """
+    Produces an overly complicated plot of the correlation and
+    covariance matrices of Markov chains, where:
+
+    - The lower corner (diagonal not included) shows the
+      correlation coefficient between parameters;
+
+    - The upper corner (diagonal included) shows the
+      absolute covariance between parameters.
+
+    Parameters
+    ----------
+    chains_clean: pd.DataFrame
+        Markov chains, output of `load_chains`
+    ppf: `PressureProfileFitter` instance
+        The main `panco2.PressureProfileFitter` instance.
+
+    Returns
+    -------
+    fig, ax
+    """
     corrs = chains_clean[ppf.model.params].corr()
     covs = chains_clean[ppf.model.params].cov()
     corrs_arr = np.array(corrs)
-    covs_arr = np.array(covs)
+    covs_arr = np.abs(np.array(covs))
     i, j = np.meshgrid(
         np.arange(corrs_arr.shape[0]), np.arange(corrs_arr.shape[0])
     )
     corrs_arr[i >= j] = np.nan
     covs_arr[i < j] = np.nan
 
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig = plt.figure(figsize=(6, 6))
+    gs = GridSpec(
+        2,
+        2,
+        width_ratios=[20, 1],
+        height_ratios=[20, 1],
+        wspace=0.0,
+        hspace=0.0,
+        left=0.15,
+        right=0.85,
+        bottom=0.15,
+        top=0.85,
+    )
+    axs = [fig.add_subplot(gs[i]) for i in range(3)]
+    ax = axs[0]
+
     im1 = ax.matshow(corrs_arr, cmap="RdBu", vmin=-1.0, vmax=1.0)
-    cb1 = fig.colorbar(
-        im1, ax=ax, orientation="horizontal", pad=0.0, shrink=0.8
-    )
-    cb1.set_label(r"Correlation $\rho_{i, j}$")
+    cb1 = fig.colorbar(im1, cax=axs[2], orientation="horizontal")
+    axs[2].set_xlabel(r"Correlation $\rho_{i, j}$")
 
-    covmax = np.max(np.nanmax(covs_arr), -np.nanmin(covs_arr))
-
-    norm = mpl.colors.SymLogNorm(
-        linthresh=1e-9, linscale=1e-9, vmin=-covmax, vmax=covmax, base=10
+    norm = mpl.colors.LogNorm(
+        vmin=np.nanmin(covs_arr), vmax=np.nanmax(covs_arr)
     )
-    im2 = ax.matshow(covs_arr, cmap="PRGn", norm=norm)
-    cb2 = fig.colorbar(im2, ax=ax, pad=0.0)
-    cb2.set_ticks(
-        [-(10.0 ** (-i)) for i in range(0, 9, 2)]
-        + [0.0]
-        + [10.0 ** (-i) for i in range(0, 9, 2)]
-    )
-    cb2.set_label(r"Covariance $\Sigma^2_{i, j}$")
+    im2 = ax.matshow(covs_arr, cmap="Greens_r", norm=norm)
+    cb2 = fig.colorbar(im2, cax=axs[1])
+    axs[1].set_ylabel(r"Covariance $\left| \Sigma^2_{i, j} \right|$")
 
     ax.set_xticks(np.arange(0, len(ppf.model.params)))
     ax.set_yticks(np.arange(0, len(ppf.model.params)))
-    ax.set_xticklabels(ppf.model.params, rotation=60.0)
-    ax.set_yticklabels(ppf.model.params, rotation=30.0)
+    ax.set_xticklabels(ppf.model.params, rotation=45.0)
+    ax.set_yticklabels(ppf.model.params, rotation=45.0)
     ax_bothticks(ax)
-    return fig, ax
+    return fig, axs[0]
 
 
 def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
