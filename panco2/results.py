@@ -9,6 +9,46 @@ from copy import copy
 
 
 def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
+    """
+    Loads raw Markov chains, cleans them, and arranges them
+    in a convenient data frame.
+
+    Parameters
+    ----------
+    out_chains_file : str
+        Path to the `npz` file containing the raw chains produced by
+        `panco2.PressureProfileFitter.run_mcmc`
+    burn : int
+        Length to discard as burn-in.
+    discard : int
+        Thinning length. See Notes.
+    clip_percent : float
+        Percentile considered as extreme to weed-out bad chains.
+        See Notes.
+    verbose : bool
+        Wether or not you want results of the cleaning to be printed.
+
+    Returns
+    -------
+    chains_clean: pd.DataFrame
+        Cleaned chains in a DataFrame.
+        Keys are the parameter names, as well as `lnprior`
+        (log-prior value), `lnlike` (log-likelihood), `chain`
+        (which walker the sample belongs to) and `step` (which
+        step of the walk the sample was obtained at).
+
+    Notes
+    =====
+    Cleaning is done as follows:
+
+    1) Discard `burn` burn-in steps and keep one sample every
+       `discard` steps
+
+    2) Find chains that are always out of the [clip_percent,
+       100 - clip_percent] interval for every parameter and
+       discard them.
+    """
+
     f = np.load(out_chains_file)
     chains = {}
     p = f.files[0]
@@ -65,7 +105,23 @@ def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
 
 
 def mcmc_trace_plot(chains_clean, show_probs=True, filename=None):
+    """
+    Create MCMC trace plots, i.e. chains evolution with steps.
 
+    Parameters
+    ----------
+    chains_clean: pd.DataFrame
+        Markov chains, output of `load_chains`
+    show_probs : bool
+        Wether or not the log likelihood and log prior chains
+        should be shown along with the parameters
+    filename : str or None
+        Filename to save the plot
+
+    Returns
+    -------
+    fig
+    """
     params = copy(chains_clean.columns)
     if show_probs:
         params = [p for p in params if (p not in ["chain", "step"])]
@@ -84,14 +140,12 @@ def mcmc_trace_plot(chains_clean, show_probs=True, filename=None):
         usetex=False,
         cmap="Spectral_r",
     )
-    cf = cc.plotter.plot_walks()
+    fig = cc.plotter.plot_walks()
 
-    cf.align_labels()
+    fig.align_labels()
     if filename is not None:
-        cf.savefig(filename)
-        plt.close(cf)
-    else:
-        return cf
+        fig.savefig(filename)
+    return fig
 
 
 def mcmc_corner_plot(
@@ -99,8 +153,32 @@ def mcmc_corner_plot(
     per_chain=False,
     show_probs=True,
     filename=None,
-    model=None,
+    ppf=None,
 ):
+    """
+    Plots 1D and 2D posterior sampled by the MCMC.
+
+    Parameters
+    ----------
+    chains_clean: pd.DataFrame
+        Markov chains, output of `load_chains`
+    per_chain: bool
+        If True, plots one distribution per chain.
+        This can make very cluttered plots.
+    show_probs : bool
+        Wether or not the log likelihood and log prior chains
+        should be shown along with the parameters
+    filename : str or None
+        Filename to save the plot
+    ppf: `PressureProfileFitter` instance or None
+        The main `panco2.PressureProfileFitter` instance.
+        If provided, the marginal prior distribution will be
+        shown for comparison with the posterior.
+
+    Returns
+    -------
+    fig
+    """
 
     params = copy(chains_clean.columns)
     if not show_probs:
@@ -112,8 +190,10 @@ def mcmc_corner_plot(
 
     n = len(params)
     cc = ChainConsumer()
-    if model is not None:
-        prior_sample = {p: rv.rvs(int(1e5)) for p, rv in model.priors.items()}
+    if ppf is not None:
+        prior_sample = {
+            p: rv.rvs(int(1e5)) for p, rv in ppf.model.priors.items()
+        }
         cc.add_chain(
             prior_sample,
             show_as_1d_prior=True,
@@ -131,13 +211,13 @@ def mcmc_corner_plot(
         serif=False,
         usetex=False,
         summary=False,
-        cmap="Spectral" + ("_r" if model is None else ""),
+        cmap="Spectral" + ("_r" if ppf is None else ""),
         shade_alpha=0.3,
         shade_gradient=0.0,
     )
-    cf = cc.plotter.plot(extents=lims)
+    fig = cc.plotter.plot(extents=lims)
 
-    axs = np.array(cf.get_axes()).reshape(n, n)
+    axs = np.array(fig.get_axes()).reshape(n, n)
     for i in range(n):
         for j in range(i + 1):
             ax = axs[i, j]
@@ -149,13 +229,11 @@ def mcmc_corner_plot(
             if j != 0:
                 ax.set_yticklabels([])
             ax_bothticks(ax)
-    cf.subplots_adjust(hspace=0.1, wspace=0.1)
-    cf.align_labels()
+    fig.subplots_adjust(hspace=0.1, wspace=0.1)
+    fig.align_labels()
     if filename is not None:
-        cf.savefig(filename)
-        plt.close(cf)
-    else:
-        return cf
+        fig.savefig(filename)
+    return fig
 
 
 def plot_corr_cov_matrices(chains_clean, ppf):
@@ -213,7 +291,7 @@ def plot_corr_cov_matrices(chains_clean, ppf):
     norm = mpl.colors.LogNorm(
         vmin=np.nanmin(covs_arr), vmax=np.nanmax(covs_arr)
     )
-    im2 = ax.matshow(covs_arr, cmap="Greens_r", norm=norm)
+    im2 = ax.matshow(covs_arr, cmap="YlGn", norm=norm)
     cb2 = fig.colorbar(im2, cax=axs[1])
     axs[1].set_ylabel(r"Covariance $\left| \Sigma^2_{i, j} \right|$")
 
@@ -226,6 +304,29 @@ def plot_corr_cov_matrices(chains_clean, ppf):
 
 
 def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
+    """
+    Plots the pressure profile recovered by PANCO2 from the
+    Markov chains.
+
+    Parameters
+    ----------
+    chains_clean: pd.DataFrame
+        Markov chains, output of `load_chains`
+    ppf: `PressureProfileFitter` instance
+        The main `panco2.PressureProfileFitter` instance.
+    r_range : np.array [kpc]
+        The radial range on which to show the profile.
+    ax : plt.Axis or None
+        If provided, an existing axis can be used
+    label : str or None
+        Label of the curve for legend purposes
+    **kwargs : dict
+        Other options to pass to `plt.plot`
+
+    Returns
+    -------
+    ax
+    """
 
     model = ppf.model
     if ax is None:
@@ -270,8 +371,8 @@ def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
 
 def plot_data_model_residuals(
     ppf,
-    par_dic=None,
     par_vec=None,
+    par_dic=None,
     smooth=0.0,
     fig=None,
     axs=None,
@@ -281,6 +382,53 @@ def plot_data_model_residuals(
     cmap="RdBu_r",
     separate_ps_model=False,
 ):
+    """
+    Plot data, model, and residuals maps.
+
+    Parameters
+    ----------
+    ppf: `PressureProfileFitter` instance
+        The main `panco2.PressureProfileFitter` instance.
+    par_vec : list or None
+        Vector in the parameter space to use to compute
+        the model map to be shown. Either one of `par_vec`
+        or `par_dic` must be provided.
+    par_dic : dict or None
+        Same as `par_vec`, but in a dictionary. Either one
+        of `par_vec` or `par_dic` must be provided.
+    smooth : float [pixels]
+        Width (sigma) of a gaussian kernel to be used to
+        smooth the maps, for visual purposes.
+    fig : plt.Figure or None
+        If provided, an existing figure can be used
+    axs : list of plt.Axis or None
+        If provided, existing axes can be used.
+        The length of the list must be consistent with
+        the number of maps to show
+    lims : tuple or None
+        Limits of the color maps, in data units
+    cbar_label : str or None
+        Label for the colorbar
+    cbar_fact : float
+        A factor by which all maps are to be multiplied
+        before plotting. Useful for very small units
+        like Compton-y or Jy/beam
+    cmap : str or mpl.colors.Colorbar
+        The color map to use. Always make pretty plots!
+    separate_ps_model : bool
+        If your model fits both SZ and point sources, makes the
+        model and residuals for SZ/PS/SZ+PS (i.e. 5 total plots)
+
+    Returns
+    -------
+    fig, axs
+
+
+    Raises
+    ======
+    Exception
+        If neither `par_vec` or `par_dic` are provided.
+    """
 
     if (par_dic is None) and (par_vec is None):
         raise Exception("Either `par_dic` or `par_vec` must be provided.")
@@ -425,9 +573,6 @@ def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
 
 
 def ax_bothticks(ax):
-    """
-    Add ticks on the top and right axis
-    """
     ax.xaxis.set_ticks_position("both")
     ax.yaxis.set_ticks_position("both")
 
