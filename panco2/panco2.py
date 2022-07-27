@@ -70,7 +70,7 @@ class PressureProfileFitter:
         # Coordinates of the enter if not specified
         if coords_center is None:
             pix_center = np.array([head[f"NAXIS{ii}"] // 2 for ii in (1, 2)])
-            ra, dec = wcs.all_pix2world([pix_center], 1)[0]
+            ra, dec = wcs.all_pix2world([pix_center], 0)[0]
             coords_center = SkyCoord(ra=ra * u.deg, dec=dec * u.deg)
             # coords_center = SkyCoord(
             #     head["CRVAL1"] * u.deg, head["CRVAL2"] * u.deg
