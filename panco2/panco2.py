@@ -16,8 +16,7 @@ import os
 import dill
 import time
 from multiprocessing import Pool
-from . import utils
-from . import model
+from . import utils, model, results
 from .cluster import Cluster
 from .filtering import Filter
 
@@ -392,7 +391,7 @@ class PressureProfileFitter:
         # Point sources
         if len(ps_fluxes) == self.model.n_ps:
             for i, F in enumerate(ps_fluxes):
-                priors[f"F_{i+1}"] = F  #TODO this is 1-indexed, is this evil?
+                priors[f"F_{i+1}"] = F  # TODO this is 1-indexed, is this evil?
         else:
             raise Exception("`ps_fluxes` is a list but has the wrong length")
 
@@ -463,7 +462,7 @@ class PressureProfileFitter:
         All maps are cropped identically to the data used for the
         fit, and the headers are adjusted accordingly.
         """
-        mod_maps = (self.model.sz_map(par_vec),  self.model.ps_map(par_vec))
+        mod_maps = (self.model.sz_map(par_vec), self.model.ps_map(par_vec))
         noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
         tot_map = mod_maps[0] + mod_maps[1] + noise
         if filter_noise:
@@ -520,6 +519,7 @@ class PressureProfileFitter:
         max_delta_tau=1e-2,
         min_autocorr_times=100,
         out_chains_file="./chains.npz",
+        plot_convergence=None,
     ):
         """
         Runs MCMC sampling of the posterior distribution.
@@ -546,6 +546,10 @@ class PressureProfileFitter:
         out_chains_file : str
             Path to a `.npz` file in which the chains
             will be stored.
+        plot_convergence: str or None
+            Filename to save a plot of the autocorrelation
+            function evolution and convergence test.
+            If None, the plot is not produced.
 
         Returns
         =======
@@ -656,6 +660,14 @@ class PressureProfileFitter:
 
         np.seterr(all="warn")
         np.savez(out_chains_file, **chains)
+
+        if plot_convergence is not None:
+            fig, _ = results.plot_acf(
+                self,
+                max_delta_tau=max_delta_tau,
+                min_autocorr_times=min_autocorr_times,
+            )
+            fig.savefig(plot_convergence)
 
         return chains
 

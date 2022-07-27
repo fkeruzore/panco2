@@ -357,7 +357,7 @@ def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
 
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(n, tau, "o-")
-    axs[1].semilogy(n[1:], dtau, "o-")
+    axs[1].plot(n[1:], dtau, "o-")
     xlims = np.array(axs[0].get_xlim())
     for ax in axs.flatten():
         ax.set_xlim(*xlims)
@@ -386,9 +386,13 @@ def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
         )
 
     axs[0].set_xticklabels([])
-    axs[0].set_ylabel(r"Integrated autocorrelation time $\tau_i$")
+    axs[0].set_ylabel(r"$\tau_i$")
     axs[1].set_ylabel(r"$|\tau_{i - 1} - \tau_{i}| \; / \; \tau_{i}$")
     axs[1].set_xlabel(r"MCMC step $i$")
+
+    fig.subplots_adjust(left=0.1, right=0.9, hspace=0)
+    fig.align_labels(axs)
+    fig.suptitle(r"Integrated autocorrelation time $\tau$")
 
     return fig, axs
 
