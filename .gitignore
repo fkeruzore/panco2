@@ -133,4 +133,3 @@ dmypy.json
 *.pyc
 *.swp
 doc/latex
-tests/test*
