@@ -230,25 +230,14 @@ def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
     ax.set_xlabel(r"$r \; [{\rm kpc}]$")
     ax.set_ylabel(r"$P_{\rm e}(r) \; [{\rm keV \cdot cm^{-3}}]$")
 
-    bg = ax.get_facecolor()
     lines_toplot = {
-        "Beam HWHM": [ppf.cluster.arcsec2kpc(ppf.beam_fwhm / 2.0), "bottom"],
-        "Map size": [ppf.cluster.arcsec2kpc(ppf.map_size * 60.0 / 2.0), "top"],
+        "Pixel size": ppf.cluster.arcsec2kpc(ppf.pix_size),
+        "Beam HWHM": ppf.cluster.arcsec2kpc(ppf.beam_fwhm / 2.0),
+        "Half map size": ppf.cluster.arcsec2kpc(ppf.map_size * 60.0 / 2.0),
     }
     for label, line in lines_toplot.items():
-        ax.axvline(line[0], 0, 1, color="k", ls="--", zorder=1)
-        # ax.text(
-        #     line[0],
-        #     0.05 if line[1] == "bottom" else 0.95,
-        #     label,
-        #     rotation=90,
-        #     ha="center",
-        #     va=line[1],
-        #     bbox={"facecolor": bg, "edgecolor": bg},
-        #     transform=ax.get_xaxis_transform(),
-        #     zorder=2,
-        # )
-
+        ax.axvline(line, 0, 1, color="k", alpha=0.5, ls=":", zorder=1)
+    ax_bothticks(ax)
     return ax
 
 
@@ -372,6 +361,7 @@ def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
     xlims = np.array(axs[0].get_xlim())
     for ax in axs.flatten():
         ax.set_xlim(*xlims)
+        ax_bothticks(ax)
 
     if min_autocorr_times is not None:
         ylims = np.array(axs[0].get_ylim())
