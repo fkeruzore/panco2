@@ -284,14 +284,16 @@ def plot_corr_cov_matrices(chains_clean, ppf):
     axs = [fig.add_subplot(gs[i]) for i in range(3)]
     ax = axs[0]
 
-    im1 = ax.matshow(corrs_arr, cmap="RdBu", vmin=-1.0, vmax=1.0)
+    im1 = ax.matshow(
+        corrs_arr, cmap="RdBu", vmin=-1.0, vmax=1.0, interpolation=None
+    )
     cb1 = fig.colorbar(im1, cax=axs[2], orientation="horizontal")
     axs[2].set_xlabel(r"Correlation $\rho_{i, j}$")
 
     norm = mpl.colors.LogNorm(
         vmin=np.nanmin(covs_arr), vmax=np.nanmax(covs_arr)
     )
-    im2 = ax.matshow(covs_arr, cmap="YlGn", norm=norm)
+    im2 = ax.matshow(covs_arr, cmap="YlGn", norm=norm, interpolation=None)
     cb2 = fig.colorbar(im2, cax=axs[1])
     axs[1].set_ylabel(r"Covariance $\left| \Sigma^2_{i, j} \right|$")
 
