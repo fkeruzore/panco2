@@ -236,7 +236,7 @@ def mcmc_corner_plot(
     return fig
 
 
-def plot_corr_cov_matrices(chains_clean, ppf):
+def mcmc_matrices_plot(chains_clean, ppf):
     """
     Produces an overly complicated plot of the correlation and
     covariance matrices of Markov chains, where:
