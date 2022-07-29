@@ -260,13 +260,12 @@ def mcmc_matrices_plot(chains_clean, ppf):
     """
     corrs = chains_clean[ppf.model.params].corr()
     covs = chains_clean[ppf.model.params].cov()
-    corrs_arr = np.array(corrs)
-    covs_arr = np.abs(np.array(covs))
-    i, j = np.meshgrid(
-        np.arange(corrs_arr.shape[0]), np.arange(corrs_arr.shape[0])
-    )
-    corrs_arr[i >= j] = np.nan
-    covs_arr[i < j] = np.nan
+
+    n_params = len(ppf.model.params)
+    i, j = np.meshgrid(np.arange(n_params), np.arange(n_params))
+
+    corrs_arr = np.ma.masked_array(corrs, mask=(i >= j))
+    covs_arr = np.abs(np.ma.masked_array(covs, mask=(i < j)))
 
     fig = plt.figure(figsize=(6, 6))
     gs = GridSpec(
@@ -285,7 +284,12 @@ def mcmc_matrices_plot(chains_clean, ppf):
     ax = axs[0]
 
     im1 = ax.matshow(
-        corrs_arr, cmap="RdBu", vmin=-1.0, vmax=1.0, interpolation=None
+        corrs_arr,
+        cmap="RdBu",
+        vmin=-1.0,
+        vmax=1.0,
+        interpolation=None,
+        zorder=2,
     )
     cb1 = fig.colorbar(im1, cax=axs[2], orientation="horizontal")
     axs[2].set_xlabel(r"Correlation $\rho_{i, j}$")
@@ -293,7 +297,9 @@ def mcmc_matrices_plot(chains_clean, ppf):
     norm = mpl.colors.LogNorm(
         vmin=np.nanmin(covs_arr), vmax=np.nanmax(covs_arr)
     )
-    im2 = ax.matshow(covs_arr, cmap="YlGn", norm=norm, interpolation=None)
+    im2 = ax.matshow(
+        covs_arr, cmap="YlGn", norm=norm, interpolation=None, zorder=1
+    )
     cb2 = fig.colorbar(im2, cax=axs[1])
     axs[1].set_ylabel(r"Covariance $\left| \Sigma^2_{i, j} \right|$")
 
