@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import astropy.units as u
 from astropy.io import fits
 from astropy.wcs import WCS
+from astropy.wcs.utils import proj_plane_pixel_scales
 from astropy.nddata import Cutout2D
 from astropy.coordinates import SkyCoord
 import emcee
@@ -60,25 +61,27 @@ class PressureProfileFitter:
         # ===== Read and formats the data ===== #
         hdulist = fits.open(sz_map_file)
         head = hdulist[hdu_data].header
+        sz_map = hdulist[hdu_data].data
+        sz_rms = hdulist[hdu_rms].data
 
         wcs = WCS(head)
-        pix_size = (
-            (np.abs(head["CDELT1"]) * u.deg).to("arcsec").value
-        )  # arcsec
+        pix_size = np.abs(proj_plane_pixel_scales(wcs) * 3600)
+        assert pix_size.size == 2, "Can't process the header, is it not 2d?"
+        assert (
+            pix_size[0] == pix_size[1]
+        ), "Can't process map with different pixel sizes in RA and dec"
+        pix_size = pix_size[0]
 
         # Coordinates of the enter if not specified
         if coords_center is None:
-            pix_center = np.array([head[f"NAXIS{ii}"] // 2 for ii in (1, 2)])
-            ra, dec = wcs.all_pix2world([pix_center], 0)[0]
+            pix_center = np.array(sz_map.shape) // 2 + 1
+            ra, dec = np.squeeze(wcs.all_pix2world(*pix_center, 0))
             coords_center = SkyCoord(ra=ra * u.deg, dec=dec * u.deg)
-            # coords_center = SkyCoord(
-            #     head["CRVAL1"] * u.deg, head["CRVAL2"] * u.deg
-            # )
 
-        # If asked, map_size the NIKA2 map in a smaller FoV
+        # If asked, crop the NIKA2 map in a smaller FoV
         if map_size is not None:
             self.map_size = map_size  # arcmin
-            # Ensure the number of pixels will be odd after map_sizeping
+            # Ensure the number of pixels will be odd after cropping
             new_npix = int(map_size * 60 / pix_size)
             if new_npix % 2 == 0.0:
                 map_size += pix_size / 60.0
