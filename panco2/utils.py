@@ -57,6 +57,39 @@ def d_gNFW_d_r(r, P0, rp, a, b, c):
 # ---------------------------------------------------------------------- #
 
 
+def map2prof(m_2d, r_2d, width=0):
+    """
+    Returns a radial profile and its confidence intervals from a
+    2d map.
+
+    Parameters
+    ----------
+    m_2d : np.ndarray, shape=(N, N)
+        the map to be made into a profile.
+    r_2d : np.ndarray, shape=(N, N)
+        radii map, i.e. distances from center for each pixel
+    width: float
+        smoothing width, samw units as r_2d
+
+    Returns
+    -------
+    r_1d: ndarray, shape=(N)
+        radii
+    m_1d: ndarray, shape=(N, 3)
+        [16th, 50th, 84th] percentile for the profile at each radius
+    """
+    r_1d = np.unique(r_2d)
+    m_1d = np.zeros((r_1d.size, 3))
+    for i, r in enumerate(r_1d):
+        is_ok = (r_2d >= r - width) & (r_2d <= r + width)
+        which_m = m_2d[is_ok]
+        m_1d[i, :] = np.percentile(which_m, [16.0, 50.0, 84.0])
+    return r_1d, m_1d
+
+
+# ---------------------------------------------------------------------- #
+
+
 def adim(qty):
     """
     Removes the dimension of an adimensioned astropy quantity, e.g.

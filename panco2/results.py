@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.ndimage import gaussian_filter
 from chainconsumer import ChainConsumer
 from copy import copy
-
+from . import utils
 
 def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
     """
@@ -532,6 +532,54 @@ def plot_data_model_residuals(
     cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
     cb.set_label(cbar_label)
     return fig, axs
+
+
+def plot_data_model_residuals_1d(
+    ppf,
+    par_vec=None,
+    par_dic=None,
+    fig=None,
+    ax=None,
+    y_label=None,
+    y_fact=1.0,
+):
+
+    if (par_dic is None) and (par_vec is None):
+        raise Exception("Either `par_dic` or `par_vec` must be provided.")
+
+    if (par_dic is not None) and (par_vec is None):
+        par_vec = ppf.model.par_dic2vec(par_dic)
+    if (par_vec is not None) and (par_dic is None):
+        par_dic = ppf.model.par_vec2dic(par_vec)
+    if (fig is None) and (ax is None):
+        fig, ax = plt.subplots()
+
+    theta_2d = ppf.cluster.kpc2arcsec(ppf.radii["r_xy"])
+    mod_map = ppf.model.sz_map(par_vec)
+    res_map = ppf.sz_map - mod_map
+
+    for m, label in zip(
+        [ppf.sz_map, mod_map, res_map, ppf.sz_rms],
+        ["Data", "Model", "Residuals", "Noise"],
+    ):
+        theta_1d, m_1d = utils.map2prof(m, theta_2d, width=2*ppf.pix_size)
+        ax.plot(theta_1d, y_fact * m_1d[:, 1], label=label, lw=1.5)
+
+    ax.axhline(0.0, 0.0, 1.0, color="k", ls="--")
+    lines_toplot = {
+        "Pixel size": ppf.pix_size,
+        "Beam HWHM": ppf.beam_fwhm / 2.0,
+        "Half map size": ppf.map_size * 60.0 / 2.0,
+    }
+    for label, line in lines_toplot.items():
+        ax.axvline(line, 0, 1, color="k", alpha=0.5, ls=":", zorder=1)
+
+    ax_bothticks(ax)
+    ax.legend(frameon=False)
+    ax.set_xlabel(r"$\theta \; [{\rm arcsec}]$")
+    ax.set_ylabel(y_label)
+
+    return fig, ax
 
 
 def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
