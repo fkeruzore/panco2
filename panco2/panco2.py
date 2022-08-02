@@ -17,9 +17,8 @@ import os
 import dill
 import time
 from multiprocessing import Pool
-from . import utils, model, results
+from . import utils, model, results, filtering
 from .cluster import Cluster
-from .filtering import Filter
 
 
 class PressureProfileFitter:
@@ -192,7 +191,7 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def add_filtering(self, beam_fwhm=0.0, tf_k=None, k=None, pad=60.0):
+    def add_filtering(self, beam_fwhm=0.0, pad=0, k=None, tf=None):
         """
         Initialize convolution by a beam and
         transfer function in the model computation.
@@ -205,29 +204,88 @@ class PressureProfileFitter:
             (e.g. if the beam is already in the transfer function).
         tf_k : array
             Filtering measurement.
-        k : array [arcmin-1]
+        k : array [arcmin-1] or tuple of arrays
             Angular frequencies at which the filtering was measured.
+            Can be a tuple of `kx` and `ky` in the same units, see Notes.
         pad : float [arcsec]
             Padding to be added to the sides of the map before convolution.
 
         Notes
         =====
-        The convention used for `k` is the same as the `numpy` one,
+
+        * The convention used for `k` is the same as the `numpy` one,
         i.e. the largest 1D mode is 1/(pixel size).
+
+        * The code can deal with 1D or 2D transfer functions, depending
+          on the inputs:
+
+          - For a 1D transfer function (isotropic filtering), `k`
+            and `tf` should be 1D arrays of same shape
+
+          - For a 2D transfer function, `k` should be a tuple of
+            two 2D arrays (kx and ky), and `tf` should be a 2D
+            array with the same shape as `kx` and `ky`
+
         """
 
         self.beam_fwhm = beam_fwhm
         beam_sigma_pix = (
             beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
         )
-        self.model.filter = Filter(
-            self.sz_map.shape[0],
-            self.pix_size,
-            beam_sigma_pix=beam_sigma_pix,
-            tf_k=tf_k,
-            k=k,
-            pad=pad,
-        )
+        # self.model.filter = filtering.Filter(
+        #     self.sz_map.shape[0],
+        #     self.pix_size,
+        #     beam_sigma_pix=beam_sigma_pix,
+        #     tf_k=tf_k,
+        #     k=k,
+        #     pad=pad,
+        # )
+
+        # Case 1: just beam, no transfer function
+        if tf is None:
+            print("Adding filtering: beam only")
+            self.model.filter = filtering.Filter(beam_sigma_pix)
+
+        # Case 2: beam (or not), 1D transfer function
+        elif (tf is not None) and isinstance(k, np.ndarray):
+            print("Adding filtering: beam and 1D transfer function")
+            assert tf.shape == k.shape, "tf and k don't have the same shape"
+            self.model.filter = filtering.Filter1d(
+                self.sz_map.shape[0],
+                self.pix_size,
+                k,
+                tf,
+                beam_sigma_pix=beam_sigma_pix,
+                pad_pix=pad,
+            )
+
+        # Case 2: beam (or not), 1D transfer function
+        elif (tf is not None) and (
+            isinstance(k, tuple) or isinstance(k, list)
+        ):
+            print("Adding filtering: beam and @D transfer function")
+            botharr = isinstance(k[0], np.ndarray) and isinstance(
+                k[1], np.ndarray
+            )
+            assert botharr, "kx and ky are not arrays"
+            assert (
+                k[0].shape == k[1].shape and k[0].shape == tf.shape
+            ), "kx, ky, tf don't have the same shape"
+            self.model.filter = filtering.Filter2d(
+                self.sz_map.shape[0],
+                self.pix_size,
+                k[0],
+                k[1],
+                tf,
+                beam_sigma_pix=beam_sigma_pix,
+                pad_pix=pad,
+            )
+
+        # Case 3: what?
+        else:
+            raise Exception(
+                "I don't understand what you want to do, please check inputs"
+            )
 
     # ---------------------------------------------------------------------- #
 
