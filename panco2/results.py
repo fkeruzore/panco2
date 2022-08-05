@@ -8,6 +8,7 @@ from chainconsumer import ChainConsumer
 from copy import copy
 from . import utils
 
+
 def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
     """
     Loads raw Markov chains, cleans them, and arranges them
@@ -49,10 +50,21 @@ def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
        discard them.
     """
 
+    burn = int(burn)
+    discard = int(discard)
+
     f = np.load(out_chains_file)
     chains = {}
     p = f.files[0]
     n_chains, n_steps = f[p].shape
+
+    assert n_steps > burn, (
+        "Your burn-in is longer than the chain! " + f"({burn} > {n_steps})"
+    )
+    assert n_steps > discard, (
+        f"You asked to discard {discard-1}/{discard} samples, "
+        + f"but the chain is only {n_steps} steps long!"
+    )
 
     # 1) discard `burn` burn-in and keep 1 sample every `discard` steps
     keep = np.arange(burn, n_steps, discard)
@@ -542,6 +554,7 @@ def plot_data_model_residuals_1d(
     ax=None,
     y_label=None,
     y_fact=1.0,
+    plot_beam=True,
 ):
 
     if (par_dic is None) and (par_vec is None):
@@ -562,8 +575,16 @@ def plot_data_model_residuals_1d(
         [ppf.sz_map, mod_map, res_map, ppf.sz_rms],
         ["Data", "Model", "Residuals", "Noise"],
     ):
-        theta_1d, m_1d = utils.map2prof(m, theta_2d, width=2*ppf.pix_size)
+        theta_1d, m_1d = utils.map2prof(m, theta_2d, width=2 * ppf.pix_size)
         ax.plot(theta_1d, y_fact * m_1d[:, 1], label=label, lw=1.5)
+
+    if plot_beam and hasattr(ppf, "beam_fwhm"):
+        beam_sigma = ppf.beam_fwhm / (2 * np.sqrt(2 * np.log(2)))
+        beam_prof = np.max(ppf.sz_map) * np.exp(
+            -0.5 * (theta_1d / beam_sigma) ** 2
+        )
+        ax.plot(theta_1d, beam_prof, color="0.5", label="Beam")
+
 
     ax.axhline(0.0, 0.0, 1.0, color="k", ls="--")
     lines_toplot = {
