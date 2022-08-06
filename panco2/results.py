@@ -550,6 +550,7 @@ def plot_data_model_residuals_1d(
     ppf,
     par_vec=None,
     par_dic=None,
+    chains_clean=None,
     fig=None,
     ax=None,
     y_label=None,
@@ -557,27 +558,71 @@ def plot_data_model_residuals_1d(
     plot_beam=True,
 ):
 
-    if (par_dic is None) and (par_vec is None):
-        raise Exception("Either `par_dic` or `par_vec` must be provided.")
+    if (par_dic is None) and (par_vec is None) and (chains_clean is None):
+        raise Exception(
+            "Either `par_dic`, `par_vec`, or `chains_clean` must be provided."
+        )
 
     if (par_dic is not None) and (par_vec is None):
         par_vec = ppf.model.par_dic2vec(par_dic)
     if (par_vec is not None) and (par_dic is None):
         par_dic = ppf.model.par_vec2dic(par_vec)
+
     if (fig is None) and (ax is None):
         fig, ax = plt.subplots()
 
     theta_2d = ppf.cluster.kpc2arcsec(ppf.radii["r_xy"])
-    mod_map = ppf.model.sz_map(par_vec)
-    res_map = ppf.sz_map - mod_map
 
-    for m, label in zip(
-        [ppf.sz_map, mod_map, res_map, ppf.sz_rms],
-        ["Data", "Model", "Residuals", "Noise"],
-    ):
-        theta_1d, m_1d = utils.map2prof(m, theta_2d, width=2 * ppf.pix_size)
-        ax.plot(theta_1d, y_fact * m_1d[:, 1], label=label, lw=1.5)
+    # Data profile
+    theta_1d, m_1d = utils.map2prof(
+        ppf.sz_map, theta_2d, width=2 * ppf.pix_size
+    )
+    ax.plot(theta_1d, y_fact * m_1d[:, 1], label="Data", lw=1.5)
 
+    # Model and residuals -- 1 parameter set only
+    if chains_clean is None:
+        mod_map = ppf.model.sz_map(par_vec)
+        res_map = ppf.sz_map - mod_map
+        for m, label in zip(
+            [mod_map, res_map],
+            ["Model", "Residuals"],
+        ):
+            theta_1d, m_1d = utils.map2prof(
+                m, theta_2d, width=2 * ppf.pix_size
+            )
+            ax.plot(theta_1d, y_fact * m_1d[:, 1], label=label, lw=1.5)
+
+    # Model and residuals -- confidence intervals
+    else:
+        which_chains = np.random.randint(0, len(chains_clean), 100)
+        all_mod_maps = [
+            ppf.model.sz_map(ppf.model.par_dic2vec(dict(pos)))
+            for pos in chains_clean.iloc[which_chains].iloc
+        ]
+        all_res_maps = [(ppf.sz_map - m) for m in all_mod_maps]
+        all_mod_profs = [
+            utils.map2prof(m, theta_2d, width=2 * ppf.pix_size)[1][:, 1]
+            for m in all_mod_maps
+        ]
+        all_res_profs = [
+            utils.map2prof(m, theta_2d, width=2 * ppf.pix_size)[1][:, 1]
+            for m in all_res_maps
+        ]
+        mod_prof = np.percentile(np.array(all_mod_profs), [16, 50, 84], axis=0)
+        res_prof = np.percentile(np.array(all_res_profs), [16, 50, 84], axis=0)
+
+        for prof, label in zip([mod_prof, res_prof], ["Model", "Residuals"]):
+            line = ax.plot(theta_1d, prof[1], label=label, lw=1.5)
+            ax.fill_between(
+                theta_1d,
+                prof[0],
+                prof[2],
+                alpha=0.3,
+                ls="--",
+                color=line[0].get_color(),
+            )
+
+    # Beam
     if plot_beam and hasattr(ppf, "beam_fwhm"):
         beam_sigma = ppf.beam_fwhm / (2 * np.sqrt(2 * np.log(2)))
         beam_prof = np.max(ppf.sz_map) * np.exp(
@@ -585,7 +630,7 @@ def plot_data_model_residuals_1d(
         )
         ax.plot(theta_1d, beam_prof, color="0.5", label="Beam")
 
-
+    # Vertical lines
     ax.axhline(0.0, 0.0, 1.0, color="k", ls="--")
     lines_toplot = {
         "Pixel size": ppf.pix_size,
