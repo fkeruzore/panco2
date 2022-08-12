@@ -132,6 +132,7 @@ dmypy.json
 paper/main.aux
 paper/main.blg
 paper/main.fdb_latexmk
+paper/main.fls
 paper/main.log
 paper/main.out
 paper/main.synctex.gz
