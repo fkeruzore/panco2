@@ -128,6 +128,15 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Paper
+./paper/main.aux
+./paper/main.blg
+./paper/main.fdb_latexmk
+./paper/main.log
+./paper/main.out
+./paper/main.synctex.gz
+./paper/main.xdv
+
 # Custom
 .DS_*
 *.pyc
