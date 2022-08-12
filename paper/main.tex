@@ -1,0 +1,98 @@
+%!TeX program = xelatex
+\documentclass[numberedappendix,twocolumn,twocolappendix]{openjournal}
+
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{longtable}
+\usepackage{epsf}
+\usepackage{amsmath}
+\usepackage{graphicx}
+%\DeclareMathOperator{\sech}{sech}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,filecolor=blue,urlcolor=blue}
+\usepackage{cleveref}
+\usepackage{bm}
+\usepackage{lipsum}
+\usepackage{enumitem}
+%\usepackage{newtx}
+
+\usepackage{natbib}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{newcommands}
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\title{panco2: a Python library to measure intracluster medium pressure profiles from Sunyaev-Zeldovich observations}
+\shorttitle{\panco: pressure profiles from tSZ maps}
+
+\author{F. K\'eruzor\'e$^{1,2,\star}$}
+\author{F. Mayet$^{2}$}
+\author{E. Artis$^{2}$}
+\author{L. E. Bleem$^{1}$}
+\author{J.-F. Mac\'ias-P\'erez$^{2}$}
+\author{M. Mu\~noz-Echeverr\'ia$^{2}$}
+\author{L. Perotto$^{2}$}
+\author{F. Ruppin$^{3}$}
+\author{others?}
+
+\affiliation{
+    $^1$High Energy Physics Division, Argonne National Laboratory, 9700 South Cass Avenue, Lemont, IL 60439, USA \\
+    $^2$Univ. Grenoble Alpes, CNRS, Grenoble INP, LPSC-IN2P3, 53, avenue des Martyrs, 38000 Grenoble, France \\
+    $^3$Univ. Lyon, Univ. Claude Bernard Lyon 1, CNRS/IN2P3, IP2I Lyon, F-69622, Villeurbanne, France
+}
+\thanks{$^{\star}$E-mail:fkeruzore@anl.gov}
+
+\shortauthors{K\'eruzor\'e et al.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+    We present \panco, an open-source \texttt{Python} library designed to fit pressure profiles in Sunyaev-Zeldovich maps.
+    The fitting procedure is based on forward modeling of the total observed signal, allowing to take into account usual features of millimeter observations, such as beam smearing, data processing filtering, and point source contamination.
+    \panco\ offers a large flexibility in the inputs that can be handled and the analysis options, enabling refined analyses and studies of systematic effects.
+    We detail the functionalities of the code, the algorithm used to infer pressure profile measurements, and the typical data products.
+    We present examples of running sequences, and the validation on simulated inputs.
+    The code is available on \href{https://github.com/fkeruzore/panco2}{github}, and comes with an extensive technical documentation to complement this paper.
+\end{abstract}
+
+\keywords{Cosmology: large-scale structure of Universe}
+
+\maketitle
+
+\vspace{1cm}
+
+\twocolumngrid
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% BODY OF PAPER %%%%%%%%%%%%%%%%%%
+
+\input{sec_intro}
+\input{sec_algo}
+\input{sec_simu}
+\input{sec_end}
+
+
+\input{acknowledgements}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{aasjournal}
+\bibliography{panco2}
+
+%%%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%
+
+\appendix
+
+\input{appendix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Don't change these lines
+%\bsp	% typesetting comment
+%\label{lastpage}
+\end{document}
