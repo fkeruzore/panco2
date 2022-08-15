@@ -355,7 +355,7 @@ def plot_profile(
 
     Returns
     -------
-    ax
+    fig, ax
     """
 
     model = ppf.model
@@ -397,9 +397,10 @@ def plot_profile(
         ax.axvline(line, 0, 1, color="k", alpha=0.5, ls=":", zorder=1)
     ax_bothticks(ax)
 
+    fig = ax.get_figure()
     if filename is not None:
         fig.savefig(filename)
-    return ax
+    return fig, ax
 
 
 def plot_data_model_residuals(
