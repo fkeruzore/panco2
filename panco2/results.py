@@ -616,17 +616,18 @@ def plot_data_model_residuals_1d(
     fig, ax
 
     Raises
-    ------
-    Exception : if neither `par_dic`, `par_vec`, or `chains_clean`
-        are provided.
+    ======
+    Exception
+        if neither `par_dic`, `par_vec`, or `chains_clean` are
+        provided.
 
     Notes
     =====
     If `par_dic` or `par_vec` are provided, only one line will be
-      plotted for the model (corresponding to one position in the
-      parameter space). If `chains_clean` is provided, confidence
-      intervals will be drawn, giving more information, but
-      making the process slower.
+    plotted for the model (corresponding to one position in the
+    parameter space). If `chains_clean` is provided, confidence
+    intervals will be drawn, giving more information, but
+    making the process slower.
 
     """
 
