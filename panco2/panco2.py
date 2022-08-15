@@ -212,9 +212,8 @@ class PressureProfileFitter:
 
         Notes
         =====
-
         * The convention used for `k` is the same as the `numpy` one,
-        i.e. the largest 1D mode is 1/(pixel size).
+          i.e. the largest 1D mode is 1/(pixel size).
 
         * The code can deal with 1D or 2D transfer functions, depending
           on the inputs:
