@@ -46,7 +46,14 @@ class Filter1d(Filter):
         k_map_1d = np.fft.fftfreq(npix + 2 * pad, pix_size)
         k_map_2d = np.hypot(*np.meshgrid(k_map_1d, k_map_1d))
 
-        interp = interp1d(k_1d, tf_1d, bounds_error=False, fill_value=0.0)
+        # Extrapolation with extreme values
+        i_sort_k_in = np.argsort(k_1d)
+        sorted_tf_1d = tf_1d[i_sort_k_in]
+        tf_smallk, tf_highk = sorted_tf_1d[0], sorted_tf_1d[-1]
+
+        interp = interp1d(
+            k_1d, tf_1d, bounds_error=False, fill_value=(tf_smallk, tf_highk)
+        )
         tf_map_2d = interp(k_map_2d)
 
         super().__init__(

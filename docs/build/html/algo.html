@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PANCO2’s algorithm &mdash; panco2 0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="The physics probed by NIKA2 observations" href="physics.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> panco2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="physics.html">The physics probed by NIKA2 observations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PANCO2’s algorithm</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#physical-modeling-of-the-icm">Physical modeling of the ICM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-computation">Model computation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#compton-parameter-map-computation">Compton parameter map computation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtered-surface-brightness-map">Filtered surface brightness map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#point-source-contamination">Point source contamination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integrated-signal">Integrated signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#model-adjustment">Model adjustment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-likelihood-function">The likelihood function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-prior-distribution">The prior distribution</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pressure-profile-parameters">Pressure profile parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#point-source-fluxes">Point source fluxes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-parameters">Other parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#posterior-distribution-sampling">Posterior distribution sampling</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#monte-carlo-markov-chain-sampling">Monte-Carlo Markov Chain sampling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#starting-point">Starting point</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chains-convergence">Chains convergence</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#results-exploitation">Results exploitation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-icm-pressure-profile">The ICM pressure profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-thermodynamical-profiles">Other thermodynamical profiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integrated-quantities">Integrated quantities</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#integrated-quantities-for-non-parametric-fits">Integrated quantities for non-parametric fits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#error-bars-on-integrated-quantities">Error bars on integrated quantities</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">panco2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>PANCO2’s algorithm</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/algo.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="panco2-s-algorithm">
+<h1>PANCO2’s algorithm<a class="headerlink" href="#panco2-s-algorithm" title="Permalink to this heading"></a></h1>
+<p>This section describes the step-by-step algorithm implemented in <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> to infer a measurement of the pressure profile and thermodynamical properties of the ICM from NIKA2 observations.</p>
+<section id="physical-modeling-of-the-icm">
+<h2>Physical modeling of the ICM<a class="headerlink" href="#physical-modeling-of-the-icm" title="Permalink to this heading"></a></h2>
+<p>The spherical symmetry of the ICM is assumed by <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>.  Therefore, the pressure distribution is described by a pressure profile, <span class="math notranslate nohighlight">\(P(r)\)</span>.
+Two models can be used:</p>
+<ul>
+<li><p>A parametric, generalized Navarro-Frenk-White (gNFW) model <span id="id1">[<a class="reference internal" href="refs.html#id3" title="Daisuke Nagai, Andrey V. Kravtsov, and Alexey Vikhlinin. Effects of Galaxy Formation on Thermodynamics of the Intracluster Medium. The Astrophysical Journal, 668(1):1–14, October 2007. URL: https://doi.org/10.1086%2F521328 (visited on 2019-02-21), doi:10.1086/521328.">8</a>, <a class="reference internal" href="refs.html#id10" title="Hongsheng Zhao. Analytical models for galactic nuclei. Monthly Notices of the Royal Astronomical Society, 278:488–496, January 1996. URL: http://adsabs.harvard.edu/abs/1996MNRAS.278..488Z (visited on 2020-07-30), doi:10.1093/mnras/278.2.488.">10</a>]</span>: in this case, the pressure profile of the ICM is written as</p>
+<blockquote>
+<div><div class="math notranslate nohighlight" id="equation-gnfw">
+<span class="eqno">(1)<a class="headerlink" href="#equation-gnfw" title="Permalink to this equation"></a></span>\[P(r) = P_0 \left(\frac{r}{r_p}\right)^{-c}
+          \left[1 + \left(\frac{r}{r_p}\right)^a \right]^\frac{c-b}{a},\]</div>
+</div></blockquote>
+<p>where the pressure profile is described by <em>five</em> parameters: a normalization <span class="math notranslate nohighlight">\(P_0\)</span>, external and internal slopes <span class="math notranslate nohighlight">\(b\)</span> and <span class="math notranslate nohighlight">\(b\)</span>, a characteristic radius of transition between the two regimes, <span class="math notranslate nohighlight">\(r_p\)</span>, and the smoothness of this transition <span class="math notranslate nohighlight">\(a\)</span>.</p>
+</li>
+<li><p>A non-parametric model, where the pressure profile of the ICM is written as</p>
+<blockquote>
+<div><div class="math notranslate nohighlight" id="equation-nonparam">
+<span class="eqno">(2)<a class="headerlink" href="#equation-nonparam" title="Permalink to this equation"></a></span>\[P(R_i &lt; r &lt; R_{i+1}) = P_i \left(\frac{r}{R_i}\right)^{-\alpha_i} .\]</div>
+</div></blockquote>
+<p>where a radial binning covering the cluster’s spatial extension is defined, and the value of the pressure profile at each radial bin is a parameter of the model.
+The value of the pressure between two bins is computed by a power law interpolation between the two closest bins.  The number of parameters of the model therefore depends on the binning chosen by the user.</p>
+</li>
+</ul>
+<p>Each model has its advantages and drawbacks.
+The gNFW model is smooth (and therefore easily extrapolated), and widely used in the literature.
+Nonetheless, performing non-parametric fits is strongly recommended for several reasons.
+Non-parametric profiles offer the ability to detect features that may be smoothed in a gNFW profile (such as local overpressures).
+But, as far as running time is concerned, the most important advantage of non-parametric fits over gNFW is the relatively weak correlation between the model parameters.
+The degeneracy of the parameters in a gNFW profile is well known, and is the source of many technical complications when trying to fit a model on data.
+As a consequence, the running time of <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> in non-parametric mode is much faster than in gNFW mode on the same map (<span class="math notranslate nohighlight">\(\sim 15\)</span> minutes vs <span class="math notranslate nohighlight">\(\sim 4\)</span> hours with the same resources).
+It is therefore highly recommended to use non-parametric models.</p>
+<p><em>Conventions and notations</em></p>
+<p>The sky plane will be designed as the <span class="math notranslate nohighlight">\((x, y)\)</span> plane.  The <span class="math notranslate nohighlight">\(z\)</span> direction will refer to the line of sight.
+For each cluster, a characteristic radius <span class="math notranslate nohighlight">\(R_{500}\)</span> can be defined, corresponding to the radius inside which the average density is 500 times higher than <span class="math notranslate nohighlight">\(\rho_c(z)\)</span>, the critical density of the Universe at the cluster’s redshift <span class="math notranslate nohighlight">\(z\)</span>.
+Quantities with a 500 subscript refer to properties of the cluster inside this radius.</p>
+</section>
+<section id="model-computation">
+<h2>Model computation<a class="headerlink" href="#model-computation" title="Permalink to this heading"></a></h2>
+<p>Regardless of the user’s choice of pressure profile model, <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>’s model computation follows the same procedure to compute a model to be compared with the input data.</p>
+<section id="compton-parameter-map-computation">
+<h3>Compton parameter map computation<a class="headerlink" href="#compton-parameter-map-computation" title="Permalink to this heading"></a></h3>
+<p>The first step is to compute the Compton parameter profile <span class="math notranslate nohighlight">\(y(r)\)</span> on a radial range that entirely covers the one covered by the input NIKA2 map.</p>
+<p><strong>In gNFW mode</strong>, the pressure is computed in the <span class="math notranslate nohighlight">\((x, z)\)</span> plane.
+The <span class="math notranslate nohighlight">\(x\)</span> direction is binned as the center of the pixels in the input map, while the <span class="math notranslate nohighlight">\(z\)</span> direction is binned with 500 log-spaced points from 1 pc to <span class="math notranslate nohighlight">\(5R_{500}\)</span>.
+The pressure is then integrated along the <span class="math notranslate nohighlight">\(z\)</span> direction.</p>
+<p><strong>In non-parametric mode</strong>, the pressure profile is analytically integrated from 0 to infinity on the <span class="math notranslate nohighlight">\(z\)</span> axis, following the work of <span id="id2">[<a class="reference internal" href="refs.html#id5" title="C. Romero, M. McWilliam, J.-F. Macías-Pérez, R. Adam, P. Ade, P. André, H. Aussel, A. Beelen, A. Benoît, A. Bideaud, N. Billot, O. Bourrion, M. Calvo, A. Catalano, G. Coiffard, B. Comis, M. de Petris, F.-X. Désert, S. Doyle, J. Goupy, C. Kramer, G. Lagache, S. Leclercq, J.-F. Lestrade, P. Mauskopf, F. Mayet, A. Monfardini, E. Pascale, L. Perotto, G. Pisano, N. Ponthieu, V. Revéret, A. Ritacco, H. Roussel, F. Ruppin, K. Schuster, A. Sievers, S. Triqueneaux, C. Tucker, and R. Zylka. A multi-instrument non-parametric reconstruction of the electron pressure profile in the galaxy cluster CLJ1226.9+3332. Astronomy &amp; Astrophysics, 612:A39, April 2018. URL: https:/articles/aa/abs/2018/04/aa31599-17/aa31599-17.html (visited on 2019-03-13), doi:10.1051/0004-6361/201731599.">9</a>]</span>.</p>
+<p>In both cases, this procedure yields a Compton parameter profile as described by eq. <a class="reference internal" href="physics.html#equation-compton">(1)</a>, computed at the radii of each pixel from the center of the map to its edge.</p>
+<p>This Compton parameter map is then interpolated at the radii corresponding to each pixel in the input map.
+This approach is much shorter than computing the line-of-sight integration for each pixel of the map.</p>
+</section>
+<section id="filtered-surface-brightness-map">
+<h3>Filtered surface brightness map<a class="headerlink" href="#filtered-surface-brightness-map" title="Permalink to this heading"></a></h3>
+<p>The Compton parameter map obtained must be converted to surface brightness units in order to be comparable with observed data.
+The unit used for NIKA2 maps is the Jy/beam.
+The conversion from <span class="math notranslate nohighlight">\(y\)</span> to Jy/beam depends on NIKA2 bandpasses, as well as its instrumental beam, and must be computed for each run separately.
+In practice, <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> uses a <em>calibration factor</em>, for which the user must provide an input value and uncertainty, and which is treated as a parameter of the fit.
+This allows one to propagate the uncertainty on the calibration of NIKA2 maps to our measurement of the pressure profile of galaxy clusters.</p>
+<p>The map obtained by multiplying the Compton parameter map with the calibration factor is then convolved with a gaussian kernel of <span class="math notranslate nohighlight">\({\rm FWHM} = 17.6 &quot;\)</span> to account for the NIKA2 instrumental filtering, yielding a map in Jy/beam.</p>
+<p>Finally, the pipeline filtering is taken into account by convolving the surface brightness map with a transfer function.
+This function is an output of both versions of SZ-oriented NIKA2 pipeline wrappers, <code class="docutils literal notranslate"><span class="pre">SZ_RDA</span></code> and <code class="docutils literal notranslate"><span class="pre">SZ_IMCM</span></code>.
+It is computed by running a simulation through the pipeline and comparing the azimuthally-averaged power spectra of the input and output maps.
+The resulting map has therefore undergone the same filtering than the input map during data processing, and the two can be compared.</p>
+</section>
+<section id="point-source-contamination">
+<h3>Point source contamination<a class="headerlink" href="#point-source-contamination" title="Permalink to this heading"></a></h3>
+<p>SZ observations are very prone to contamination by point sources.
+To take it into account, <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> can use the methodology described in <span id="id3">[<a class="reference internal" href="refs.html#id11" title="F. Kéruzoré, F. Mayet, G. W. Pratt, R. Adam, P. Ade, P. André, A. Andrianasolo, M. Arnaud, H. Aussel, I. Bartalucci, A. Beelen, A. Benoît, S. Berta, O. Bourrion, M. Calvo, A. Catalano, M. De Petris, F.-X. Désert, S. Doyle, E. F. C. Driessen, A. Gomez, J. Goupy, C. Kramer, B. Ladjelate, G. Lagache, S. Leclercq, J.-F. Lestrade, J. F. Macías-Pérez, P. Mauskopf, A. Monfardini, L. Perotto, G. Pisano, E. Pointecouteau, N. Ponthieu, V. Revéret, A. Ritacco, C. Romero, H. Roussel, F. Ruppin, K. Schuster, S. Shu, A. Sievers, and C. Tucker. Exploiting NIKA2/XMM-Newton imaging synergy for intermediate mass, high-\$z\$ galaxy clusters within the NIKA2 SZ Large Program. arXiv e-prints, 2009:arXiv:2009.02563, September 2020. URL: http://adsabs.harvard.edu/abs/2020arXiv200902563K (visited on 2020-09-11).">6</a>]</span>, which consists in treating the fluxes of known point sources as parameters of the fit, constrained by a prior knowledge of each source’s flux.
+This allows to propagate the uncertainty in the point sources fluxes to <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>’s results.</p>
+<p>If asked, <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> will therefore add for each source a 2D gaussian function representing
+the NIKA2 instrumental beam, with an amplitude given by the flux of the source.  This
+addition is performed before the convolution by the transfer function, as the point
+sources re just as affected by the filtering as the SZ signal.</p>
+</section>
+<section id="integrated-signal">
+<h3>Integrated signal<a class="headerlink" href="#integrated-signal" title="Permalink to this heading"></a></h3>
+<p>As <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> was designed for the NIKA2 SZ Large Program (LPSZ,
+<span id="id4">[<a class="reference internal" href="refs.html#id8" title="F. Mayet, R. Adam, P. Ade, P. André, A. Andrianasolo, M. Arnaud, H. Aussel, I. Bartalucci, A. Beelen, A. Benoît, A. Bideaud, O. Bourrion, M. Calvo, A. Catalano, B. Comis, M. De Petris, F.-X. Désert, S. Doyle, E. F. C. Driessen, A. Gomez, J. Goupy, F. Kéruzoré, C. Kramer, B. Ladjelate, G. Lagache, S. Leclercq, J.-F. Lestrade, J. F. Macías-Pérez, P. Mauskopf, A. Monfardini, L. Perotto, G. Pisano, E. Pointecouteau, N. Ponthieu, G. W. Pratt, V. Revéret, A. Ritacco, C. Romero, H. Roussel, F. Ruppin, K. Schuster, S. Shu, A. Sievers, C. Tucker, and R. Zylka. Cluster cosmology with the NIKA2 SZ Large Program. EPJ Web of Conferences, 228:00017, 2020. Publisher: EDP Sciences. URL: https://www.epj-conferences.org/articles/epjconf/abs/2020/04/epjconf_mmuniverse2019_00017/epjconf_mmuniverse2019_00017.html (visited on 2020-05-23), doi:10.1051/epjconf/202022800017.">7</a>]</span>), it uses the knowledge of the integrated SZ flux of the
+cluster, which is always available for LPSZ clusters from the ACT and <em>Planck</em> surveys.
+Therefore, along with the model map computation, a model integrated SZ signal is
+computed as</p>
+<div class="math notranslate nohighlight" id="equation-yinteg">
+<span class="eqno">(3)<a class="headerlink" href="#equation-yinteg" title="Permalink to this equation"></a></span>\[Y_R = 4\pi\frac{\sigma_\mathrm{T}}{m_e c^2} \int_0^R r^2 P(r) \,\mathrm{d}r,\]</div>
+<p>where <span class="math notranslate nohighlight">\(R\)</span> can either be <span class="math notranslate nohighlight">\(R_{500}\)</span> or <span class="math notranslate nohighlight">\(5R_{500}\)</span> depending on what is
+available.  This integrated signal can be compared to the actual survey measurement as a
+way to constrain large-scale emission of the cluster.</p>
+</section>
+<section id="summary">
+<h3>Summary<a class="headerlink" href="#summary" title="Permalink to this heading"></a></h3>
+<p>The parameters of the model used by PANCO can be summarized in a vector
+<span class="math notranslate nohighlight">\(\vartheta\)</span> composed of:</p>
+<ul class="simple">
+<li><p>The parameters of the pressure profile: <span class="math notranslate nohighlight">\(P_0,\,r_p,\,a,\,b,\,c\)</span> for a gNFW fit,
+<span class="math notranslate nohighlight">\(P_i,\; i = 0 \cdots n_{\rm bins}\)</span> for a non-parametric fit;</p></li>
+<li><p>The “calibration coefficient” to convert Compton parameter measurements to Jy/beam,</p></li>
+<li><p>If asked, a zero-level can also be used as a free parameter to account for possible
+residual noise,</p></li>
+<li><p>If asked, a flux value for each known point source in the map.</p></li>
+</ul>
+<p>From these parameters, a model map <span class="math notranslate nohighlight">\(\mathcal{M}(\vartheta)\)</span> can be generated that
+can be directly compared to NIKA2 observations, as well as a value of
+spherically-integrated SZ signal <span class="math notranslate nohighlight">\(Y\)</span>.</p>
+</section>
+</section>
+<section id="model-adjustment">
+<h2>Model adjustment<a class="headerlink" href="#model-adjustment" title="Permalink to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> aims at finding the probability distribution for the parameters of the chosen model
+given the input data.  It does so by using Bayesian Monte Carlo Markov Chains (MCMC)
+sampling: let <span class="math notranslate nohighlight">\(D\)</span> be the input data and <span class="math notranslate nohighlight">\(\vartheta\)</span> the set of parameters of
+the model.  The probability for <span class="math notranslate nohighlight">\(\theta\)</span> to accurately describe the data is given
+by the Bayes theorem:</p>
+<div class="math notranslate nohighlight" id="equation-post">
+<span class="eqno">(4)<a class="headerlink" href="#equation-post" title="Permalink to this equation"></a></span>\[P(\vartheta \,|\, D) = \frac{P(D \,|\, \vartheta) \, P(\vartheta)}{P(D)},\]</div>
+<p>where <span class="math notranslate nohighlight">\(P(\vartheta \,|\, D)\)</span> is called the <em>posterior distribution</em>, <span class="math notranslate nohighlight">\(P(D
+\,|\, \vartheta)\)</span> is the <em>likelihood function</em> comparing the model to the data,
+<span class="math notranslate nohighlight">\(P(\vartheta)\)</span> is the <em>prior distribution</em> encapsulating the user’s prior knowledge
+about the parameters, and <span class="math notranslate nohighlight">\(P(D)\)</span> is the data evidence, here treated as a
+normalization constant.</p>
+<section id="the-likelihood-function">
+<h3>The likelihood function<a class="headerlink" href="#the-likelihood-function" title="Permalink to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> uses a multivariate gaussian likelihood function to compare the model to data.
+Starting from <code class="docutils literal notranslate"><span class="pre">v1.1_dec20</span></code>, each data point (<em>i.e.</em> each pixel of the map) can either be considered independent or correlated to the others: for a
+parameter set <span class="math notranslate nohighlight">\(\vartheta\)</span>,</p>
+<div class="math notranslate nohighlight" id="equation-loglike">
+<span class="eqno">(5)<a class="headerlink" href="#equation-loglike" title="Permalink to this equation"></a></span>\[\mathrm{log} \, \mathcal{L}(\vartheta)
+    = \mathrm{log} \, P(D \, | \, \vartheta) = - \frac{1}{2}
+    \left(D - \mathcal{M}(\vartheta)\right)^{\rm T} \Sigma^{-1} \left(D -
+    \mathcal{M}(\vartheta)\right)
+      - \frac{1}{2} \left(\frac{Y_R^{\rm meas.} - Y_R(\vartheta)}{\Delta Y_R^{\rm
+      meas.}}\right)^2 - \Delta_{\rm mass}\]</div>
+<p>where <span class="math notranslate nohighlight">\(D\)</span> is the measured NIKA2 map, <span class="math notranslate nohighlight">\(\Sigma\)</span> is the noise covariance matrix,
+<span class="math notranslate nohighlight">\(\mathcal{M}(\vartheta)\)</span> is the model map described in <code class="xref std std-numref docutils literal notranslate"><span class="pre">Model</span> <span class="pre">Computation</span></code>,
+<span class="math notranslate nohighlight">\(Y_R(\vartheta)\)</span> is the integrated SZ signal computed from Eq.  <a class="reference internal" href="#equation-yinteg">(3)</a>, and
+<span class="math notranslate nohighlight">\(Y_R^{\rm meas.}\)</span> and <span class="math notranslate nohighlight">\(\Delta Y_R^{\rm meas.}\)</span> are the measured integrated
+SZ signal and its uncertainty, respectively.
+The noise covariance matrix can be computed in <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> if the user provides a set of correlated noise realizations (as produced by <code class="docutils literal notranslate"><span class="pre">SZ_IMCM</span></code>).
+Otherwise, the noise is considered to be white and the pixels uncorrelated, simplifying Eq. <a class="reference internal" href="#equation-loglike">(5)</a> and greatly improving the computation time.</p>
+<p>In gNFW mode, if X-ray data are available, a term <span class="math notranslate nohighlight">\(\Delta_{\rm mass}\)</span> is added,
+ensuring that the hydrostatic mass profile from Eq. <a class="reference internal" href="physics.html#equation-mhse">(2)</a> always increases with
+radius:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\Delta_{\rm mass} =
+\begin{cases}
+    \; 0 \;\text{if}\; \mathrm{d}M / \mathrm{d}r \geq 0 \,\forall r, \\ \; -\infty
+    \;\text{otherwise.}
+\end{cases}\end{split}\]</div>
+</section>
+<section id="the-prior-distribution">
+<h3>The prior distribution<a class="headerlink" href="#the-prior-distribution" title="Permalink to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> uses a prior distribution where all parameters are assumed uncorrelated.  Some
+parameters accept a wide variety of priors, that we detail here.</p>
+<section id="pressure-profile-parameters">
+<h4>Pressure profile parameters<a class="headerlink" href="#pressure-profile-parameters" title="Permalink to this heading"></a></h4>
+<p><strong>In gNFW mode</strong>, priors are usually needed because of the strong correlations between
+parameters. They can be:</p>
+<ul class="simple">
+<li><p>Gaussian functions, where the user is free to either specify the mean and standard
+deviation of each distribution manually or to adopt one of the reference papers
+<span id="id5">[<a class="reference internal" href="refs.html#id2" title="M. Arnaud, G. W. Pratt, R. Piffaretti, H. Böhringer, J. H. Croston, and E. Pointecouteau. The universal galaxy cluster pressure profile from a representative sample of nearby systems (REXCESS) and the YSZ – M500 relation. Astronomy &amp; Astrophysics, 517:A92, July 2010. URL: https://www.aanda.org/articles/aa/abs/2010/09/aa13416-09/aa13416-09.html (visited on 2019-02-21), doi:10.1051/0004-6361/200913416.">1</a>, <a class="reference internal" href="refs.html#id6" title="Planck Collaboration et al. Planck intermediate results - V. Pressure profiles of galaxy clusters from the Sunyaev-Zeldovich effect. Astronomy &amp; Astrophysics, 550:A131, February 2013. URL: https://www.aanda.org/articles/aa/abs/2013/02/aa20040-12/aa20040-12.html (visited on 2019-08-29), doi:10.1051/0004-6361/201220040.">3</a>]</span>,</p></li>
+<li><p>Flat, where the user can specify a lower and higher limit for each
+parameter.</p></li>
+</ul>
+<p>Note that in any case, negative parameters are not allowed.</p>
+<p><strong>In non-parametric mode</strong>, the only constraint imposed is that every pressure bin must
+be positive.</p>
+</section>
+<section id="point-source-fluxes">
+<h4>Point source fluxes<a class="headerlink" href="#point-source-fluxes" title="Permalink to this heading"></a></h4>
+<p>If the map is contaminated by point sources, the user may adjust them along with the SZ
+signal.  In that case, the prior on each point source flux can be:</p>
+<ul class="simple">
+<li><p>The probability distribution function of the flux evaluated via kernel density
+estimation from a previous sampling (<em>e.g.</em> from <code class="docutils literal notranslate"><span class="pre">PSTools</span></code> <span id="id6">[<a class="reference internal" href="refs.html#id14" title="F. Kéruzoré, F. Mayet, L. Perotto, and J.-F. Macías-Pérez. PSTools: A toolbox for the estimation of the contamination by sub-millimeter galaxies in NIKA2 galaxy cluster observations. 2019.">11</a>]</span>),</p></li>
+<li><p>A Gaussian function, for which the user must specify a mean and standard deviation,</p></li>
+<li><p>A flat distribution, for which the user must specify a lower and higher bound.</p></li>
+</ul>
+</section>
+<section id="other-parameters">
+<h4>Other parameters<a class="headerlink" href="#other-parameters" title="Permalink to this heading"></a></h4>
+<p>The prior on the “calibration factor” is a Gaussian function, the mean and standard
+deviation of which must be specified by the user.</p>
+<p>The prior on the zero level of the map is a Gaussian function with mean <span class="math notranslate nohighlight">\(\mu = 0\)</span>
+and <span class="math notranslate nohighlight">\(\sigma = 5 \times 10^{-4} \; {\rm Jy/beam}\)</span>.</p>
+</section>
+</section>
+<section id="posterior-distribution-sampling">
+<h3>Posterior distribution sampling<a class="headerlink" href="#posterior-distribution-sampling" title="Permalink to this heading"></a></h3>
+<p>The fit is performed by Monte Carlo Markov Chain (MCMC) sampling of the posterior
+probability distribution of Eq.  <a class="reference internal" href="#equation-post">(4)</a>.  This section quickly reviews this
+statistical technique and presents the specific implementation done in <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>.</p>
+<section id="monte-carlo-markov-chain-sampling">
+<h4>Monte-Carlo Markov Chain sampling<a class="headerlink" href="#monte-carlo-markov-chain-sampling" title="Permalink to this heading"></a></h4>
+<p>MCMC is a statistical tool aiming at sampling a distribution, <em>i.e.</em> generating random
+samples that follow the probability distribution function (PDF). The broad idea of MCMC
+can be described by the Metropolis-Hastings algorithm:</p>
+<ol class="arabic">
+<li><p>Start from a given position in the parameter space, <span class="math notranslate nohighlight">\(\theta\)</span>, and compute the
+value of the probability distribution of interest, <span class="math notranslate nohighlight">\({\rm PDF}(\theta)\)</span>;</p></li>
+<li><p>Select a new position near <span class="math notranslate nohighlight">\(\theta\)</span>, <span class="math notranslate nohighlight">\(\theta'\)</span>, and compute
+<span class="math notranslate nohighlight">\({\rm PDF}(\theta')\)</span>;</p></li>
+<li><p>If <span class="math notranslate nohighlight">\({\rm PDF}(\theta') \geq {\rm PDF}(\theta)\)</span>, accept <span class="math notranslate nohighlight">\(\theta'\)</span> as your
+new position ; otherwise, accept it with a probability</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[P \propto \frac{\rm PDF (\theta')}{\rm PDF (\theta)};\]</div>
+</div></blockquote>
+</li>
+<li><p>Start again from step 2.</p></li>
+</ol>
+<p>The set of accepted positions in the parameter space constitutes a random walk called a
+Markov chain.  The algorithm can be run simultaneously by several independent chains,
+providing an easy way to parallelize the sampling.  In <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>, the sampler used is the
+affine-invariant sampler implemented in the <code class="docutils literal notranslate"><span class="pre">emcee</span></code> Python library
+<span id="id7">[<a class="reference internal" href="refs.html#id7" title="Daniel Foreman-Mackey, Will M. Farr, Manodeep Sinha, Anne M. Archibald, David W. Hogg, Jeremy S. Sanders, Joe Zuntz, Peter K. G. Williams, Andrew R. J. Nelson, Miguel de Val-Borro, Tobias Erhardt, Ilya Pashchenko, and Oriol Abril Pla. Emcee v3: A Python ensemble sampling toolkit for affine-invariant MCMC. arXiv e-prints, pages arXiv:1911.07688, November 2019. URL: https://ui.adsabs.harvard.edu/abs/2019arXiv191107688F/abstract (visited on 2019-11-19).">4</a>]</span>, where the parameter space is explored by “walkers”,
+the key difference being that walkers are not independent and communicate with each
+other during the sampling.</p>
+</section>
+<section id="starting-point">
+<h4>Starting point<a class="headerlink" href="#starting-point" title="Permalink to this heading"></a></h4>
+<p>The starting point of the Markov chains in the parameter space is an input of any MCMC
+analysis.  The sampling can either be started from a random position – in which case
+the sampler needs to find the optimal region – or from an initial guess of the user.
+For <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>, we chose the latter, in order to speed up the process.</p>
+<p><strong>In gNFW mode,</strong> the parameters maximizing the posterior distribution of Eq.
+<a class="reference internal" href="#equation-post">(4)</a> are found using the <code class="docutils literal notranslate"><span class="pre">migrad</span></code> algorithm of <code class="docutils literal notranslate"><span class="pre">iMinuit</span></code>, the Python
+implementation of the <code class="docutils literal notranslate"><span class="pre">MINUIT</span></code> suite <span id="id8">[<a class="reference internal" href="refs.html#id13" title="Hans Dembinski, Piti Ongmongkolkul, Christoph Deil, David Menéndez Hurtado, Matthew Feickert, Henry Schreiner, Andrew, Chris Burr, Fabian Rost, Alex Pearce, Lukas Geiger, Bernhard M. Wiedemann, and Omar Zapata. Scikit-hep/iminuit: v1.4.9. July 2020. URL: https://zenodo.org/record/3951328 (visited on 2020-09-16), doi:10.5281/zenodo.3951328.">2</a>]</span>.
+The MCMC is started at this position in the parameter space.</p>
+<p><strong>In non-parametric mode,</strong> the parameters are the pressure in each bin, and their
+starting point are computed as the value of the universal pressure profile of
+<span id="id9">[<a class="reference internal" href="refs.html#id2" title="M. Arnaud, G. W. Pratt, R. Piffaretti, H. Böhringer, J. H. Croston, and E. Pointecouteau. The universal galaxy cluster pressure profile from a representative sample of nearby systems (REXCESS) and the YSZ – M500 relation. Astronomy &amp; Astrophysics, 517:A92, July 2010. URL: https://www.aanda.org/articles/aa/abs/2010/09/aa13416-09/aa13416-09.html (visited on 2019-02-21), doi:10.1051/0004-6361/200913416.">1</a>]</span> at each radius bin.</p>
+<p>For other parameters (calibration coefficient, zero level, point source fluxes), the
+starting point of each parameter is the maximum of its prior distribution.</p>
+</section>
+<section id="chains-convergence">
+<h4>Chains convergence<a class="headerlink" href="#chains-convergence" title="Permalink to this heading"></a></h4>
+<p>One crucial step of MCMC analyses is to know at which point the sampling can be stopped.
+To do so, the following test was implemented and is performed regularly:</p>
+<ol class="arabic">
+<li><p>Apply a burn-in cut, <em>i.e.</em> discard a portion of each chain at its beginning (the
+time needed to reach the “correct” part of the parameter space);</p></li>
+<li><p>Compute the autocorrelation length <span class="math notranslate nohighlight">\(l\)</span>, which is the number of steps <span class="math notranslate nohighlight">\(n\)</span>
+a walker has to perform from a position <span class="math notranslate nohighlight">\(\theta_i\)</span> so that <span class="math notranslate nohighlight">\(\theta_{i+n}\)</span> is
+independent from <span class="math notranslate nohighlight">\(\theta_i\)</span> (or, more simply put, the time it takes a walker to
+forget where it comes from);</p></li>
+<li><p>The convergence of the chains is accepted if:</p>
+<blockquote>
+<div><ul>
+<li><p>More than 2/3 of the chains have walked more than 40 times their autocorrelation
+length,</p></li>
+<li><p>These chains pass the R-hat test of <span id="id10">[<a class="reference internal" href="refs.html#id12" title="Andrew Gelman and Donald B. Rubin. Inference from Iterative Simulation Using Multiple Sequences. Statistical Science, 7:457–472, 1992. URL: http://adsabs.harvard.edu/abs/1992StaSc...7..457G (visited on 2020-09-16), doi:10.1214/ss/1177011136.">5</a>]</span>:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\hat{R} = \sqrt{\frac{V}{W}} &lt; 1.02\]</div>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(V\)</span> measures the variance between all chains, and <span class="math notranslate nohighlight">\(W\)</span> measures
+the average variance within one chain.</p>
+</li>
+</ol>
+<p>The whole process ensures that more than two thirds of the chains are long enough that
+they can be used for inference, and that they are correctly mixed, <em>i.e.</em> that the
+individual properties of each chains are similar to those of the whole sample.</p>
+</section>
+</section>
+</section>
+<section id="results-exploitation">
+<h2>Results exploitation<a class="headerlink" href="#results-exploitation" title="Permalink to this heading"></a></h2>
+<p>Once the chains have reached convergence, they constitute a random sample for which the
+probability distribution is the posterior distribution of Eq.  <a class="reference internal" href="#equation-post">(4)</a>.  These are
+used to infer measurements of the physical properties of the ICM.</p>
+<section id="the-icm-pressure-profile">
+<h3>The ICM pressure profile<a class="headerlink" href="#the-icm-pressure-profile" title="Permalink to this heading"></a></h3>
+<p>The pressure profile of the ICM is the property directly probed by our fit.  Its value
+is given by the computation of our model for the set of parameters that maximize the
+posterior distribution sampled in our fit.  Each set of parameters sampled in the MCMC
+is then used to compute a pressure profile on a wide radius range.  The dispersion of
+these profiles gives a measurement of the statistical error on the pressure for the
+whole radial range considered.</p>
+<p>In non-parametric mode, at the end of the MCMC, another regression can be performed to
+fit a gNFW profile on the non-parametric pressure bins. This fit is difficult to perform,
+as it requires to fit a model with highly correlated parameters on a small number of
+data points. Sampling a posterior distribution is therefore tedious without tight priors.
+Still, a module is implemented to allow the user to perform such a fit, using MCMC as
+well as a maximum-likelihood approach is implemented, where the user may use <code class="docutils literal notranslate"><span class="pre">MIGRAD</span></code>
+to find the gNFW profile that best describe the pressure profile. In each case, the full
+posterior distribution of <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>’s first MCMC is used in the fit (<em>i.e.</em> the
+correlations between the different bins are taken into account).</p>
+</section>
+<section id="other-thermodynamical-profiles">
+<h3>Other thermodynamical profiles<a class="headerlink" href="#other-thermodynamical-profiles" title="Permalink to this heading"></a></h3>
+<p>If X-ray data are available for the cluster, <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code> will also combine them with the
+resulting pressure profile to infer more measurements of thermodynamical properties.
+Namely, the pressure profile from NIKA2 <span class="math notranslate nohighlight">\(P(r)\)</span> will be combined with the density
+profile from X-ray data <span class="math notranslate nohighlight">\(n(r)\)</span> to compute the radial profiles of the ICM
+temperature <span class="math notranslate nohighlight">\(k_{\rm B}T(r) = P(r) / n(r)\)</span>, entropy <span class="math notranslate nohighlight">\(K(r) = P(r) \,
+n^{-5/3}(r)\)</span>, hydrostatic mass through the equation of hydrostatic equilibrium
+<a class="reference internal" href="physics.html#equation-mhse">(2)</a>.  The statistical error on each profile are computed the same way as for the
+pressure profile (see <code class="xref std std-numref docutils literal notranslate"><span class="pre">The</span> <span class="pre">ICM</span> <span class="pre">pressure</span> <span class="pre">profile</span></code>).</p>
+</section>
+<section id="integrated-quantities">
+<h3>Integrated quantities<a class="headerlink" href="#integrated-quantities" title="Permalink to this heading"></a></h3>
+<p>One of the goals of the NIKA2 LPSZ is to compute the scaling relation between
+<span class="math notranslate nohighlight">\(Y_{500}\)</span> and <span class="math notranslate nohighlight">\(M_{500}\)</span>, namely the integrated SZ signal and mass contained
+in a radius <span class="math notranslate nohighlight">\(R_{500}\)</span>.  These quantities are computed by <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>.</p>
+<p>If X-ray data are available, a measurement of <span class="math notranslate nohighlight">\(R_{500}\)</span> can be computed by finding
+the radius inside which the average density contrast is 500, <em>i.e.</em> by solving</p>
+<div class="math notranslate nohighlight">
+\[\delta_c (R_{500})
+= \frac{M_{\rm HSE}(R_{500})}{\rho_c(z) \times \frac{4}{3} \pi R_{500}^3} = 500\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_c(z)\)</span> is the critical density of the Universe at the redshift of the
+cluster <span class="math notranslate nohighlight">\(z\)</span>.  Computing it for all sets of parameter sampled by our MCMC gives the
+probability distribution of <span class="math notranslate nohighlight">\(R_{500}\)</span>.  Similarly, the integrated SZ signal
+<span class="math notranslate nohighlight">\(Y_{500}\)</span> and hydrostatic mass <span class="math notranslate nohighlight">\(M_{500}\)</span> can be computed for all the sampled
+pressure profiles.</p>
+<section id="integrated-quantities-for-non-parametric-fits">
+<h4>Integrated quantities for non-parametric fits<a class="headerlink" href="#integrated-quantities-for-non-parametric-fits" title="Permalink to this heading"></a></h4>
+<p>As seen in Eq.  <a class="reference internal" href="physics.html#equation-mhse">(2)</a>, the hydrostatic mass profile is proportional to the
+derivative of the pressure profile with respect to radius.  A consequence is that for
+non-parametric profiles, which are not smooth functions of the radius, mass profiles can
+present undesirable features such as discontinuities.  This can potentially have strong
+effects on the measurement of <span class="math notranslate nohighlight">\(R_{500}\)</span> and <span class="math notranslate nohighlight">\(M_{500}\)</span>.</p>
+<p>We bypass this problem by using spline interpolations.  The samples of the posterior
+distribution (<em>i.e.</em> the value of the pressure bins sampled during the MCMC) are each
+interpolated in the log-log plane using a spline.  The derivative of the pressure needed
+to evaluate the hydrostatic mass is then computed as the derivative of the spline.  This
+smoothes the pressure profile, making its derivation more stable.</p>
+</section>
+<section id="error-bars-on-integrated-quantities">
+<h4>Error bars on integrated quantities<a class="headerlink" href="#error-bars-on-integrated-quantities" title="Permalink to this heading"></a></h4>
+<p>Since <span class="math notranslate nohighlight">\(Y_{500}\)</span> and <span class="math notranslate nohighlight">\(M_{500}\)</span> are both computed inside a radius
+<span class="math notranslate nohighlight">\(R_{500}\)</span>, the correlation between the three variables is obviously important.  A
+consequence is that the values can be evaluated in two distinct ways:</p>
+<ul class="simple">
+<li><p>Each sampled pressure profile can be used to compute a value of <span class="math notranslate nohighlight">\(R_{500}\)</span>,
+inside which we compute the integrated quantities <span class="math notranslate nohighlight">\(Y_{500}\)</span> and <span class="math notranslate nohighlight">\(M_{500}\)</span> ;</p></li>
+<li><p>The best-fitting pressure profile cam be used to compute a fixed value of
+<span class="math notranslate nohighlight">\(R_{500}\)</span>, inside which we compute the integrated quantities <span class="math notranslate nohighlight">\(Y_{500}\)</span> and
+<span class="math notranslate nohighlight">\(M_{500}\)</span> for each sampled profile.</p></li>
+</ul>
+<p>The latter leads to significantly smaller error bars on the integrated quantities, as it
+does not allow to propagate the uncertainty on <span class="math notranslate nohighlight">\(R_{500}\)</span> to the integrated
+quantities.  Both ways are implemented in <code class="docutils literal notranslate"><span class="pre">PANCO2</span></code>, although by default the former
+approach will be used.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="physics.html" class="btn btn-neutral float-left" title="The physics probed by NIKA2 observations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Florian Kéruzoré.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API &mdash; panco2 0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="References" href="refs.html" />
+    <link rel="prev" title="PANCO2’s algorithm" href="algo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> panco2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="physics.html">The physics probed by NIKA2 observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algo.html">PANCO2’s algorithm</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#panco2-panco2">panco2.panco2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-panco2.results">panco2.results</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">panco2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="panco2-panco2">
+<h2>panco2.panco2<a class="headerlink" href="#panco2-panco2" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="panco2.PressureProfileFitter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">panco2.</span></span><span class="sig-name descname"><span class="pre">PressureProfileFitter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sz_map_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hdu_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hdu_rms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter" title="Permalink to this definition"></a></dt>
+<dd><p>Blah, blah, blah</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sz_map_file</strong> (<em>str</em>) – Path to a FITS file containing the SZ map and noise RMS</p></li>
+<li><p><strong>hdu_data</strong> (<em>int</em>) – Index of the FITS extension in which the SZ map is stored</p></li>
+<li><p><strong>hdu_rms</strong> (<em>int</em>) – Index of the FITS extension in which the RMS map is stored</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – Cluster’s redshift</p></li>
+<li><p><strong>M_500</strong> (<em>float</em><em> [</em><em>Msun</em><em>]</em>) – A guess of the cluster’s mass.
+This is used to build the starting point of the MCMC.</p></li>
+<li><p><strong>coords_center</strong> (<em>SkyCoord</em><em>, </em><em>optional</em>) – Coordinate to consider as the center of the map</p></li>
+<li><p><strong>map_size</strong> (<em>float</em><em> [</em><em>arcmin</em><em>]</em><em>, </em><em>optional</em>) – The size of the map to be considered</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="panco2.PressureProfileFitter.add_covmat">
+<span class="sig-name descname"><span class="pre">add_covmat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_noise_simus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_covmat_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_covmat" title="Permalink to this definition"></a></dt>
+<dd><p>Loads or computes a covariance matrix for the likelihood.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_noise_simus</strong> (<em>str</em>) – Path to a <cite>fits</cite> file in which each extension is a noise map.
+The covariance will be computed as the pixel-to-pixel
+covariance of these maps.
+The first extension must have a header that can be used to
+create a <cite>WCS</cite> object to ensure the noise and data
+pixels are the same.</p></li>
+<li><p><strong>inv_covmat</strong> (<em>str</em>) – Path to a <cite>npy</cite> file containing an inverse covariance matrix.
+The matrix must be the same size and units as the data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="panco2.PressureProfileFitter.add_filtering">
+<span class="sig-name descname"><span class="pre">add_filtering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beam_fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_filtering" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize convolution by a beam and
+transfer function in the model computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beam_fwhm</strong> (<em>float</em><em> [</em><em>arcsec</em><em>]</em><em>, </em><em>optional</em>) – The FWHM of your gaussian beam.
+Can be set to 0 if you don’t want beam confolution
+(e.g. if the beam is already in the transfer function).</p></li>
+<li><p><strong>tf_k</strong> (<em>array</em>) – Filtering measurement.</p></li>
+<li><p><strong>k</strong> (<em>array</em><em> [</em><em>arcmin-1</em><em>] or </em><em>tuple of arrays</em>) – Angular frequencies at which the filtering was measured.
+Can be a tuple of <cite>kx</cite> and <cite>ky</cite> in the same units, see Notes.</p></li>
+<li><p><strong>pad</strong> (<em>float</em><em> [</em><em>arcsec</em><em>]</em>) – Padding to be added to the sides of the map before convolution.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The convention used for <cite>k</cite> is the same as the <cite>numpy</cite> one,
+i.e. the largest 1D mode is 1/(pixel size).</p></li>
+<li><p>The code can deal with 1D or 2D transfer functions, depending
+on the inputs:</p>
+<ul>
+<li><p>For a 1D transfer function (isotropic filtering), <cite>k</cite>
+and <cite>tf</cite> should be 1D arrays of same shape</p></li>
+<li><p>For a 2D transfer function, <cite>k</cite> should be a tuple of
+two 2D arrays (kx and ky), and <cite>tf</cite> should be a 2D
+array with the same shape as <cite>kx</cite> and <cite>ky</cite></p></li>
+</ul>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="panco2.PressureProfileFitter.add_integ_Y">
+<span class="sig-name descname"><span class="pre">add_integ_Y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_integ_Y" title="Permalink to this definition"></a></dt>
+<dd><p>Add a constraint on the integrated Compton parameter
+to the fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Y</strong> (<em>float</em><em> [</em><em>kpc2</em><em>]</em>) – Integrated Compton parameter value</p></li>
+<li><p><strong>dY</strong> (<em>float</em><em> [</em><em>kpc2</em><em>]</em>) – Uncertainty on Y</p></li>
+<li><p><strong>r</strong> (<em>float</em><em> [</em><em>kpc</em><em>]</em>) – Radius within which the Compton parameter was integrated</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="panco2.PressureProfileFitter.define_priors">
+<span class="sig-name descname"><span class="pre">define_priors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P_bins=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gNFW_params=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv=&lt;scipy.stats._distn_infrastructure.rv_frozen</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero=&lt;scipy.stats._distn_infrastructure.rv_frozen</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ps_fluxes=[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.define_priors" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>P_bins</strong> (<em>ss.distributions</em><em> or </em><em>list of ss.distributions</em>) – Priors on the pressure bins in binned profile mode.
+If only one distribution, all bins will have the same
+prior. If a list, the length should be the number of bins.</p></li>
+<li><p><strong>gNFW_params</strong> (<em>#TODO</em>) – </p></li>
+<li><p><strong>conv</strong> (<em>ss.distributions instance</em>) – Prior on the conversion coefficient.
+Defaults to N(0, 1).</p></li>
+<li><p><strong>zero</strong> (<em>ss.distributions instance</em>) – Prior on the zero level of the map.
+Defaults to N(0, 1).</p></li>
+<li><p><strong>ps_fluxes</strong> (<em>list of ss.distributions</em>) – Priors on the flux of each point source, in map units.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>Exception</strong> – If something happens #TODO</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>To create distributions, use the <cite>scipy.stats</cite> module.</p>
+<p class="rubric">Examples</p>
+<ul>
+<li><p>Normal distribution with mean 0 and spread 1:</p>
+<blockquote>
+<div><p>import scipy.stats as ss</p>
+<p>prior_on_parameter = ss.norm(0.0, 1.0)</p>
+</div></blockquote>
+</li>
+<li><p>Uniform distribution between 0 and 1:</p>
+<blockquote>
+<div><p>import scipy.stats as ss</p>
+<p>prior_on_parameter = ss.uniform(0.0, 1.0)</p>
+</div></blockquote>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="panco2.PressureProfileFitter.run_mcmc">
+<span class="sig-name descname"><span class="pre">run_mcmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_chains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_threads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_delta_tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_autocorr_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_chains_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./chains.npz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_convergence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.run_mcmc" title="Permalink to this definition"></a></dt>
+<dd><p>Runs MCMC sampling of the posterior distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_chains</strong> (<em>int</em>) – Number of emcee walkers.</p></li>
+<li><p><strong>max_steps</strong> (<em>int</em>) – Maximum number of steps in the Markov chains.
+The final number of points can be lower if
+convergence is accepted before <cite>max_steps</cite> is
+reached – see Notes.</p></li>
+<li><p><strong>n_threads</strong> (<em>int</em>) – Number of parallel threads to use.</p></li>
+<li><p><strong>n_check</strong> (<em>int</em>) – Number of steps between two convergence checks.</p></li>
+<li><p><strong>max_delta_tau</strong> (<em>float</em>) – Maximum relative difference of the autocorrelation
+length between two convergence checks to end sampling.</p></li>
+<li><p><strong>min_autocorr_times</strong> (<em>int</em>) – Minimum ratio between the chains length and the
+autocorrelation length to end samlling.</p></li>
+<li><p><strong>out_chains_file</strong> (<em>str</em>) – Path to a <cite>.npz</cite> file in which the chains
+will be stored.</p></li>
+<li><p><strong>plot_convergence</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save a plot of the autocorrelation
+function evolution and convergence test.
+If None, the plot is not produced.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>chains</strong> – Markov chains. Each key is a parameter, and the
+values are 2D arrays of shape (n_chains, n_steps).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The convergence check are performed every <cite>n_check</cite> steps.
+Convergence is accepted if:</p>
+<ul>
+<li><p>In the last two checks, the mean autocorrelation time
+had a relative variation smaller than <cite>max_delta_tau</cite>
+compared to the previous step.</p></li>
+<li><p>The chain is longer than <cite>min_autocorr_times</cite> times
+the current mean autocorrelation time.</p></li>
+</ul>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="panco2.PressureProfileFitter.write_sim_map">
+<span class="sig-name descname"><span class="pre">write_sim_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par_vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.write_sim_map" title="Permalink to this definition"></a></dt>
+<dd><p>Write a FITS map with given parameter values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>par_vec</strong> (<em>list</em><em> or </em><em>array</em>) – Vector in the parameter space.</p></li>
+<li><p><strong>out_file</strong> (<em>str</em>) – Path to a FITS file to which the map will be written.
+If the file already exists, it will be overwritten.</p></li>
+<li><p><strong>filter_noise</strong> (<em>bool</em>) – If True, convolve the noise realization by your
+filtering kernel.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The created FITS file contains the following extensions:</p>
+<ul class="simple">
+<li><p>HDU 0: primary, contains header and no data.</p></li>
+<li><p>HDU 1: TOTAL, contains the model map (SZ+PS+noise) and header.</p></li>
+<li><p>HDU 2: SZ, contains the SZ model map and header.</p></li>
+<li><p>HDU 3: PS, contains the PS model map and header.</p></li>
+<li><p>HDU 4: NOISE, contains the noise map realization and header.</p></li>
+<li><p>HDU 5: RMS, contains the noise RMS map and header.</p></li>
+</ul>
+<p>All maps are cropped identically to the data used for the
+fit, and the headers are adjusted accordingly.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-panco2.results">
+<span id="panco2-results"></span><h2>panco2.results<a class="headerlink" href="#module-panco2.results" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="panco2.results.load_chains">
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">load_chains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_chains_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discard</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_percent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.load_chains" title="Permalink to this definition"></a></dt>
+<dd><p>Loads raw Markov chains, cleans them, and arranges them
+in a convenient data frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>out_chains_file</strong> (<em>str</em>) – Path to the <cite>npz</cite> file containing the raw chains produced by
+<cite>panco2.PressureProfileFitter.run_mcmc</cite></p></li>
+<li><p><strong>burn</strong> (<em>int</em>) – Length to discard as burn-in.</p></li>
+<li><p><strong>discard</strong> (<em>int</em>) – Thinning length. See Notes.</p></li>
+<li><p><strong>clip_percent</strong> (<em>float</em>) – Percentile considered as extreme to weed-out bad chains.
+See Notes.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Wether or not you want results of the cleaning to be printed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>chains_clean</strong> – Cleaned chains in a DataFrame.
+Keys are the parameter names, as well as <cite>lnprior</cite>
+(log-prior value), <cite>lnlike</cite> (log-likelihood), <cite>chain</cite>
+(which walker the sample belongs to) and <cite>step</cite> (which
+step of the walk the sample was obtained at).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Cleaning is done as follows:</p>
+<ol class="arabic simple">
+<li><p>Discard <cite>burn</cite> burn-in steps and keep one sample every
+<cite>discard</cite> steps</p></li>
+<li><p>Find chains that are always out of the [clip_percent,
+100 - clip_percent] interval for every parameter and
+discard them.</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="panco2.results.mcmc_corner_plot">
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_corner_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_corner_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plots 1D and 2D posterior sampled by the MCMC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chains_clean</strong> (<em>pd.DataFrame</em>) – Markov chains, output of <cite>load_chains</cite></p></li>
+<li><p><strong>per_chain</strong> (<em>bool</em>) – If True, plots one distribution per chain.
+This can make very cluttered plots.</p></li>
+<li><p><strong>show_probs</strong> (<em>bool</em>) – Wether or not the log likelihood and log prior chains
+should be shown along with the parameters</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save the plot</p></li>
+<li><p><strong>ppf</strong> (<cite>PressureProfileFitter</cite> instance or None) – The main <cite>panco2.PressureProfileFitter</cite> instance.
+If provided, the marginal prior distribution will be
+shown for comparison with the posterior.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>fig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="panco2.results.mcmc_matrices_plot">
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_matrices_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_matrices_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Produces an overly complicated plot of the correlation and
+covariance matrices of Markov chains, where:</p>
+<ul class="simple">
+<li><p>The lower corner (diagonal not included) shows the
+correlation coefficient between parameters;</p></li>
+<li><p>The upper corner (diagonal included) shows the
+absolute covariance between parameters.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chains_clean</strong> (<em>pd.DataFrame</em>) – Markov chains, output of <cite>load_chains</cite></p></li>
+<li><p><strong>ppf</strong> (<cite>PressureProfileFitter</cite> instance) – The main <cite>panco2.PressureProfileFitter</cite> instance.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save the plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>fig, ax</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="panco2.results.mcmc_trace_plot">
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_trace_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_trace_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Create MCMC trace plots, i.e. chains evolution with steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chains_clean</strong> (<em>pd.DataFrame</em>) – Markov chains, output of <cite>load_chains</cite></p></li>
+<li><p><strong>show_probs</strong> (<em>bool</em>) – Wether or not the log likelihood and log prior chains
+should be shown along with the parameters</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save the plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>fig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="panco2.results.plot_data_model_residuals">
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_data_model_residuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RdBu_r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separate_ps_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_data_model_residuals" title="Permalink to this definition"></a></dt>
+<dd><p>Plot data, model, and residuals maps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ppf</strong> (<cite>PressureProfileFitter</cite> instance) – The main <cite>panco2.PressureProfileFitter</cite> instance.</p></li>
+<li><p><strong>par_vec</strong> (<em>list</em><em> or </em><em>None</em>) – Vector in the parameter space to use to compute
+the model map to be shown. Either one of <cite>par_vec</cite>
+or <cite>par_dic</cite> must be provided.</p></li>
+<li><p><strong>par_dic</strong> (<em>dict</em><em> or </em><em>None</em>) – Same as <cite>par_vec</cite>, but in a dictionary. Either one
+of <cite>par_vec</cite> or <cite>par_dic</cite> must be provided.</p></li>
+<li><p><strong>smooth</strong> (<em>float</em><em> [</em><em>pixels</em><em>]</em>) – Width (sigma) of a gaussian kernel to be used to
+smooth the maps, for visual purposes.</p></li>
+<li><p><strong>fig</strong> (<em>plt.Figure</em><em> or </em><em>None</em>) – If provided, an existing figure can be used</p></li>
+<li><p><strong>axs</strong> (<em>list of plt.Axis</em><em> or </em><em>None</em>) – If provided, existing axes can be used.
+The length of the list must be consistent with
+the number of maps to show</p></li>
+<li><p><strong>lims</strong> (<em>tuple</em><em> or </em><em>None</em>) – Limits of the color maps, in data units</p></li>
+<li><p><strong>cbar_label</strong> (<em>str</em><em> or </em><em>None</em>) – Label for the colorbar</p></li>
+<li><p><strong>cbar_fact</strong> (<em>float</em>) – A factor by which all maps are to be multiplied
+before plotting. Useful for very small units
+like Compton-y or Jy/beam</p></li>
+<li><p><strong>cmap</strong> (<em>str</em><em> or </em><em>mpl.colors.Colorbar</em>) – The color map to use. Always make pretty plots!</p></li>
+<li><p><strong>separate_ps_model</strong> (<em>bool</em>) – If your model fits both SZ and point sources, makes the
+model and residuals for SZ/PS/SZ+PS (i.e. 5 total plots)</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save the plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>fig, axs</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If neither <cite>par_vec</cite> or <cite>par_dic</cite> are provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="panco2.results.plot_data_model_residuals_1d">
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_data_model_residuals_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_beam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_data_model_residuals_1d" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ppf</strong> (<cite>PressureProfileFitter</cite> instance) – The main <cite>panco2.PressureProfileFitter</cite> instance.</p></li>
+<li><p><strong>par_vec</strong> (<em>list</em><em> or </em><em>None</em>) – Vector in the parameter space to use to compute
+the model map to be shown. Either one of <cite>par_vec</cite>
+or <cite>par_dic</cite> must be provided.</p></li>
+<li><p><strong>par_dic</strong> (<em>dict</em><em> or </em><em>None</em>) – Same as <cite>par_vec</cite>, but in a dictionary. Either one
+of <cite>par_vec</cite> or <cite>par_dic</cite> must be provided.</p></li>
+<li><p><strong>chains_clean</strong> (<em>pd.DataFrame</em>) – Markov chains, output of <cite>load_chains</cite></p></li>
+<li><p><strong>fig</strong> (<em>plt.Figure</em><em> or </em><em>None</em>) – If provided, an existing figure can be used</p></li>
+<li><p><strong>ax</strong> (<em>plt.Axis</em><em> or </em><em>None</em>) – If provided, existing axes can be used.
+The length of the list must be consistent with
+the number of maps to show</p></li>
+<li><p><strong>lims</strong> (<em>tuple</em><em> or </em><em>None</em>) – Limits of the color maps, in data units</p></li>
+<li><p><strong>y_label</strong> (<em>str</em><em> or </em><em>None</em>) – Label for the y axis</p></li>
+<li><p><strong>y_fact</strong> (<em>float</em>) – A factor by which all profiles are to be multiplied
+before plotting. Useful for very small units
+like Compton-y or Jy/beam</p></li>
+<li><p><strong>plot_beam</strong> (<em>bool</em>) – Overplot the beam profile.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save the plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>fig, ax</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>Exception</strong> – if neither <cite>par_dic</cite>, <cite>par_vec</cite>, or <cite>chains_clean</cite> are
+    provided.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If <cite>par_dic</cite> or <cite>par_vec</cite> are provided, only one line will be
+plotted for the model (corresponding to one position in the
+parameter space). If <cite>chains_clean</cite> is provided, confidence
+intervals will be drawn, giving more information, but
+making the process slower.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="panco2.results.plot_profile">
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_profile" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the pressure profile recovered by PANCO2 from the
+Markov chains.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chains_clean</strong> (<em>pd.DataFrame</em>) – Markov chains, output of <cite>load_chains</cite></p></li>
+<li><p><strong>ppf</strong> (<cite>PressureProfileFitter</cite> instance) – The main <cite>panco2.PressureProfileFitter</cite> instance.</p></li>
+<li><p><strong>r_range</strong> (<em>np.array</em><em> [</em><em>kpc</em><em>]</em>) – The radial range on which to show the profile.</p></li>
+<li><p><strong>ax</strong> (<em>plt.Axis</em><em> or </em><em>None</em>) – If provided, an existing axis can be used</p></li>
+<li><p><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – Label of the curve for legend purposes</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save the plot</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Other options to pass to <cite>plt.plot</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ax</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="algo.html" class="btn btn-neutral float-left" title="PANCO2’s algorithm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="refs.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Florian Kéruzoré.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

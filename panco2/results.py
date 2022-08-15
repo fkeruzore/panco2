@@ -248,7 +248,7 @@ def mcmc_corner_plot(
     return fig
 
 
-def mcmc_matrices_plot(chains_clean, ppf):
+def mcmc_matrices_plot(chains_clean, ppf, filename=None):
     """
     Produces an overly complicated plot of the correlation and
     covariance matrices of Markov chains, where:
@@ -265,6 +265,8 @@ def mcmc_matrices_plot(chains_clean, ppf):
         Markov chains, output of `load_chains`
     ppf: `PressureProfileFitter` instance
         The main `panco2.PressureProfileFitter` instance.
+    filename : str or None
+        Filename to save the plot
 
     Returns
     -------
@@ -320,10 +322,16 @@ def mcmc_matrices_plot(chains_clean, ppf):
     ax.set_xticklabels(ppf.model.params, rotation=45.0)
     ax.set_yticklabels(ppf.model.params, rotation=45.0)
     ax_bothticks(ax)
+
+    if filename is not None:
+        fig.savefig(filename)
+
     return fig, axs[0]
 
 
-def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
+def plot_profile(
+    chains_clean, ppf, r_range, ax=None, label=None, filename=None, **kwargs
+):
     """
     Plots the pressure profile recovered by PANCO2 from the
     Markov chains.
@@ -340,12 +348,14 @@ def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
         If provided, an existing axis can be used
     label : str or None
         Label of the curve for legend purposes
+    filename : str or None
+        Filename to save the plot
     **kwargs : dict
         Other options to pass to `plt.plot`
 
     Returns
     -------
-    ax
+    fig, ax
     """
 
     model = ppf.model
@@ -386,7 +396,11 @@ def plot_profile(chains_clean, ppf, r_range, ax=None, label=None, **kwargs):
     for label, line in lines_toplot.items():
         ax.axvline(line, 0, 1, color="k", alpha=0.5, ls=":", zorder=1)
     ax_bothticks(ax)
-    return ax
+
+    fig = ax.get_figure()
+    if filename is not None:
+        fig.savefig(filename)
+    return fig, ax
 
 
 def plot_data_model_residuals(
@@ -401,6 +415,7 @@ def plot_data_model_residuals(
     cbar_fact=1.0,
     cmap="RdBu_r",
     separate_ps_model=False,
+    filename=None,
 ):
     """
     Plot data, model, and residuals maps.
@@ -438,6 +453,8 @@ def plot_data_model_residuals(
     separate_ps_model : bool
         If your model fits both SZ and point sources, makes the
         model and residuals for SZ/PS/SZ+PS (i.e. 5 total plots)
+    filename : str or None
+        Filename to save the plot
 
     Returns
     -------
@@ -543,6 +560,9 @@ def plot_data_model_residuals(
 
     cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
     cb.set_label(cbar_label)
+
+    if filename is not None:
+        fig.savefig(filename)
     return fig, axs
 
 
@@ -556,7 +576,61 @@ def plot_data_model_residuals_1d(
     y_label=None,
     y_fact=1.0,
     plot_beam=True,
+    filename=None,
 ):
+    """
+
+    Parameters
+    ----------
+    ppf: `PressureProfileFitter` instance
+        The main `panco2.PressureProfileFitter` instance.
+    par_vec : list or None
+        Vector in the parameter space to use to compute
+        the model map to be shown. Either one of `par_vec`
+        or `par_dic` must be provided.
+    par_dic : dict or None
+        Same as `par_vec`, but in a dictionary. Either one
+        of `par_vec` or `par_dic` must be provided.
+    chains_clean: pd.DataFrame
+        Markov chains, output of `load_chains`
+    fig : plt.Figure or None
+        If provided, an existing figure can be used
+    ax : plt.Axis or None
+        If provided, existing axes can be used.
+        The length of the list must be consistent with
+        the number of maps to show
+    lims : tuple or None
+        Limits of the color maps, in data units
+    y_label : str or None
+        Label for the y axis
+    y_fact : float
+        A factor by which all profiles are to be multiplied
+        before plotting. Useful for very small units
+        like Compton-y or Jy/beam
+    plot_beam: bool
+        Overplot the beam profile.
+    filename : str or None
+        Filename to save the plot
+
+    Returns
+    -------
+    fig, ax
+
+    Raises
+    ======
+    Exception
+        if neither `par_dic`, `par_vec`, or `chains_clean` are
+        provided.
+
+    Notes
+    =====
+    If `par_dic` or `par_vec` are provided, only one line will be
+    plotted for the model (corresponding to one position in the
+    parameter space). If `chains_clean` is provided, confidence
+    intervals will be drawn, giving more information, but
+    making the process slower.
+
+    """
 
     if (par_dic is None) and (par_vec is None) and (chains_clean is None):
         raise Exception(
@@ -645,6 +719,8 @@ def plot_data_model_residuals_1d(
     ax.set_xlabel(r"$\theta \; [{\rm arcsec}]$")
     ax.set_ylabel(y_label)
 
+    if filename is not None:
+        fig.savefig(filename)
     return fig, ax
 
 
