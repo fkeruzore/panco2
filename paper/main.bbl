@@ -174,6 +174,16 @@ K{\'e}ruzor{\'e}, F., Mayet, F., Pratt, G.~W., {et~al.} 2020, A\&A, 644, A93,
 Liu, A., Bulbul, E., Ghirardini, V., {et~al.} 2022, A\&A, 661, A2,
   \dodoi{10.1051/0004-6361/202141120}
 
+\bibitem[{Mayet {et~al.}(2020)Mayet, Adam, Ade, Andr{\'e}, Andrianasolo,
+  Arnaud, Aussel, Bartalucci, Beelen, Beno{\^i}t, Bideaud, Bourrion, Calvo,
+  Catalano, Comis, Petris, D{\'e}sert, Doyle, Driessen, Gomez, Goupy,
+  K{\'e}ruzor{\'e}, Kramer, Ladjelate, Lagache, Leclercq, Lestrade,
+  {Mac{\'i}as-P{\'e}rez}, Mauskopf, Monfardini, Perotto, Pisano, Pointecouteau,
+  Ponthieu, Pratt, Rev{\'e}ret, Ritacco, Romero, Roussel, Ruppin, Schuster,
+  Shu, Sievers, Tucker, \& Zylka}]{mayet_cluster_2020}
+Mayet, F., Adam, R., Ade, P., {et~al.} 2020, EPJ Web Conf., 228, 00017,
+  \dodoi{10.1051/epjconf/202022800017}
+
 \bibitem[{Melin {et~al.}(2012)Melin, Aghanim, Bartelmann, Bartlett, Betoule,
   Bobin, Carvalho, Chon, Delabrouille, Diego, Harrison, Herranz, Hobson,
   Kneissl, Lasenby, Le~Jeune, {Lopez-Caniego}, Mazzotta, Rocha, Schaefer,
@@ -222,6 +232,18 @@ Nagai, D., Kravtsov, A.~V., \& Vikhlinin, A. 2007, ApJ, 668, 1,
   Zylka}]{perotto_calibration_2020}
 Perotto, L., Ponthieu, N., {Mac{\'i}as-P{\'e}rez}, J.~F., {et~al.} 2020, A\&A,
   637, A71, \dodoi{10.1051/0004-6361/201936220}
+
+\bibitem[{Perotto {et~al.}(2021)Perotto, Adam, Ade, Ajeddig, Andr{\'e}, Arnaud,
+  Artis, Aussel, Bartalucci, Beelen, Beno{\^i}t, Berta, Bing, Bourrion, Calvo,
+  Catalano, De~Petris, D{\'e}sert, Doyle, Driessen, Ferragamo, Gomez, Goupy,
+  K{\'e}ruzor{\'e}, Kramer, Ladjelate, Lagache, Leclercq, Lestrade,
+  {Mac{\'i}as-P{\'e}rez}, Maury, Mauskopf, Mayet, Monfardini,
+  {Mu{\~n}oz-Echeverr{\'i}a}, Paliwal, Pisano, Pointecouteau, Ponthieu, Pratt,
+  Rev{\'e}ret, Rigby, Ritacco, Romero, Roussel, Ruppin, Schuster, Shu, Sievers,
+  Tucker, \& Yepes}]{perotto_nika2_2021}
+Perotto, L., Adam, R., Ade, P., {et~al.} 2021, EPJ Web of conferences, 257,
+  00038.
+\newblock \doarXiv{2111.01729}
 
 \bibitem[{{Planck Collaboration} {et~al.}(2013){Planck Collaboration}, Ade,
   Aghanim, Arnaud, Ashdown, {Atrio-Barandela}, Aumont, Baccigalupi, Balbi,

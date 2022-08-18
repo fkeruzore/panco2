@@ -38,6 +38,64 @@ Tbe bottom panel of figure~\ref{fig:valid:sample} places the clusters in the ang
 % -------------------------------------------------------------------------- %
 \subsection{Data generation}
 
+We create mock maps for the three clusters by forward modeling their tSZ signal.
+We assume that each cluster has a pressure profile that follows the universal profile of \aten, scaled with its mass and redshift.
+This pressure distribution is integrated along the line of sight to obtain a Compton$-y$ map.
+This map is then projected on a flat-sky grid and convolved with a Gaussian filter to account for instrumental filtering, and added to a random noise realization.
+
+As discussed previously, and illustrated in the bottom panel of figure~\ref{fig:valid:sample}, the angular size of each cluster is very different, and the mapping of their tSZ signal is very different for all instruments considered.
+We therefore create different sets of maps for the three clusters.
+For C1, the most extended cluster, we create mock \textit{Planck} and SPT maps.
+For C2, our intermediate case, we create SPT and NIKA2 mock maps.
+Finally, for C3, the smallest cluster in our sample, we only create mock NIKA2 data.
+The characteristics of the maps are designed to mimic know cluster observations by the three instruments, and summarized in table~\ref{tab:simu:map_props}.
+
+\paragraph{Planck-like data}
+Our mock \textit{Planck} dataset is designed to emulate the \textit{Planck} Compton$-y$ map of \citet{planck_collaboration_planck_2016}.
+The original data products for this map are in \texttt{healpix} format, which \panco\ cannot process, as it relies on the flat-sky approximation.
+We therefore create maps of $(2\degree \times 2\degree)$ patches of the sky using a gnomonic projection, with a pixel size of $2'$, and a Gaussian PSF of ${\rm FWHM} = 10'$.
+The noise in these maps is white and has an homogeneous distribution, with an RMS taken from the left panel of figure~13 in \citet{planck_collaboration_planck_2016}.
+\todo{filtering?}
+\todo{correlated noise?}
+
+\paragraph{SPT-like data}
+Our SPT-like maps mimic the plublicly available $y-$maps released by the SPT collaboration \citep{bleem_cmbksz_2022}.
+We use the same projection as their flat-sky maps, \ie\ a Sanson-Flamsteed projection with $15''$ pixels, on a $(1\degree \times 1\degree)$ patch of the sky.
+The resolution of the map is Gaussian with ${\rm FWHM} = 1.25'$.
+We inject a white noise realization, the amplitude of which is evaluated by computing the RMS of the map in a $(5\degree \times 5\degree)$ patch of the sky, taking care of masking sources.
+\todo{filtering?}
+\todo{correlated noise?}
+
+\paragraph{NIKA2-like data}
+Our NIKA2-like data imitates the NIKA2 150~GHz sky maps obtained by the NIKA2 SZ Large Program \citep{mayet_cluster_2020, perotto_nika2_2021}.
+In particular, we use the data products publicly released in \citet{keruzore_exploiting_2020}.
+We create a gnomonic projection of a $(6.5' \times 6.5')$ patch of the sky with $3''$ pixels.
+The angular resolution of the map is Gaussian with ${\rm FWHM} = 18''$, and we also take into account filtering of angular scales due to data processing via the transfer function of \citet{keruzore_exploiting_2020}.
+The noise in these NIKA2 maps is considered white and isotropic, but not homogeneous, as the NIKA2 on-the-fly scanning strategy used for obsevations of the NIKA2 SZ Large Program creates a variation in the noise level of the maps depending on the distance from the pointing coordinates.
+To accurately take into account this effect, we use the noise RMS map of \citet{keruzore_exploiting_2020}, which we multiply by a scalar value to account for different exposure times.
+
+\begin{table*}[t]
+    \centering
+    \begin{tabular}{l c c c c c c}
+        \toprule
+        Instrument & Clusters & Map size & Pixel size & FWHM & Filtering & Noise \\
+        \midrule
+        \multirow{2}{*}{\textit{Planck}} & \multirow{2}{*}{C1} & \multirow{2}{*}{$2\degree$} & \multirow{2}{*}{$2'$} & \multirow{2}{*}{$10'$} & \multirow{2}{*}{--} & White, Homogeneous \\
+            & & & & & & RMS=$4.12 \times 10^{-6} \; [y]$ \\
+        \midrule
+        \multirow{2}{*}{SPT} & \multirow{2}{*}{C1, C2} & \multirow{2}{*}{$1\degree$} & \multirow{2}{*}{$15''$} & \multirow{2}{*}{$1.25'$} & -- & White, Homogeneous, \\
+            & & & & & & RMS=$9.78 \times 10^{-6} \; [y]$ \\
+        \midrule
+        \multirow{2}{*}{NIKA2} & \multirow{2}{*}{C2, C3} & \multirow{2}{*}{$6.5'$} & \multirow{2}{*}{$3''$} & \multirow{2}{*}{$18''$} & NIKA2-like & White, isotropic \\
+                               & & & & & transfer function & NIKA2-like RMS \\
+        \bottomrule
+    \end{tabular}
+    \caption{\normalfont
+        Properties of simulated maps emulating cutouts of the \textit{Planck} \citep{planck_collaboration_planck_2016} and SPT \citep{bleem_cmbksz_2022} $y-$maps, and NIKA2 cluster observations \citep{keruzore_exploiting_2020}.
+    }
+    \label{tab:simu:map_props}
+\end{table*}
+
 % -------------------------------------------------------------------------- %
 \subsection{Pressure profile fitting}
 
