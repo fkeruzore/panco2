@@ -648,10 +648,10 @@ def plot_data_model_residuals_1d(
     theta_2d = ppf.cluster.kpc2arcsec(ppf.radii["r_xy"])
 
     # Data profile
-    theta_1d, m_1d = utils.map2prof(
+    theta_1d, sz_data_1d = utils.map2prof(
         ppf.sz_map, theta_2d, width=2 * ppf.pix_size
     )
-    ax.plot(theta_1d, y_fact * m_1d[:, 1], label="Data", lw=1.5)
+    ax.plot(theta_1d, y_fact * sz_data_1d[:, 1], label="Data", lw=1.5)
 
     # Model and residuals -- 1 parameter set only
     if chains_clean is None:
@@ -699,8 +699,10 @@ def plot_data_model_residuals_1d(
     # Beam
     if plot_beam and hasattr(ppf, "beam_fwhm"):
         beam_sigma = ppf.beam_fwhm / (2 * np.sqrt(2 * np.log(2)))
-        beam_prof = np.max(ppf.sz_map) * np.exp(
-            -0.5 * (theta_1d / beam_sigma) ** 2
+        beam_prof = (
+            np.max(sz_data_1d[:, 1])
+            * y_fact
+            * np.exp(-0.5 * (theta_1d / beam_sigma) ** 2)
         )
         ax.plot(theta_1d, beam_prof, color="0.5", label="Beam")
 
