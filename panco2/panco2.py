@@ -73,7 +73,7 @@ class PressureProfileFitter:
 
         # Coordinates of the enter if not specified
         if coords_center is None:
-            pix_center = np.array(sz_map.shape) // 2 + 1
+            pix_center = np.array(sz_map.shape) // 2  # + 1
             ra, dec = np.squeeze(wcs.all_pix2world(*pix_center, 0))
             coords_center = SkyCoord(ra=ra * u.deg, dec=dec * u.deg)
 
@@ -83,11 +83,15 @@ class PressureProfileFitter:
             # Ensure the number of pixels will be odd after cropping
             new_npix = int(map_size * 60 / pix_size)
             if new_npix % 2 == 0.0:
-                map_size += pix_size / 60.0
+                self.map_size += pix_size / 60.0
                 new_npix += 1
 
             cropped_map = Cutout2D(
-                hdulist[hdu_data].data, coords_center, new_npix, wcs=wcs
+                hdulist[hdu_data].data,
+                coords_center,
+                new_npix,
+                wcs=wcs,
+                mode="strict",
             )
             self.sz_map = cropped_map.data
             cropped_rms = Cutout2D(
@@ -108,6 +112,15 @@ class PressureProfileFitter:
         self.inv_covmat = None
         self.has_covmat = False
         self.has_integ_Y = False
+
+        sz_shape = self.sz_map.shape
+        rms_shape = self.sz_rms.shape
+        assert np.all(
+            np.array(sz_shape) == np.array(rms_shape)
+        ), f"SZ map and RMS have incompatible shapes: {sz_shape, rms_shape}"
+        assert np.all(
+            np.array(sz_shape) % 2 == 1
+        ), f"SZ map has an even number of pixels: {sz_shape}"
 
     # ---------------------------------------------------------------------- #
 
@@ -262,7 +275,7 @@ class PressureProfileFitter:
         elif (tf is not None) and (
             isinstance(k, tuple) or isinstance(k, list)
         ):
-            print("Adding filtering: beam and @D transfer function")
+            print("Adding filtering: beam and 2D transfer function")
             botharr = isinstance(k[0], np.ndarray) and isinstance(
                 k[1], np.ndarray
             )
@@ -525,6 +538,7 @@ class PressureProfileFitter:
         mod_maps = (self.model.sz_map(par_vec), self.model.ps_map(par_vec))
         noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
         tot_map = mod_maps[0] + mod_maps[1] + noise
+
         if filter_noise:
             noise = self.model.filter(noise)
 
