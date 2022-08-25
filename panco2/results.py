@@ -706,7 +706,7 @@ def plot_data_model_residuals_1d(
         beam_sigma = ppf.beam_fwhm / (2 * np.sqrt(2 * np.log(2)))
         theta_range = np.linspace(0.0, theta_1d.max(), 1000)
         beam_prof = (
-            np.max(ppf.sz_map)
+            sz_data_1d[1, 1]
             * y_fact
             * np.exp(-0.5 * (theta_range / beam_sigma) ** 2)
         )
@@ -724,6 +724,7 @@ def plot_data_model_residuals_1d(
 
     if x_log:
         ax.set_xscale("log")
+        ax.set_xlim(ppf.pix_size / 2, ppf.map_size * 60 / np.sqrt(2))
 
     ax_bothticks(ax)
     ax.legend(frameon=False)

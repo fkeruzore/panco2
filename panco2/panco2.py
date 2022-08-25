@@ -220,8 +220,9 @@ class PressureProfileFitter:
         k : array [arcmin-1] or tuple of arrays
             Angular frequencies at which the filtering was measured.
             Can be a tuple of `kx` and `ky` in the same units, see Notes.
-        pad : float [arcsec]
-            Padding to be added to the sides of the map before convolution.
+        pad : int
+            Padding to be added to the sides of the map before convolution,
+            in pixels.
 
         Notes
         =====
@@ -244,14 +245,6 @@ class PressureProfileFitter:
         beam_sigma_pix = (
             beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
         )
-        # self.model.filter = filtering.Filter(
-        #     self.sz_map.shape[0],
-        #     self.pix_size,
-        #     beam_sigma_pix=beam_sigma_pix,
-        #     tf_k=tf_k,
-        #     k=k,
-        #     pad=pad,
-        # )
 
         # Case 1: just beam, no transfer function
         if tf is None:
@@ -303,13 +296,11 @@ class PressureProfileFitter:
 
     def define_model(
         self,
-        model_type,
         r_bins,
         zero_level=True,
         integ_Y=None,
     ):
 
-        model_type = model_type.lower()
         d_a = self.cluster.d_a
         npix = self.sz_map.shape[0]
 
@@ -331,19 +322,6 @@ class PressureProfileFitter:
         )
 
         self.radii = {"r_x": r_x, "r_xy": r_xy, "theta_x": theta_x}
-
-        # If gNFW, we need to define the line of sight
-        if model_type == "gnfw":
-            # 1D LoS radius
-            r_z = np.logspace(-3.0, np.log10(5 * self.cluster.R_500), 500)
-
-            # 2D (x, z) radius plane to compute 1D compton profile
-            r_xx, r_zz = np.meshgrid(r_x, r_z)
-            r_xz = np.hypot(r_xx, r_zz)
-
-            self.radii["r_z"] = r_z
-            self.radii["r_zz"] = r_zz
-            self.radii["r_xz"] = r_xz
 
         self.model = model.ModelBinned(
             r_bins, self.radii, zero_level=zero_level
@@ -701,7 +679,6 @@ class PressureProfileFitter:
                 tau_is_stable = dtau < max_delta_tau
                 chain_is_long = it > (mean_tau * min_autocorr_times)
 
-                print(tau_is_stable, tau_was_stable, chain_is_long)
                 print(
                     f"    {it} iterations = {it / mean_tau:.1f}*tau",
                     f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
@@ -745,22 +722,6 @@ class PressureProfileFitter:
 
         return chains
 
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #
 
