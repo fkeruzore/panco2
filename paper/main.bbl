@@ -84,11 +84,23 @@ Bleem, L.~E., Crawford, T.~M., Ansarinejad, B., {et~al.} 2022, The
   Astrophysical Journal Supplement Series, 258, 36,
   \dodoi{10.3847/1538-4365/ac35e9}
 
+\bibitem[{B{\"o}hringer \& Schartel(2013)}]{bohringer_x-ray_2013}
+B{\"o}hringer, H., \& Schartel, N. 2013, Astronomische Nachrichten, 334, 482,
+  \dodoi{10.1002/asna.201211886}
+
+\bibitem[{B{\"o}hringer \& Werner(2010)}]{bohringer_x-ray_2010}
+B{\"o}hringer, H., \& Werner, N. 2010, Astron Astrophys Rev, 18, 127,
+  \dodoi{10.1007/s00159-009-0023-3}
+
 \bibitem[{Carlstrom {et~al.}(2002)Carlstrom, Holder, \&
   Reese}]{carlstrom_cosmology_2002}
 Carlstrom, J.~E., Holder, G.~P., \& Reese, E.~D. 2002, Annual Review of
   Astronomy and Astrophysics, 40, 643,
   \dodoi{10.1146/annurev.astro.40.060401.093803}
+
+\bibitem[{Castagna \& Andreon(2020)}]{castagna_joxsz_2020-1}
+Castagna, F., \& Andreon, S. 2020, Astronomy \& Astrophysics, 639, A73,
+  \dodoi{10.1051/0004-6361/202037543}
 
 \bibitem[{{DES Collaboration} {et~al.}(2020){DES Collaboration}, Abbott,
   Aguena, Alarcon, Allam, Allen, Annis, Avila, Bacon, Bechtol, Bermeo,
@@ -376,6 +388,15 @@ Romero, C.~E., Sievers, J., Ghirardini, V., {et~al.} 2020, The Astrophysical
 Ruppin, F., Mayet, F., {Mac{\'i}as-P{\'e}rez}, J.~F., \& Perotto, L. 2019,
   Monthly Notices of the Royal Astronomical Society, 490, 784,
   \dodoi{10.1093/mnras/stz2669}
+
+\bibitem[{Ruppin {et~al.}(2018)Ruppin, Mayet, Pratt, Adam, Ade, Andr{\'e},
+  Arnaud, Aussel, Bartalucci, Beelen, Beno{\^i}t, Bideaud, Bourrion, Calvo,
+  Catalano, Comis, Petris, D{\'e}sert, Doyle, Driessen, Goupy, Kramer, Lagache,
+  Leclercq, Lestrade, {Mac{\'i}as-P{\'e}rez}, Mauskopf, Monfardini, Perotto,
+  Pisano, Pointecouteau, Ponthieu, Rev{\'e}ret, Ritacco, Romero, Roussel,
+  Schuster, Sievers, Tucker, \& Zylka}]{ruppin_first_2018}
+Ruppin, F., Mayet, F., Pratt, G.~W., {et~al.} 2018, A\&A, 615, A112,
+  \dodoi{10.1051/0004-6361/201732558}
 
 \bibitem[{Sayers {et~al.}(2022)Sayers, Mantz, Rasia, Allen, Cui, Golwala,
   Morris, \& Wan}]{sayers_evolution_2022}
