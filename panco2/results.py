@@ -413,6 +413,7 @@ def plot_data_model_residuals(
     lims=None,
     cbar_label=None,
     cbar_fact=1.0,
+    cbar_hztl=False,
     cmap="RdBu_r",
     separate_ps_model=False,
     filename=None,
@@ -448,6 +449,8 @@ def plot_data_model_residuals(
         A factor by which all maps are to be multiplied
         before plotting. Useful for very small units
         like Compton-y or Jy/beam
+    cbar_hztl : bool
+        Makes the colorbar horizontal instead of vertical.
     cmap : str or mpl.colors.Colorbar
         The color map to use. Always make pretty plots!
     separate_ps_model : bool
@@ -501,7 +504,7 @@ def plot_data_model_residuals(
 
     else:
         if fig is None:
-            fig = plt.figure(figsize=(10, 5))
+            fig = plt.figure(figsize=(12, 4))
         if axs is None:
             axs = [
                 fig.add_subplot(131 + i, projection=ppf.wcs) for i in range(3)
@@ -554,11 +557,14 @@ def plot_data_model_residuals(
         )
         ax.set_xlabel("Right ascension (J2000)")
         if i == 0:
-            ax.set_ylabel("Declination (J200)")
+            ax.set_ylabel("Declination (J2000)")
         else:
             ax.set_ylabel(" ")
 
-    cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
+    if cbar_hztl:
+        cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
+    else:
+        cb = fig.colorbar(im, ax=axs, fraction=0.02, shrink=0.83, aspect=15)
     cb.set_label(cbar_label)
 
     if filename is not None:
