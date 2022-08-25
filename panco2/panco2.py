@@ -681,7 +681,7 @@ class PressureProfileFitter:
                 len(starts[0]),
                 log_post,
                 pool=pool,
-                moves=emcee.moves.DEMove(),
+                moves=emcee.moves.StretchMove(),
                 args=[log_lhood, self.model.log_prior],
             )
 
