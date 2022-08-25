@@ -575,6 +575,7 @@ def plot_data_model_residuals_1d(
     ax=None,
     y_label=None,
     y_fact=1.0,
+    x_log=False,
     plot_beam=True,
     filename=None,
 ):
@@ -599,14 +600,14 @@ def plot_data_model_residuals_1d(
         If provided, existing axes can be used.
         The length of the list must be consistent with
         the number of maps to show
-    lims : tuple or None
-        Limits of the color maps, in data units
     y_label : str or None
         Label for the y axis
     y_fact : float
         A factor by which all profiles are to be multiplied
         before plotting. Useful for very small units
         like Compton-y or Jy/beam
+    x_log: bool
+        Log-scale for the x axis
     plot_beam: bool
         Overplot the beam profile.
     filename : str or None
@@ -648,10 +649,10 @@ def plot_data_model_residuals_1d(
     theta_2d = ppf.cluster.kpc2arcsec(ppf.radii["r_xy"])
 
     # Data profile
-    theta_1d, m_1d = utils.map2prof(
+    theta_1d, sz_data_1d = utils.map2prof(
         ppf.sz_map, theta_2d, width=2 * ppf.pix_size
     )
-    ax.plot(theta_1d, y_fact * m_1d[:, 1], label="Data", lw=1.5)
+    ax.plot(theta_1d, y_fact * sz_data_1d[:, 1], label="Data", lw=1.5)
 
     # Model and residuals -- 1 parameter set only
     if chains_clean is None:
@@ -699,10 +700,13 @@ def plot_data_model_residuals_1d(
     # Beam
     if plot_beam and hasattr(ppf, "beam_fwhm"):
         beam_sigma = ppf.beam_fwhm / (2 * np.sqrt(2 * np.log(2)))
-        beam_prof = np.max(ppf.sz_map) * np.exp(
-            -0.5 * (theta_1d / beam_sigma) ** 2
+        theta_range = np.linspace(0.0, theta_1d.max(), 1000)
+        beam_prof = (
+            np.max(ppf.sz_map)
+            * y_fact
+            * np.exp(-0.5 * (theta_range / beam_sigma) ** 2)
         )
-        ax.plot(theta_1d, beam_prof, color="0.5", label="Beam")
+        ax.plot(theta_range, beam_prof, color="0.5", label="Beam")
 
     # Vertical lines
     ax.axhline(0.0, 0.0, 1.0, color="k", ls="--")
@@ -713,6 +717,9 @@ def plot_data_model_residuals_1d(
     }
     for label, line in lines_toplot.items():
         ax.axvline(line, 0, 1, color="k", alpha=0.5, ls=":", zorder=1)
+
+    if x_log:
+        ax.set_xscale("log")
 
     ax_bothticks(ax)
     ax.legend(frameon=False)
