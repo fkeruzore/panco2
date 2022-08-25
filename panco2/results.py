@@ -523,8 +523,6 @@ def plot_data_model_residuals(
         noise = gaussian_filter(noise, smooth) / np.sqrt(
             2 * np.pi * smooth**2
         )
-    # if par_dic["conv"] < 0:
-    #    noise *= -1.0  # for negative SNR
 
     if isinstance(lims, (tuple, list, np.ndarray)):
         vmin, vmax = lims
