@@ -50,7 +50,7 @@ For C1, the most extended cluster, we create mock \textit{Planck} and SPT maps.
 For C2, our intermediate case, we create SPT and NIKA2 mock maps.
 Finally, for C3, the smallest cluster in our sample, we only create mock NIKA2 data.
 The characteristics of the maps are designed to mimic know cluster observations by the three instruments, and summarized in table~\ref{tab:simu:map_props}.
-The generated maps are shown in figure~\ref{fig:valid:sample}.
+The generated maps are shown on the left panels of figure~\ref{fig:valid:dmr_2d}.
 
 \paragraph{Planck-like data}  % ............................................ %
 Our mock \textit{Planck} dataset is designed to emulate the \textit{Planck} Compton$-y$ map of \citet{planck_collaboration_planck_2016}.
@@ -98,24 +98,24 @@ To accurately take into account this effect, we use the noise RMS map of \citet{
     \label{tab:simu:map_props}
 \end{table*}
 
-\begin{figure*}[t]
-    \centering
-    \includegraphics[page=1, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-    \includegraphics[page=2, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-    \includegraphics[page=3, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-    \includegraphics[page=4, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-    \includegraphics[page=5, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-    \caption{%
-        Simulated maps of the three validation clusters.
-        \textbf{Top:} C1 seen by \textit{Planck} (\textit{left}) and SPT (\textit{right});
-        \textbf{Middle:} C2 seen by SPT (\textit{left}) and NIKA2 (\textit{right});
-        \textbf{Bottom:} C3 seen by NIKA2.
-        Map properties are summarized in table~\ref{tab:simu:map_props}, and the cluster properties in eq.~(\ref{eq:valid:clusters}).
-        Each map is smoothed with a Gaussian filter with $\sigma = 1 \; {\rm pixel}$ for displaying purposes.
-        The FWHM of the angular resolution of each map is shown as a hatched circle in its bottom left.
-    }
-    \label{fig:valid:maps}
-\end{figure*}
+% \begin{figure*}[t]
+%     \centering
+%     \includegraphics[page=1, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
+%     \includegraphics[page=2, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
+%     \includegraphics[page=3, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
+%     \includegraphics[page=4, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
+%     \includegraphics[page=5, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
+%     \caption{%
+%         Simulated maps of the three validation clusters.
+%         \textbf{Top:} C1 seen by \textit{Planck} (\textit{left}) and SPT (\textit{right});
+%         \textbf{Middle:} C2 seen by SPT (\textit{left}) and NIKA2 (\textit{right});
+%         \textbf{Bottom:} C3 seen by NIKA2.
+%         Map properties are summarized in table~\ref{tab:simu:map_props}, and the cluster properties in eq.~(\ref{eq:valid:clusters}).
+%         Each map is smoothed with a Gaussian filter with $\sigma = 1 \; {\rm pixel}$ for displaying purposes.
+%         The FWHM of the angular resolution of each map is shown as a hatched circle in its bottom left.
+%     }
+%     \label{fig:valid:maps}
+% \end{figure*}
 
 % -------------------------------------------------------------------------- %
 \subsection{Pressure profile fitting}
@@ -123,7 +123,7 @@ To accurately take into account this effect, we use the noise RMS map of \citet{
 % -------------------------------------------------------------------------- %
 \subsection{Results} \label{sec:simu:results}
 
-\begin{figure*}[tp]
+\begin{figure*}[t]
     \centering
     \includegraphics[height=4cm, trim={2cm 0.7cm 1.5cm 1.5cm}, clip]{../validation/results/C1/Planck/data_model_residuals_maps.pdf}
     \includegraphics[height=4cm, trim={2cm 0.7cm 1.5cm 1.5cm}, clip]{../validation/results/C1/SPT/data_model_residuals_maps.pdf}
@@ -140,18 +140,18 @@ To accurately take into account this effect, we use the noise RMS map of \citet{
 \end{figure*}
 
 
-\begin{figure*}[tp]
+\begin{figure*}[t]
     \centering
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C1/Planck/data_model_residuals_profiles.pdf}
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C1/Planck/pressure_profile.pdf} \\
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C1/SPT/data_model_residuals_profiles.pdf}
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C1/SPT/pressure_profile.pdf} \\
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C2/SPT/data_model_residuals_profiles.pdf}
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C2/SPT/pressure_profile.pdf} \\
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C2/NIKA2/data_model_residuals_profiles.pdf}
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C2/NIKA2/pressure_profile.pdf} \\
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C3/NIKA2/data_model_residuals_profiles.pdf}
-    \includegraphics[height=4cm, trim={0.5cm 0.3cm 1.3cm 1.3cm}, clip]{../validation/results/C3/NIKA2/pressure_profile.pdf}
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C1/Planck/data_model_residuals_profiles.pdf}
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C1/Planck/pressure_profile.pdf} \\
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C1/SPT/data_model_residuals_profiles.pdf}
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C1/SPT/pressure_profile.pdf} \\
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C2/SPT/data_model_residuals_profiles.pdf}
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C2/SPT/pressure_profile.pdf} \\
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C2/NIKA2/data_model_residuals_profiles.pdf}
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C2/NIKA2/pressure_profile.pdf} \\
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C3/NIKA2/data_model_residuals_profiles.pdf}
+    \includegraphics[height=4cm, trim={0 0 1cm 0.5cm}, clip]{../validation/results/C3/NIKA2/pressure_profile.pdf}
     \caption{
         \textbf{Left:} Data, model, and residuals (\ie\ difference between data and model) azimuthal profiles for the five validation fits.
         The beam profile is shown in grey for comparison.
@@ -160,7 +160,7 @@ To accurately take into account this effect, we use the noise RMS map of \citet{
         \textbf{Right:} Pressure profiles reconstructed for each validation fit (blue line).
         For each profile, the shaded area marks the region between the 16th and 84th percentiles of the posterior distribution.
         The dashed black line shows the true pressure profile used to generate each map.
-        In each plot, dottedvertical lines, from left to right, show the size of a map pixel, the beam HWHM, and the half map size.
+        In each plot, dotted vertical lines, from left to right, show the size of a map pixel, the beam HWHM, and the half map size.
     }
     \label{fig:valid:profiles}
 \end{figure*}

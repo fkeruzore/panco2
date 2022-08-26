@@ -360,7 +360,7 @@ def plot_profile(
 
     model = ppf.model
     if ax is None:
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6, 4))
 
     chains_arr = np.array(
         [model.par_dic2vec(dict(p)) for p in chains_clean[model.params].iloc()]
@@ -648,7 +648,7 @@ def plot_data_model_residuals_1d(
         par_dic = ppf.model.par_vec2dic(par_vec)
 
     if (fig is None) and (ax is None):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6, 4))
 
     theta_2d = ppf.cluster.kpc2arcsec(ppf.radii["r_xy"])
 
@@ -691,11 +691,11 @@ def plot_data_model_residuals_1d(
         res_prof = np.percentile(np.array(all_res_profs), [16, 50, 84], axis=0)
 
         for prof, label in zip([mod_prof, res_prof], ["Model", "Residuals"]):
-            line = ax.plot(theta_1d, prof[1], label=label, lw=1.5)
+            line = ax.plot(theta_1d, y_fact * prof[1], label=label, lw=1.5)
             ax.fill_between(
                 theta_1d,
-                prof[0],
-                prof[2],
+                y_fact * prof[0],
+                y_fact * prof[2],
                 alpha=0.3,
                 ls="--",
                 color=line[0].get_color(),
