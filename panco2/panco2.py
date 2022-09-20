@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import numpy as np
-import matplotlib.pyplot as plt
 import astropy.units as u
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -8,16 +7,13 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 from astropy.nddata import Cutout2D
 from astropy.coordinates import SkyCoord
 import emcee
-from scipy.interpolate import interp1d
-from scipy.ndimage import gaussian_filter
 from scipy.optimize import minimize
+from scipy import linalg
 import scipy.stats as ss
-import sys
-import os
 import dill
 import time
 from multiprocessing import Pool
-from . import utils, model, results, filtering
+from . import utils, model, results, filtering, noise_covariance
 from .cluster import Cluster
 
 
@@ -101,8 +97,8 @@ class PressureProfileFitter:
             self.wcs = cropped_map.wcs
 
         else:
-            self.sz_map = hdulist[hdu_data].data
-            self.sz_rms = hdulist[hdu_rms].data
+            self.sz_map = sz_map
+            self.sz_rms = sz_rms
             self.wcs = wcs
             self.map_size = self.sz_map.shape[0] * pix_size / 60
 
@@ -147,60 +143,67 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def add_covmat(self, file_noise_simus=None, inv_covmat_file=None):
+    def add_covmat(self, covmat=None, inv_covmat=None):
         """
-        Loads or computes a covariance matrix for the likelihood.
+        Adds in a (inverse) noise covariance matrix to be used in the
+        log-likelihood computation, in order to account for spatial
+        correlations in the noise.
+        The `panco2.noise_covariance` module offers ways to compute such
+        matrices from different types of inputs: noise power spectrum,
+        noise maps, etc -- see documentation.
 
         Parameters
         ----------
-        file_noise_simus : str
-            Path to a `fits` file in which each extension is a noise map.
-            The covariance will be computed as the pixel-to-pixel
-            covariance of these maps.
-            The first extension must have a header that can be used to
-            create a `WCS` object to ensure the noise and data
-            pixels are the same.
-        inv_covmat : str
-            Path to a `npy` file containing an inverse covariance matrix.
-            The matrix must be the same size and units as the data.
+        covmat : ndarray, optional
+            Noise covariance matrix, in squared data units.
+            shape=(n_pix**2, n_pix**2)
+        inv_covmat : ndarray, optional
+            Inverse noise covariance matrix, in squared data units.
+            shape=(n_pix**2, n_pix**2)
+
+        Raises
+        ------
+        Exception
+            If neither the covariance matrix or inverted covariance
+            matrix is provided.
+
+        Notes
+        =====
+        If `inv_covmat` is provided, it is taken as-is for the
+        log-likelihood computation. If it is not, and `covmat` is
+        given, the code will try to compute the Moore-Penrose
+        pseudo-inverse matrix using `scipy.linalg.pinv`, and check that
+        the matrix product C @ C-1 is close to identity.
         """
 
-        if (inv_covmat_file is None) and (file_noise_simus is None):
-            covmat = None
-            print(
-                "No covariance or noise simulations: considering white noise"
+        szsh = self.sz_map.shape
+
+        if inv_covmat is not None:
+            nx2, ny2 = inv_covmat.shape
+            assert nx2 == ny2, "Trying to pass in non-square covariance matrix"
+            assert nx2 == szsh[0] ** 2, (
+                f"Wrong size: SZ map is {szsh}, so the covariance matrix "
+                + f"should be {szsh[0]**2, szsh[1]**2}, but the array passed "
+                + f"is {nx2, ny2}"
             )
+            self.inv_covmat = inv_covmat
+            self.has_covmat = True
 
-        elif (inv_covmat_file is None) and (file_noise_simus is not None):
-            print("Noise covariance matrix computation...")
-            # Read correlated noise maps
-            hdulist_noise = fits.open(file_noise_simus)
-            n_maps = len(hdulist_noise)
-            wcs = WCS(hdulist_noise[0].header)
-            noise_maps = np.array(
-                [
-                    Cutout2D(
-                        hdu.data, self.coords_center, self.map_size, wcs=wcs
-                    ).data
-                    for hdu in hdulist_noise
-                ]
+        elif (inv_covmat is None) and (covmat is not None):
+            nx2, ny2 = covmat.shape
+            assert nx2 == ny2, "Trying to pass in non-square covariance matrix"
+            assert nx2 == szsh[0] ** 2, (
+                f"Wrong size: SZ map is {szsh}, so the covariance matrix "
+                + f"should be {szsh[0]**2, szsh[1]**2}, but the array passed "
+                + f"is {nx2, ny2}"
             )
-            hdulist_noise.close()
+            inv_covmat = linalg.pinv(covmat)
+            noise_covariance.check_inversion(covmat, inv_covmat)
+            self.inv_covmat = inv_covmat
+            self.has_covmat = True
 
-            # Compute covariance matrix
-            noise_vecs = noise_maps.reshape(n_maps, -1)
-            covmat = np.cov(noise_vecs, rowvar=False)
-
-            # numpy needs help for large covariace matrices
-            # see https://pythonhosted.org/covar/
-            # covmat, shrink = covar.cov_shrink_rblw(covmat, n_maps)
-            # print(f"    Covariance shrinkage: {shrink}")
-            self.inv_covmat = np.linalg.inv(covmat)
-
-        elif inv_covmat_file is not None:
-            print("    Loading inverse covariance matrix...")
-            self.inv_covmat = np.load(inv_covmat_file)
-        self.has_covmat = True
+        else:
+            raise Exception("Either `covmat` or `inv_covmat` must be provided")
 
     # ---------------------------------------------------------------------- #
 
@@ -648,7 +651,7 @@ class PressureProfileFitter:
         all_taus = [[], []]
         print(
             f"I'll check convergence every {n_check} steps, and "
-            + f"stop when the autocorrelation length `tau` has changed by "
+            + "stop when the autocorrelation length `tau` has changed by "
             + f"less than {100*max_delta_tau:.1f}% twice in a row, and the "
             + f"chain is longer than {min_autocorr_times}*tau"
         )
