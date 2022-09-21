@@ -6,6 +6,7 @@ from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 from astropy.nddata import Cutout2D
 from astropy.coordinates import SkyCoord
+from astropy.cosmology import FlatLambdaCDM
 import emcee
 from scipy.optimize import minimize
 from scipy import linalg
@@ -49,9 +50,10 @@ class PressureProfileFitter:
         M_500,
         coords_center=None,
         map_size=None,
+        cosmo=FlatLambdaCDM(70.0, 0.3),
     ):
 
-        self.cluster = Cluster(z, M_500=M_500)
+        self.cluster = Cluster(z, M_500=M_500, cosmo=cosmo)
 
         # ===== Read and formats the data ===== #
         hdulist = fits.open(sz_map_file)

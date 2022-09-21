@@ -2,7 +2,6 @@ import numpy as np
 import astropy.constants as const
 import astropy.units as u
 from astropy.cosmology import FlatLambdaCDM
-from . import utils
 
 
 class Cluster:
@@ -11,35 +10,59 @@ class Cluster:
 
     Attributes
     ----------
-        P_500 :
-        R_500 :
-        theta_500 :
-        M_500 :
-        cosmo :
-        z :
-        E :
-        A10_params :
-        sz_fact :
-        Y_500_arcmin2 :
-        d_a :
-        Y_500_kpc2 :
-        dens_crit :
+    P_500 : float
+        Normalized pressure, corresponds to the first two terms of
+        eq. 13 in Arnaud et al. 2010 (with a slightly different
+        notation) [keV cm-3]
+    R_500 : float
+        Radius around the cluster center within which the mean density
+        is 500 times the critical density of the Universe at the
+        redshift of the cluster [kpc]
+    theta_500 : float
+        Angle on the sky subtended by R_500 [arcmin]
+    M_500 : float
+        Cluster mass contained within R_500 [Msun]
+    cosmo : astropy.cosmology.Cosmology
+        Cosmology assumed
+    z : float
+        Cluster redshift
+    E : float
+        Efunc H(z)/H_0 at the redshift of the cluster
+    A10_params : list
+        [P_0*P_500], r_p, a, b, c] for this cluster if it has an A10
+        universal pressure profile (eqs 12-23 of Arnaud et al. 2010)
+    sz_fact : float
+        (sigma_T / (m_e c^2)) in [keV-1 cm3 kpc-1].
+        Multiply with a pressure distribution in [keV cm-3] integrated
+        along a line of sight in [kpc] to get a dimensionless
+        Compton y
+    Y_500_arcmin2 : float
+        Spherically integrated pressure profile within R_500 [arcmin2]
+    d_a : float
+        Angular diameter distance to the cluster [kpc]
+    Y_500_kpc2 : float
+        Spherically integrated pressure profile within R_500 [kpc2]
+    dens_crit : float
+        Critical density of the Universe at the redshift of the cluster
+        [Msun kpc-3]
 
     """
 
-    def __init__(self, z, M_500):
+    def __init__(self, z, M_500, cosmo=FlatLambdaCDM(70.0, 0.3)):
         """
-
         Parameters
         ----------
         z : float
             Cluster's redshift
         M_500 : float [Msun]
             Cluster's mass within R_500.
+        cosmo : astropy.cosmology.Cosmology, optional
+            The cosmology to assume for distance computations.
+            Defaults to flat LCDM with h=0.7, Om0=0.3.
         """
 
         # Cosmology related parameters
-        self.cosmo = FlatLambdaCDM(70.0 * u.Unit("km s-1 Mpc-1"), 0.3)
+        self.cosmo = cosmo
         self.z = z
         self.E = self.cosmo.efunc(z)
         self.dens_crit = self.cosmo.critical_density(z).to("Msun kpc-3").value
