@@ -178,7 +178,7 @@ def inv_covmat_from_noise_maps(noise_maps, method="lw"):
     """
     noise_vecs = noise_maps.reshape(noise_maps.shape[0], -1)
     if method == "lw":
-        cov = covariance.ledoit_wolf(noise_vecs)
+        cov, shrink = covariance.ledoit_wolf(noise_vecs)
     elif method in ["np", "numpy"]:
         cov = np.cov(noise_vecs, rowvar=False)
     else:
@@ -191,7 +191,9 @@ def inv_covmat_from_noise_maps(noise_maps, method="lw"):
     return inv_cov
 
 
-def inv_covmat_from_powspec(k, pk, n_pix, pix_size, n_maps=1000, method="lw"):
+def inv_covmat_from_powspec(
+    ell, C_ell, n_pix, pix_size, n_maps=1000, method="lw"
+):
     """
     Computes the inverse of the pixel noise covariance matrix
     from a noise power spectrum by generating many random
@@ -200,9 +202,9 @@ def inv_covmat_from_powspec(k, pk, n_pix, pix_size, n_maps=1000, method="lw"):
 
     Parameters
     ----------
-    k : ndarray
-        Angular scales
-    pk : ndarray
+    ell : ndarray
+        Multipole numbers
+    C_ell : ndarray
         Power spectrum values
     n_pix : int
         Number of pixels on each dimension of the map
@@ -222,13 +224,9 @@ def inv_covmat_from_powspec(k, pk, n_pix, pix_size, n_maps=1000, method="lw"):
     -------
     ndarray
         The inverted covariance matrix, shape=(nx^2, nx^2)
-
-    Notes
-    =====
-    The convention used for `k` is the same as the `numpy` one,
-    i.e. the largest 1D mode is 1/(pixel size).
     """
-    noise_maps = powspec_to_maps(k, pk, n_pix, n_pix, pix_size, int(n_maps))
+    k = 180.0 * 3600 * ell  # arcsec-1
+    noise_maps = powspec_to_maps(k, C_ell, n_pix, n_pix, pix_size, int(n_maps))
     inv_cov = inv_covmat_from_noise_maps(noise_maps, method=method)
     return inv_cov
 
