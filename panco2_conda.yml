@@ -1,20 +1,7 @@
 name: panco2
 channels:
   - defaults
-  - conda-forge
 dependencies:
-  - python
   - pip
-  - pip:
-    - astropy==5.*
-    - chainconsumer
-    - dill
-    - emcee==3.*
-    - iminuit
-    - ipympl
-    - jupyterlab
-    - numpy
-    - pandas
-    - scipy
-    - statsmodels
-    - tqdm
+  - python
+prefix: /Users/fkeruzore/.miniconda3/envs/panco2
