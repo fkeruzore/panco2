@@ -150,9 +150,9 @@ def check_inversion(m, invm):
     )
 
 
-def inv_covmat_from_noise_maps(noise_maps, method="lw"):
+def covmat_from_noise_maps(noise_maps, method="lw"):
     """
-    Computes the inverse of the pixel noise covariance matrix
+    Computes the pixel noise covariance matrix and its inverse
     from random noise realizations.
 
     Parameters
@@ -168,6 +168,8 @@ def inv_covmat_from_noise_maps(noise_maps, method="lw"):
 
     Returns
     -------
+    ndarray
+        The covariance matrix, shape=(nx^2, nx^2)
     ndarray
         The inverted covariance matrix, shape=(nx^2, nx^2)
 
@@ -188,14 +190,12 @@ def inv_covmat_from_noise_maps(noise_maps, method="lw"):
         )
     inv_cov = linalg.pinv(cov)
     check_inversion(cov, inv_cov)
-    return inv_cov
+    return cov, inv_cov
 
 
-def inv_covmat_from_powspec(
-    ell, C_ell, n_pix, pix_size, n_maps=1000, method="lw"
-):
+def covmat_from_powspec(ell, C_ell, n_pix, pix_size, n_maps=1000, method="lw"):
     """
-    Computes the inverse of the pixel noise covariance matrix
+    Computes the pixel noise covariance matrix and its inverse
     from a noise power spectrum by generating many random
     maps with the input power spectrum.
 
@@ -223,17 +223,19 @@ def inv_covmat_from_powspec(
     Returns
     -------
     ndarray
+        The covariance matrix, shape=(nx^2, nx^2)
+    ndarray
         The inverted covariance matrix, shape=(nx^2, nx^2)
     """
     k = 180.0 * 3600 * ell  # arcsec-1
     noise_maps = powspec_to_maps(k, C_ell, n_pix, n_pix, pix_size, int(n_maps))
-    inv_cov = inv_covmat_from_noise_maps(noise_maps, method=method)
-    return inv_cov
+    cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
+    return cov, inv_cov
 
 
-def inv_covmat_from_noise_map(noise_map, pix_size, n_maps=1000, method="lw"):
+def covmats_from_noise_map(noise_map, pix_size, n_maps=1000, method="lw"):
     """
-    Computes the inverse of the pixel noise covariance matrix
+    Computes the pixel noise covariance matrix and its inverse
     from a noise map by generating many random realizations
     with the same power spectrum.
 
@@ -255,8 +257,10 @@ def inv_covmat_from_noise_map(noise_map, pix_size, n_maps=1000, method="lw"):
     Returns
     -------
     ndarray
+        The covariance matrix, shape=(nx^2, nx^2)
+    ndarray
         The inverted covariance matrix, shape=(nx^2, nx^2)
     """
     noise_maps = make_maps_with_same_pk(noise_map, pix_size, int(n_maps))
-    inv_cov = inv_covmat_from_noise_maps(noise_maps, method=method)
-    return inv_cov
+    cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
+    return cov, inv_cov

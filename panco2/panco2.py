@@ -115,6 +115,7 @@ class PressureProfileFitter:
         hdulist.close()
         self.pix_size = pix_size  # arcsec
         self.coords_center = coords_center
+        self.covmat = None
         self.inv_covmat = None
         self.has_covmat = False
         self.has_integ_Y = False
@@ -188,6 +189,15 @@ class PressureProfileFitter:
 
         szsh = self.sz_map.shape
 
+        if (inv_covmat is not None) and (covmat is not None):
+            print("Adding correlated noise: covariance matrix & inverse")
+        elif (inv_covmat is None) and (covmat is not None):
+            print("Adding correlated noise: covariance matrix to be inverted")
+        if (inv_covmat is not None) and (covmat is None):
+            print("Adding correlated noise: inverse covariance matrix")
+        else:
+            raise Exception("Either `covmat` or `inv_covmat` must be provided")
+
         if inv_covmat is not None:
             nx2, ny2 = inv_covmat.shape
             assert nx2 == ny2, "Trying to pass in non-square covariance matrix"
@@ -198,6 +208,12 @@ class PressureProfileFitter:
             )
             self.inv_covmat = inv_covmat
             self.has_covmat = True
+            if covmat is not None:
+                assert covmat.shape == inv_covmat.shape, (
+                    "Incompatible shapes for `covmat` and `inv_covmat: ",
+                    f"{covmat.shape}, {inv_covmat.shape}",
+                )
+                self.covmat = covmat
 
         elif (inv_covmat is None) and (covmat is not None):
             nx2, ny2 = covmat.shape
@@ -209,11 +225,9 @@ class PressureProfileFitter:
             )
             inv_covmat = linalg.pinv(covmat)
             noise_covariance.check_inversion(covmat, inv_covmat)
+            self.covmat = covmat
             self.inv_covmat = inv_covmat
             self.has_covmat = True
-
-        else:
-            raise Exception("Either `covmat` or `inv_covmat` must be provided")
 
     # ---------------------------------------------------------------------- #
 
@@ -492,7 +506,9 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def write_sim_map(self, par_vec, out_file, filter_noise=True):
+    def write_sim_map(
+        self, par_vec, out_file, filter_noise=True, corr_noise=False
+    ):
         """
         Write a FITS map with given parameter values
 
@@ -506,6 +522,9 @@ class PressureProfileFitter:
         filter_noise : bool
             If True, convolve the noise realization by your
             filtering kernel.
+        corr_noise : bool
+            If True, the random noise realization will be drawn
+            using the noise covariance matrix.
 
         Notes
         =====
@@ -527,7 +546,29 @@ class PressureProfileFitter:
         fit, and the headers are adjusted accordingly.
         """
         mod_maps = (self.model.sz_map(par_vec), self.model.ps_map(par_vec))
-        noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
+
+        if corr_noise and self.has_covmat:
+            if self.covmat is not None:
+                covmat = self.covmat
+            else:
+                covmat = linalg.pinv(self.inv_covmat)
+            noise_vec = np.random.multivariate_normal(
+                np.zeros(self.sz_map.size), covmat
+            )
+            noise = noise_vec.reshape(*self.sz_map.shape)
+        elif not self.has_covmat:
+            raise Exception(
+                "Covariance matrix was not initialized, "
+                + "cannot create correlated noise realization. "
+                + "See `self.add_covmat`."
+            )
+        else:
+            if not corr_noise:
+                print(
+                    "Adding white noise even though there is a defined "
+                    + "noise covariance matrix"
+                )
+            noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
         tot_map = mod_maps[0] + mod_maps[1] + noise
 
         if filter_noise:
