@@ -50,7 +50,7 @@ def make_sim_map_nika2(
         np.log10(ppf.cluster.arcsec2kpc(ppf.map_size * 30)),
         50,
     )
-    ppf.define_model("binned", r_bins)
+    ppf.define_model(r_bins)
     ppf.add_point_sources(ps_pos, 18.0)
 
     tf = Table.read("./example_data/NIKA2/nk2_tf.fits")
@@ -77,6 +77,7 @@ def make_sim_map_spt(
     fact_noise=1.0,
     ps_pos=[],
     ps_fluxes=[],
+    corr_noise=False,
 ):
     ppf = p2.PressureProfileFitter(
         "./example_data/SPT/empty.fits",
@@ -92,15 +93,31 @@ def make_sim_map_spt(
         np.log10(ppf.cluster.arcsec2kpc(ppf.map_size * 30)),
         50,
     )
-    ppf.define_model("binned", r_bins)
+    ppf.define_model(r_bins)
     ppf.add_point_sources(ps_pos, 75.0)
 
     P_bins = p2.utils.gNFW(ppf.model.r_bins, *ppf.cluster.A10_params)
     par_vec = np.append(P_bins, [conv, zero, *ps_fluxes])
 
     ppf.add_filtering(beam_fwhm=75.0)
+    if corr_noise:
+        noise = Table.read(
+            "./example_data/SPT/noise_powspec.csv", format="csv"
+        )
+        ell, c_ell = noise["ell"].value, noise["c_ell"].value
+        covs = p2.noise_covariance.covmat_from_powspec(
+            ell,
+            c_ell,
+            ppf.sz_map.shape[0],
+            ppf.pix_size,
+            n_maps=1000,
+            method="lw",
+        )
+        ppf.add_covmat(covmat=covs[0], inv_covmat=covs[1])
 
-    ppf.write_sim_map(par_vec, file_out, filter_noise=True)
+    ppf.write_sim_map(
+        par_vec, file_out, filter_noise=False, corr_noise=corr_noise
+    )
 
 
 def make_sim_map_planck(
@@ -128,7 +145,7 @@ def make_sim_map_planck(
         np.log10(ppf.cluster.arcsec2kpc(ppf.map_size * 30)),
         50,
     )
-    ppf.define_model("binned", r_bins)
+    ppf.define_model(r_bins)
     ppf.add_point_sources(ps_pos, 600.0)
 
     P_bins = p2.utils.gNFW(ppf.model.r_bins, *ppf.cluster.A10_params)
