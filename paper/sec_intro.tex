@@ -1,3 +1,4 @@
+% !TEX root = ./main.tex
 \section{Introduction}
 \label{sec:intro}
 
@@ -25,24 +26,31 @@ Early works conducted on local, X-ray selected samples, such as \citet[][hereaft
 In these studies, the main determining factor for the shape of the pressure profile of a cluster was its dynamical state, with relaxed clusters exhibiting a steeper pressure profile in their core.
 % But hey that was wrong because feedback and stuff
 % We'd do simulations but their subgrids need us so the snake is eating its own tail
-
 \textcolor{lightgray}{\lipsum[1]}
 
 %%% How do we measure pressure profiles
+The first step in any evaluation of the mean pressure profile of a sample is the extraction of individual profiles from observed data.
 % Can be from Xrays
+Such measurements can be performed from X-ray cluster observations, using a deprojection of the ICM electron density and temperature \citep[see \eg][for reviews]{bohringer_x-ray_2010, bohringer_x-ray_2013}.
 % But that works better for low-z and high-M thingies
+Because of cosmological dimming, the X-ray surface brightness measure towards a cluster -- at fixed density -- strongly decreases with redshift, with $S_{\rm X} \propto (1+z)^{-4}$.
+As a consequence, X-ray observations of sufficient depth to infer quality measurements of pressure profiles can be prohibitively costly from an observation time perspective for high redshift systems.
 % Can be from SZ
+Alternatively, one may use tSZ observations of clusters, which do not suffer from this redshift dimming, enabling the detection of more distant objects.
 % Need to resolve them but can be done
+In particular, high angular resolution millimeter observations of clusters with large aperture telescopes have successfully been used to measure cluster pressure profiles, and are today one of the preferred sources of data for studies of the mean pressure profile of clusters \citep[\eg][]{mayet_cluster_2020, young_mean_2022, sayers_evolution_2022}.
 
 %%% What is this paper
 % In this work we present a software to go from SZ map to P(r)
+In this paper, we present \panco, a \texttt{Python} library written to perform pressure profile extraction from tSZ observations.
+The algorithm is based on forward modeling of the tSZ signal and MCMC sampling, and allows users to account for different features of millimeter-wave observations that may manifest as systematic biases or uncertainties in recovered pressure profiles.
 An earlier version of \panco\ was described in \citet{keruzore_panco2_2021}, which offered less flexibility in the analysis, as the only data that could be analyzed was maps from the NIKA2 camera 150~GHz channel \citep{adam_nika2_2018, perotto_calibration_2020}.
 This software has already been used for different studies based on NIKA2 data \citep[\eg][]{artis_psz2_2022,munoz-echeverria_multi-probe_2022,munoz-echeverria_lpsz-clash_2022}.
 Here, we present a generalization of the code, that makes it able to perform pressure profile extractions from arbitrary data formats.
 
-
-
-\textcolor{lightgray}{\lipsum[2]}
+%%% Outline
+The paper is structured as follows.
+\textcolor{lightgray}{\lipsum[6]}
 
 Throughout this paper, even though \panco\ can use different cosmologies \todo{this is not true yet}, we assume a flat $\Lambda {\rm CDM}$ model, with $\Omega_{\rm m} = 0.3, \;\Omega_\Lambda = 0.7, \; h = 0.7$.
 This cosmology is mainly used to infer angular diameter distances to the cluster being studied from its redshift, in order to accuratrly map sky distances to physical ones.

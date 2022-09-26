@@ -1,3 +1,4 @@
+% !TEX root = ./main.tex
 % ========================================================================== %
 \section{Validation on simulations} \label{sec:simu}
 
@@ -37,7 +38,31 @@ Tbe bottom panel of figure~\ref{fig:valid:sample} places the clusters in the ang
 \end{figure}
 
 % -------------------------------------------------------------------------- %
-\subsection{Data generation}
+\subsection{Data generation} \label{sec:simu:mkdata}
+
+\begin{table*}[htp]
+    \centering
+    \begin{tabular}{l c c c c c}
+        \toprule
+        Instrument & Map size & Pixel size & FWHM & Filtering & White noise \\
+        (Clusters) & $\theta_{\rm map}$ & $\theta_{\rm pix}$ & $\theta_{\rm FWHM}$ & & level \\
+        \midrule
+        \textit{Planck} & \multirow{2}{*}{$5\degree$} & \multirow{2}{*}{$2'$} & \multirow{2}{*}{$10'$} & \multirow{2}{*}{--} & Homogeneous \\
+        (C1) & & & & & RMS=$4.12 \times 10^{-6} \; [y]$ \\
+        \midrule
+        SPT & \multirow{2}{*}{$1\degree$} & \multirow{2}{*}{$15''$} & \multirow{2}{*}{$1.25'$} & -- & Homogeneous, \\
+        (C1, C2) & & & & & RMS=$9.78 \times 10^{-6} \; [y]$ \\
+        \midrule
+        NIKA2 & \multirow{2}{*}{$6.5'$} & \multirow{2}{*}{$3''$} & \multirow{2}{*}{$18''$} & NIKA2-like & Isotropic \\
+        (C2, C3) & & & & transfer function & NIKA2-like RMS \\
+        \bottomrule
+    \end{tabular}
+    \caption{\normalfont
+        Properties of simulated maps emulating cutouts of the \textit{Planck} \citep{planck_collaboration_planck_2016} and SPT \citep{bleem_cmbksz_2022} $y-$maps, and NIKA2 cluster observations \citep{keruzore_exploiting_2020}.
+    }
+    \label{tab:simu:map_props}
+\end{table*}
+
 
 We create mock maps for the three clusters by forward modeling their tSZ signal.
 We assume that each cluster has a pressure profile that follows the universal profile of \aten, scaled with its mass and redshift.
@@ -75,28 +100,8 @@ We create a gnomonic projection of a $(6.5' \times 6.5')$ patch of the sky with 
 The angular resolution of the map is Gaussian with ${\rm FWHM} = 18''$, and we also take into account filtering of angular scales due to data processing via the transfer function of \citet{keruzore_exploiting_2020}.
 The noise in these NIKA2 maps is considered white and isotropic, but not homogeneous, as the NIKA2 on-the-fly scanning strategy used for obsevations of the NIKA2 SZ Large Program creates a variation in the noise level of the maps depending on the distance from the pointing coordinates.
 To accurately take into account this effect, we use the noise RMS map of \citet{keruzore_exploiting_2020}, which we multiply by a scalar value to account for different exposure times.
-
-\begin{table*}[t]
-    \centering
-    \begin{tabular}{l c c c c c c}
-        \toprule
-        Instrument & Clusters & Map size & Pixel size & FWHM & Filtering & Noise \\
-        \midrule
-        \multirow{2}{*}{\textit{Planck}} & \multirow{2}{*}{C1} & \multirow{2}{*}{$5\degree$} & \multirow{2}{*}{$2'$} & \multirow{2}{*}{$10'$} & \multirow{2}{*}{--} & White, Homogeneous \\
-            & & & & & & RMS=$4.12 \times 10^{-6} \; [y]$ \\
-        \midrule
-        \multirow{2}{*}{SPT} & \multirow{2}{*}{C1, C2} & \multirow{2}{*}{$1\degree$} & \multirow{2}{*}{$15''$} & \multirow{2}{*}{$1.25'$} & -- & White, Homogeneous, \\
-            & & & & & & RMS=$9.78 \times 10^{-6} \; [y]$ \\
-        \midrule
-        \multirow{2}{*}{NIKA2} & \multirow{2}{*}{C2, C3} & \multirow{2}{*}{$6.5'$} & \multirow{2}{*}{$3''$} & \multirow{2}{*}{$18''$} & NIKA2-like & White, isotropic \\
-                               & & & & & transfer function & NIKA2-like RMS \\
-        \bottomrule
-    \end{tabular}
-    \caption{\normalfont
-        Properties of simulated maps emulating cutouts of the \textit{Planck} \citep{planck_collaboration_planck_2016} and SPT \citep{bleem_cmbksz_2022} $y-$maps, and NIKA2 cluster observations \citep{keruzore_exploiting_2020}.
-    }
-    \label{tab:simu:map_props}
-\end{table*}
+Data produced by the NIKA2 collaboration is in NIKA2 150 GHz surface brightness units, usually presented in mJy/beam.
+The conversion coefficient of $y-$to$-$mJy/beam can be evaluated by integrating the tSZ spectral distortion in the NIKA2 150 GHz effective bandpass (accounting for atmospheric opacity at the time of the observations), and is usually of the order of $-12$ mJy/beam/$y$ \citep[\eg][]{keruzore_exploiting_2020}, therefore we choose this value for our map generation.
 
 % \begin{figure*}[t]
 %     \centering
@@ -120,8 +125,44 @@ To accurately take into account this effect, we use the noise RMS map of \citet{
 % -------------------------------------------------------------------------- %
 \subsection{Pressure profile fitting}
 
+The five generated maps are then used to extract a pressure profile using \panco, \ie\ following the procedure detained in \S\ref{sec:algo}.
+We assume that we know the characteristics of the map prior to fitting -- \ie\ the width of the beams used, the transfer function, and the noise RMS given to \panco\ in input are the same ones that have beed used to generate the maps.
+
+Two ingredients in our model then remain to be specified: the radial binning -- \ie\ the value of the radii $R_i$ in eq.(~\ref{eq:algo:pressure_profile}) -- and the priors on the parameters.
+For the radial binning, we choose one that is identically determined by the angular coverage of each map.
+The first bin is defined as the projected radius corresponding to the size of a map pixel, $R_0 = \mathcal{D}_{\rm A}(z) \tan^{-1} \theta_{\rm pix}$, where $\mathcal{D}_{\rm A}(z)$ is the angular diameter distance to the cluster redshift $z$.
+Four bins $\left\{R_1 \dots R_4 \right\}$ are then added, log-spaced between the projected sizes of the beam FWHM, $\mathcal{D}_{\rm A}(z) \tan^{-1} \theta_{\rm FWHM}$, and of the half map size, $\mathcal{D}_{\rm A}(z) \tan^{-1} \theta_{\rm map} / 2$.
+
+The priors on each parameter is defined as follows.
+For the pressure parameters $P_i$, corresponding to the value of the pressure profile at radii $R_i$, we compute the value of the universal pressure profile from \aten\ for the cluster's mass and redshift.
+The prior on $P_i$ is then set as a log-uniform distribution around this value:
+\begin{equation}
+    \label{eq:simu:prior_Pi}
+    p(P_i) = \log\mathcal{U}(10^{-2}, 10^2) \times P_{\rm A10}(R_i).
+\end{equation}
+The prior on the conversion coefficient is set as a Gaussian distribution.
+For \textit{Planck}- and SPT-like maps, the data is directly in units of Compton$-y$, therefore this distribution is centered around 1.
+For NIKA2 data, as discussed in \S\ref{sec:simu:mkdata}, the central value of the prior is set at $-12$ mJy/beam/$y$.
+For all data, the spread of the distribution is taken as $10\%$ of its central value.
+Finally, the prior on the zero-level of the map is set as \todo{what did I put?}.
+
+The MCMC sampling is run as presented in \S\ref{sec:algo:mcmc}, with $30$ walkers, and setting $n_{\rm auto} = ?$ and $\Delta\tau_{\rm max} = ?$ \todo{values?}.
+For our tests, we used a 2021 MacBook Pro with an M1 Pro chip and a 10-core CPU \todo{is this necessary?}.
+With this setup and these criteria, each fit took 10 to 20 minutes to converge.
+The raw Markov chains are then saved, and cleaned for the exploitation as described in \S\ref{sec:algo:outputs}, with $n_{\rm burn} = ?$, $n_{\rm discard} = ?$, and $q_{\rm extr} = ?$ \todo{values}.
+
 % -------------------------------------------------------------------------- %
 \subsection{Results} \label{sec:simu:results}
+
+The results of the regression is presented in Figures~\ref{fig:valid:dmr_2d} and \ref{fig:valid:profiles}.
+Figure~\ref{fig:valid:dmr_2d} shows, for each of the five datasets, the simulated data (left), best-fitting 2D model (center), and the residuals (right).
+The residuals panels show no significant structure, providing a visual indication of goodness of fit.
+The right panels of Figure~\ref{fig:valid:profiles} also shows the data, model, and residuals, but as 1D azimuthal profiles, and include uncertainty computed from the spread of the sampled posterior.
+The compatibility of the green curves (\ie\ residuals) with zero within uncertainties proves that \panco\ is able to retrieve a pressure profile that fits the data.
+
+The left panels of Figure~\ref{fig:valid:profiles} show the pressure profiles recovered for each fit as the blue curves, including uncertainties.
+The true profile used to generate each map data (\ie\ the universal \aten\ pressure profile for the cluster's mass and redshift, see \S\ref{sec:simu:mkdata}) is shown as a black dashed line.
+For each data set, the agreement between the two curves across the considered radial range (\ie\ from the projected pixel size to the projected half map size) shows that \panco\ is able to retrieve an accurate estimation of the pressure profile of a cluster from its tSZ map.
 
 \begin{figure*}[t]
     \centering

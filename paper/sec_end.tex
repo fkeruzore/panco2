@@ -1,5 +1,6 @@
+% !TEX root = ./main.tex
 % ========================================================================== %
-\section{Conclusions and discussion}
+\section{Conclusions and discussion} \label{sec:end}
 
 This paper presents the release of \panco, a software enabling its users to perform pressure profile extraction from a tSZ map.
 We have presented the main features of the software, based on forward modeling MCMC of the tSZ signal with a radially-binned pressure profile.
@@ -30,9 +31,15 @@ Here, we offer a non-exhaustive list of possible such extensions.
 We strongly emphasize that this list should \textit{not} be interpreted as a list of features currently in development by the authors, but instead as a collection of possible avenues to explore.
 
 \paragraph{Joint analysis of several tSZ maps} % ........................... %
-We have shown in \S\ref{sec:simu} that \panco\ could recover pressure profiles from tSZ observations with different kinds of instruments -- namely \textit{Planck}, SPT, and NIKA2.
+We have shown in \S\ref{sec:simu} that \panco\ could recover pressure profiles from tSZ observations with different kinds of instruments -- namely, we have tested \textit{Planck}-, SPT-, and NIKA2-like mappings.
 But our analysis treated all of these datasets separately.
 For clusters with available data from several instruments, there may be interesting information to be extracted from the joint analysis of several maps \citep[see \eg][]{ruppin_first_2018, romero_multi-instrument_2018}.
+
+\paragraph{Different profile parametrizations} % ........................... %
+As discussed in \S\ref{sec:algo:press}, many studies of pressure profiles from tSZ (or X-rays) observations use the gNFW profile.
+Even though our radially-binned parametrization offers more flexibility and circumvents the known problems of the usual gNFW parametrization, one may be interested in using other functional forms of pressure profile.
+For example, the rewriting of the gNFW model from \citet{battaglia_cluster_2012-1} \citep[see also \eg][]{sayers_evolution_2022} offers a way to constrain the same functional form, but minimizing the correlations in the parameter space.
+Even though it is still possible to use a radially-binned profile and to fit any other functional form on the pressure bins \textit{a posteriori} \citep[see \eg][]{munoz-echeverria_multi-probe_2022}, one may want to directly fit said parametrization to the data, which is currently not supported.
 
 \paragraph{Non-spherical pressure models} % ................................ %
 Galaxy clusters are well known to not be perfectly spherical structures.
@@ -61,6 +68,7 @@ The possibility of joint tSZ--X-ray fits could be added to \panco\ to take furth
 As discussed in \S\ref{sec:algo:press}, the pressure model fitted on the data requires the user to define a set of radii used as nodes for the power-law interpolation of the profile.
 The choice of these radii is far from straightforward, as it depends on the angular scales present in the data to be fitted, as well as on the scientific goals of the analysis.
 This is the main downside of the radially binned model used in \panco, as the radii chosen may have a significant impact on the analysis results.
+The model dependence of products derived from radially-binned pressure profiles has been discussed by \citet{munoz-echeverria_multi-probe_2022}, who show that hydrostatic mass estimates, linked to the first derivative of the pressure profile, are particularily affected.
 
 In order to try to circumvent this shortcoming, we strongly advise \panco\ users to be cautious about their choice of binning, and, when possible, to try different binnings.
 We have implemented functions in \panco\ that allow users to easily simulate a mock tSZ map mimicking the data to be fitted.
