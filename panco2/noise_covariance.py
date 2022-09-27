@@ -193,7 +193,9 @@ def covmat_from_noise_maps(noise_maps, method="lw"):
     return cov, inv_cov
 
 
-def covmat_from_powspec(ell, C_ell, n_pix, pix_size, n_maps=1000, method="lw"):
+def covmat_from_powspec(
+    ell, C_ell, n_pix, pix_size, n_maps=1000, method="lw", return_maps=False
+):
     """
     Computes the pixel noise covariance matrix and its inverse
     from a noise power spectrum by generating many random
@@ -219,6 +221,9 @@ def covmat_from_powspec(ell, C_ell, n_pix, pix_size, n_maps=1000, method="lw"):
         is the sample covariance computed via `numpy.cov`,
         or "lw" for the Ledoit-Wolf covariance estimated
         using `sklearn.covariance.ledoit_wolf()` (default).
+    return_maps: bool, optional
+        If True, this function also returns the noise realizations
+        used to compute the covariance, default is False.
 
     Returns
     -------
@@ -226,14 +231,22 @@ def covmat_from_powspec(ell, C_ell, n_pix, pix_size, n_maps=1000, method="lw"):
         The covariance matrix, shape=(nx^2, nx^2)
     ndarray
         The inverted covariance matrix, shape=(nx^2, nx^2)
+    ndarray
+        If `return_maps` is True, the noise maps used to compute the
+        covariance, shape=(n_maps, nx, nx)
     """
     k = 180.0 * 3600 * ell  # arcsec-1
     noise_maps = powspec_to_maps(k, C_ell, n_pix, n_pix, pix_size, int(n_maps))
     cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
-    return cov, inv_cov
+    if return_maps:
+        return cov, inv_cov, noise_maps
+    else:
+        return cov, inv_cov
 
 
-def covmats_from_noise_map(noise_map, pix_size, n_maps=1000, method="lw"):
+def covmats_from_noise_map(
+    noise_map, pix_size, n_maps=1000, method="lw", return_maps=False
+):
     """
     Computes the pixel noise covariance matrix and its inverse
     from a noise map by generating many random realizations
@@ -253,6 +266,9 @@ def covmats_from_noise_map(noise_map, pix_size, n_maps=1000, method="lw"):
         is the sample covariance computed via `numpy.cov`,
         or "lw" for the Ledoit-Wolf covariance estimated
         using `sklearn.covariance.ledoit_wolf()` (default).
+    return_maps: bool, optional
+        If True, this function also returns the noise realizations
+        used to compute the covariance, default is False.
 
     Returns
     -------
@@ -260,7 +276,13 @@ def covmats_from_noise_map(noise_map, pix_size, n_maps=1000, method="lw"):
         The covariance matrix, shape=(nx^2, nx^2)
     ndarray
         The inverted covariance matrix, shape=(nx^2, nx^2)
+    ndarray
+        If `return_maps` is True, the noise maps used to compute the
+        covariance, shape=(n_maps, nx, nx)
     """
     noise_maps = make_maps_with_same_pk(noise_map, pix_size, int(n_maps))
     cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
-    return cov, inv_cov
+    if return_maps:
+        return cov, inv_cov, noise_maps
+    else:
+        return cov, inv_cov
