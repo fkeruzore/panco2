@@ -556,7 +556,7 @@ class PressureProfileFitter:
                 np.zeros(self.sz_map.size), covmat
             )
             noise = noise_vec.reshape(*self.sz_map.shape)
-        elif not self.has_covmat:
+        elif corr_noise and (not self.has_covmat):
             raise Exception(
                 "Covariance matrix was not initialized, "
                 + "cannot create correlated noise realization. "
