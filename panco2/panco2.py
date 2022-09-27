@@ -193,7 +193,7 @@ class PressureProfileFitter:
             print("Adding correlated noise: covariance matrix & inverse")
         elif (inv_covmat is None) and (covmat is not None):
             print("Adding correlated noise: covariance matrix to be inverted")
-        if (inv_covmat is not None) and (covmat is None):
+        elif (inv_covmat is not None) and (covmat is None):
             print("Adding correlated noise: inverse covariance matrix")
         else:
             raise Exception("Either `covmat` or `inv_covmat` must be provided")
