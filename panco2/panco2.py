@@ -133,11 +133,42 @@ class PressureProfileFitter:
 
     @classmethod
     def load_from_file(cls, file_name):
+        """
+        Load a `PressureProfileFitter` object from a `dill` serialized
+        file.
+
+        Parameters
+        ----------
+        file_name : str
+            Name of the file dump
+
+        Returns
+        -------
+        PressureProfileFitter
+            The `panco2.PressureProfileFitter` object
+
+        See Also
+        --------
+        PressureProfileFitter.dump_to_file
+        """
         with open(file_name, "rb") as f:
             inst = dill.load(f)
         return inst
 
     def dump_to_file(self, file_name):
+        """
+        Writes a `PressureProfileFitter` object as a `dill` serialized
+        file.
+
+        Parameters
+        ----------
+        file_name : str
+            Name of the file to write
+
+        See Also
+        --------
+        PressureProfileFitter.load_from_file
+        """
         with open(file_name, "wb") as f:
             f.write(dill.dumps(self))
 
