@@ -64,16 +64,16 @@ This point will be addressed in \S\ref{sec:end}.
 % -------------------------------------------------------------------------- %
 \subsection{Forward modeling: from pressure profile to SZ map} \label{sec:algo:fwdmod}
 
-\begin{figure*}
+\begin{figure}
     \centering
-    \includegraphics[width=.9\linewidth]{Figures/fwdmod_placeholder.pdf}
+    \includegraphics[height=0.933\textheight]{Figures/fwmod.pdf}
     \caption{
         Illustration of the forward modeling procedure.
-        The pressure profile is integrated along the line of sight to create a Compton$-y$ map, which is filtered and converted to be realistically comparable to the observed data.
-        If point source contamination information is passed, point source models can be added to the map.
+        The pressure profile (A) is integrated along the line of sight to create a Compton$-y$ map (B), which is filtered (C) and converted (D) to be realistically comparable to the observed data.
+        If point source contamination information is passed, point source models can be added to the map (E).
     }
     \label{fig:fwmod}
-\end{figure*}
+\end{figure}
 
 The approach used by \panco\ to fit pressure profiles on SZ maps is forward modeling.
 In that framework, a pressure profile model -- determined by \refeq{eq:algo:pressure_profile} -- is used to generate a map that can be compared to data.
