@@ -35,7 +35,7 @@ def powspec(in_map, pix_size, n_bins=None):
     n_bins = int(n_bins)
 
     kx, ky = np.fft.fftfreq(nx, d=pix_size), np.fft.fftfreq(ny, d=pix_size)
-    k = np.hypot(kx[:, np.newaxis], ky)
+    k = np.hypot(*np.meshgrid(kx, ky, indexing="ij"))
 
     ft_in_map = np.fft.fft2(in_map, norm="ortho")
     pk_in_map = np.real(ft_in_map * np.conj(ft_in_map))
@@ -46,7 +46,7 @@ def powspec(in_map, pix_size, n_bins=None):
         pk /= norm
 
     k_bins = k_edges[:-1] + np.ediff1d(k_edges)
-    msk = k_bins < (0.5 / pix_size)
+    msk = np.ones_like(k_bins, dtype=bool)  # k_bins < (0.5 / pix_size)
     return pk[msk], k_bins[msk]
 
 
@@ -235,7 +235,7 @@ def covmat_from_powspec(
         If `return_maps` is True, the noise maps used to compute the
         covariance, shape=(n_maps, nx, nx)
     """
-    k = 180.0 * 3600 * ell  # arcsec-1
+    k = ell / (180.0 * 3600.0)  # arcsec-1
     noise_maps = powspec_to_maps(k, C_ell, n_pix, n_pix, pix_size, int(n_maps))
     cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
     if return_maps:
