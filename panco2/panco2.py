@@ -36,7 +36,7 @@ class PressureProfileFitter:
     M_500 : float
         A guess of the cluster's mass [Msun]
         This is used to build the starting point of the MCMC.
-    coords_center : SkyCoord, optional
+    coords_center : astropy.coordinates.SkyCoord, optional
         Coordinate to consider as the center of the map.
         If not provided, the center of the FITS map is used.
     map_size : float, optional
