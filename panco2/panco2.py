@@ -594,7 +594,7 @@ class PressureProfileFitter:
                 + "See `self.add_covmat`."
             )
         else:
-            if not corr_noise:
+            if self.has_covmat:
                 print(
                     "Adding white noise even though there is a defined "
                     + "noise covariance matrix"
