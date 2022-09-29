@@ -22,6 +22,29 @@ class PressureProfileFitter:
     """
     The main class of panco2, that manages data loading, model
     definition, and MCMC sampling.
+
+    Parameters
+    ----------
+    sz_map_file : str
+        Path to a FITS file containing the SZ map and noise RMS
+    hdu_data : int
+        Index of the FITS extension in which the SZ map is stored
+    hdu_rms : int
+        Index of the FITS extension in which the RMS map is stored
+    z : float
+        Cluster's redshift
+    M_500 : float
+        A guess of the cluster's mass [Msun]
+        This is used to build the starting point of the MCMC.
+    coords_center : SkyCoord, optional
+        Coordinate to consider as the center of the map.
+        If not provided, the center of the FITS map is used.
+    map_size : float, optional
+        The size of the map to be considered [arcmin].
+        If not provided, the entire FITS map is used.
+    cosmo : astropy.cosmology.Cosmology, optional
+        The cosmology to assume for distance computations.
+        Defaults to flat LCDM with h=0.7, Om0=0.3.
     """
 
     def __init__(
@@ -35,31 +58,6 @@ class PressureProfileFitter:
         map_size=None,
         cosmo=FlatLambdaCDM(70.0, 0.3),
     ):
-        """_summary_
-
-        Parameters
-        ----------
-        sz_map_file : str
-            Path to a FITS file containing the SZ map and noise RMS
-        hdu_data : int
-            Index of the FITS extension in which the SZ map is stored
-        hdu_rms : int
-            Index of the FITS extension in which the RMS map is stored
-        z : float
-            Cluster's redshift
-        M_500 : float
-            A guess of the cluster's mass [Msun]
-            This is used to build the starting point of the MCMC.
-        coords_center : SkyCoord, optional
-            Coordinate to consider as the center of the map.
-            If not provided, the center of the FITS map is used.
-        map_size : float, optional
-            The size of the map to be considered [arcmin].
-            If not provided, the entire FITS map is used.
-        cosmo : astropy.cosmology.Cosmology, optional
-            The cosmology to assume for distance computations.
-            Defaults to flat LCDM with h=0.7, Om0=0.3.
-        """
 
         self.cluster = Cluster(z, M_500=M_500, cosmo=cosmo)
 
