@@ -88,10 +88,13 @@ def powspec_to_maps(k, pk, nx, ny, pix_size, n_maps):
             np.fft.fftfreq(nx, d=pix_size), np.fft.fftfreq(ny, d=pix_size)
         )
     )
-    filt_fct = interp1d(
-        k, np.log10(sqpk), bounds_error=False, fill_value="extrapolate"
-    )
-    filt = 10 ** filt_fct(k_filt)
+
+    with np.errstate(invalid="ignore"):
+        filt_fct = interp1d(
+            np.log10(k), np.log10(sqpk), bounds_error=False, fill_value=0.0
+        )
+        filt = 10 ** filt_fct(np.log10(k_filt))
+        filt[k_filt == 0] = 0.0
     ft_colored_maps = (
         np.fft.fft2(white_maps, axes=(-2, -1), norm="ortho")
         * filt[np.newaxis, :, :]
