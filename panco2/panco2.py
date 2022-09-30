@@ -1,29 +1,27 @@
 #!/usr/bin/env python3
 import numpy as np
-import matplotlib.pyplot as plt
 import astropy.units as u
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 from astropy.nddata import Cutout2D
 from astropy.coordinates import SkyCoord
+from astropy.cosmology import FlatLambdaCDM
 import emcee
-from scipy.interpolate import interp1d
-from scipy.ndimage import gaussian_filter
 from scipy.optimize import minimize
+from scipy import linalg
 import scipy.stats as ss
-import sys
-import os
 import dill
 import time
 from multiprocessing import Pool
-from . import utils, model, results, filtering
+from . import utils, model, results, filtering, noise_covariance
 from .cluster import Cluster
 
 
 class PressureProfileFitter:
     """
-    Blah, blah, blah
+    The main class of panco2, that manages data loading, model
+    definition, and MCMC sampling.
 
     Parameters
     ----------
@@ -35,13 +33,18 @@ class PressureProfileFitter:
         Index of the FITS extension in which the RMS map is stored
     z : float
         Cluster's redshift
-    M_500 : float [Msun]
-        A guess of the cluster's mass.
+    M_500 : float
+        A guess of the cluster's mass [Msun]
         This is used to build the starting point of the MCMC.
-    coords_center : SkyCoord, optional
-        Coordinate to consider as the center of the map
-    map_size : float [arcmin], optional
-        The size of the map to be considered
+    coords_center : astropy.coordinates.SkyCoord, optional
+        Coordinate to consider as the center of the map.
+        If not provided, the center of the FITS map is used.
+    map_size : float, optional
+        The size of the map to be considered [arcmin].
+        If not provided, the entire FITS map is used.
+    cosmo : astropy.cosmology.Cosmology, optional
+        The cosmology to assume for distance computations.
+        Defaults to flat LCDM with h=0.7, Om0=0.3.
     """
 
     def __init__(
@@ -53,9 +56,10 @@ class PressureProfileFitter:
         M_500,
         coords_center=None,
         map_size=None,
+        cosmo=FlatLambdaCDM(70.0, 0.3),
     ):
 
-        self.cluster = Cluster(z, M_500=M_500)
+        self.cluster = Cluster(z, M_500=M_500, cosmo=cosmo)
 
         # ===== Read and formats the data ===== #
         hdulist = fits.open(sz_map_file)
@@ -101,14 +105,15 @@ class PressureProfileFitter:
             self.wcs = cropped_map.wcs
 
         else:
-            self.sz_map = hdulist[hdu_data].data
-            self.sz_rms = hdulist[hdu_rms].data
+            self.sz_map = sz_map
+            self.sz_rms = sz_rms
             self.wcs = wcs
             self.map_size = self.sz_map.shape[0] * pix_size / 60
 
         hdulist.close()
         self.pix_size = pix_size  # arcsec
         self.coords_center = coords_center
+        self.covmat = None
         self.inv_covmat = None
         self.has_covmat = False
         self.has_integ_Y = False
@@ -126,11 +131,42 @@ class PressureProfileFitter:
 
     @classmethod
     def load_from_file(cls, file_name):
+        """
+        Load a `PressureProfileFitter` object from a `dill` serialized
+        file.
+
+        Parameters
+        ----------
+        file_name : str
+            Name of the file dump
+
+        Returns
+        -------
+        PressureProfileFitter
+            The `panco2.PressureProfileFitter` object
+
+        See Also
+        --------
+        PressureProfileFitter.dump_to_file
+        """
         with open(file_name, "rb") as f:
             inst = dill.load(f)
         return inst
 
     def dump_to_file(self, file_name):
+        """
+        Writes a `PressureProfileFitter` object as a `dill` serialized
+        file.
+
+        Parameters
+        ----------
+        file_name : str
+            Name of the file to write
+
+        See Also
+        --------
+        PressureProfileFitter.load_from_file
+        """
         with open(file_name, "wb") as f:
             f.write(dill.dumps(self))
 
@@ -147,60 +183,80 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def add_covmat(self, file_noise_simus=None, inv_covmat_file=None):
+    def add_covmat(self, covmat=None, inv_covmat=None):
         """
-        Loads or computes a covariance matrix for the likelihood.
+        Adds in a (inverse) noise covariance matrix to be used in the
+        log-likelihood computation, in order to account for spatial
+        correlations in the noise.
+        The `panco2.noise_covariance` module offers ways to compute such
+        matrices from different types of inputs: noise power spectrum,
+        noise maps, etc -- see documentation.
 
         Parameters
         ----------
-        file_noise_simus : str
-            Path to a `fits` file in which each extension is a noise map.
-            The covariance will be computed as the pixel-to-pixel
-            covariance of these maps.
-            The first extension must have a header that can be used to
-            create a `WCS` object to ensure the noise and data
-            pixels are the same.
-        inv_covmat : str
-            Path to a `npy` file containing an inverse covariance matrix.
-            The matrix must be the same size and units as the data.
+        covmat : ndarray, optional
+            Noise covariance matrix, in squared data units.
+            shape=(n_pix**2, n_pix**2)
+        inv_covmat : ndarray, optional
+            Inverse noise covariance matrix, in squared data units.
+            shape=(n_pix**2, n_pix**2)
+
+        Raises
+        ------
+        Exception
+            If neither the covariance matrix or inverted covariance
+            matrix is provided.
+
+        Notes
+        =====
+        If `inv_covmat` is provided, it is taken as-is for the
+        log-likelihood computation. If it is not, and `covmat` is
+        given, the code will try to compute the Moore-Penrose
+        pseudo-inverse matrix using `scipy.linalg.pinv`, and check that
+        the matrix product C @ C-1 is close to identity.
         """
 
-        if (inv_covmat_file is None) and (file_noise_simus is None):
-            covmat = None
-            print(
-                "No covariance or noise simulations: considering white noise"
+        szsh = self.sz_map.shape
+
+        if (inv_covmat is not None) and (covmat is not None):
+            print("Adding correlated noise: covariance matrix & inverse")
+        elif (inv_covmat is None) and (covmat is not None):
+            print("Adding correlated noise: covariance matrix to be inverted")
+        elif (inv_covmat is not None) and (covmat is None):
+            print("Adding correlated noise: inverse covariance matrix")
+        else:
+            raise Exception("Either `covmat` or `inv_covmat` must be provided")
+
+        if inv_covmat is not None:
+            nx2, ny2 = inv_covmat.shape
+            assert nx2 == ny2, "Trying to pass in non-square covariance matrix"
+            assert nx2 == szsh[0] ** 2, (
+                f"Wrong size: SZ map is {szsh}, so the covariance matrix "
+                + f"should be {szsh[0]**2, szsh[1]**2}, but the array passed "
+                + f"is {nx2, ny2}"
             )
+            self.inv_covmat = inv_covmat
+            self.has_covmat = True
+            if covmat is not None:
+                assert covmat.shape == inv_covmat.shape, (
+                    "Incompatible shapes for `covmat` and `inv_covmat: ",
+                    f"{covmat.shape}, {inv_covmat.shape}",
+                )
+                self.covmat = covmat
 
-        elif (inv_covmat_file is None) and (file_noise_simus is not None):
-            print("Noise covariance matrix computation...")
-            # Read correlated noise maps
-            hdulist_noise = fits.open(file_noise_simus)
-            n_maps = len(hdulist_noise)
-            wcs = WCS(hdulist_noise[0].header)
-            noise_maps = np.array(
-                [
-                    Cutout2D(
-                        hdu.data, self.coords_center, self.map_size, wcs=wcs
-                    ).data
-                    for hdu in hdulist_noise
-                ]
+        elif (inv_covmat is None) and (covmat is not None):
+            nx2, ny2 = covmat.shape
+            assert nx2 == ny2, "Trying to pass in non-square covariance matrix"
+            assert nx2 == szsh[0] ** 2, (
+                f"Wrong size: SZ map is {szsh}, so the covariance matrix "
+                + f"should be {szsh[0]**2, szsh[1]**2}, but the array passed "
+                + f"is {nx2, ny2}"
             )
-            hdulist_noise.close()
-
-            # Compute covariance matrix
-            noise_vecs = noise_maps.reshape(n_maps, -1)
-            covmat = np.cov(noise_vecs, rowvar=False)
-
-            # numpy needs help for large covariace matrices
-            # see https://pythonhosted.org/covar/
-            # covmat, shrink = covar.cov_shrink_rblw(covmat, n_maps)
-            # print(f"    Covariance shrinkage: {shrink}")
-            self.inv_covmat = np.linalg.inv(covmat)
-
-        elif inv_covmat_file is not None:
-            print("    Loading inverse covariance matrix...")
-            self.inv_covmat = np.load(inv_covmat_file)
-        self.has_covmat = True
+            inv_covmat = linalg.pinv(covmat)
+            noise_covariance.check_inversion(covmat, inv_covmat)
+            self.covmat = covmat
+            self.inv_covmat = inv_covmat
+            self.has_covmat = True
 
     # ---------------------------------------------------------------------- #
 
@@ -220,8 +276,9 @@ class PressureProfileFitter:
         k : array [arcmin-1] or tuple of arrays
             Angular frequencies at which the filtering was measured.
             Can be a tuple of `kx` and `ky` in the same units, see Notes.
-        pad : float [arcsec]
-            Padding to be added to the sides of the map before convolution.
+        pad : int
+            Padding to be added to the sides of the map before convolution,
+            in pixels.
 
         Notes
         =====
@@ -244,14 +301,6 @@ class PressureProfileFitter:
         beam_sigma_pix = (
             beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
         )
-        # self.model.filter = filtering.Filter(
-        #     self.sz_map.shape[0],
-        #     self.pix_size,
-        #     beam_sigma_pix=beam_sigma_pix,
-        #     tf_k=tf_k,
-        #     k=k,
-        #     pad=pad,
-        # )
 
         # Case 1: just beam, no transfer function
         if tf is None:
@@ -303,13 +352,11 @@ class PressureProfileFitter:
 
     def define_model(
         self,
-        model_type,
         r_bins,
         zero_level=True,
         integ_Y=None,
     ):
 
-        model_type = model_type.lower()
         d_a = self.cluster.d_a
         npix = self.sz_map.shape[0]
 
@@ -331,19 +378,6 @@ class PressureProfileFitter:
         )
 
         self.radii = {"r_x": r_x, "r_xy": r_xy, "theta_x": theta_x}
-
-        # If gNFW, we need to define the line of sight
-        if model_type == "gnfw":
-            # 1D LoS radius
-            r_z = np.logspace(-3.0, np.log10(5 * self.cluster.R_500), 500)
-
-            # 2D (x, z) radius plane to compute 1D compton profile
-            r_xx, r_zz = np.meshgrid(r_x, r_z)
-            r_xz = np.hypot(r_xx, r_zz)
-
-            self.radii["r_z"] = r_z
-            self.radii["r_zz"] = r_zz
-            self.radii["r_xz"] = r_xz
 
         self.model = model.ModelBinned(
             r_bins, self.radii, zero_level=zero_level
@@ -501,7 +535,9 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def write_sim_map(self, par_vec, out_file, filter_noise=True):
+    def write_sim_map(
+        self, par_vec, out_file, filter_noise=True, corr_noise=False
+    ):
         """
         Write a FITS map with given parameter values
 
@@ -515,6 +551,9 @@ class PressureProfileFitter:
         filter_noise : bool
             If True, convolve the noise realization by your
             filtering kernel.
+        corr_noise : bool
+            If True, the random noise realization will be drawn
+            using the noise covariance matrix.
 
         Notes
         =====
@@ -536,7 +575,29 @@ class PressureProfileFitter:
         fit, and the headers are adjusted accordingly.
         """
         mod_maps = (self.model.sz_map(par_vec), self.model.ps_map(par_vec))
-        noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
+
+        if corr_noise and self.has_covmat:
+            if self.covmat is not None:
+                covmat = self.covmat
+            else:
+                covmat = linalg.pinv(self.inv_covmat)
+            noise_vec = np.random.multivariate_normal(
+                np.zeros(self.sz_map.size), covmat
+            )
+            noise = noise_vec.reshape(*self.sz_map.shape)
+        elif corr_noise and (not self.has_covmat):
+            raise Exception(
+                "Covariance matrix was not initialized, "
+                + "cannot create correlated noise realization. "
+                + "See `self.add_covmat`."
+            )
+        else:
+            if self.has_covmat:
+                print(
+                    "Adding white noise even though there is a defined "
+                    + "noise covariance matrix"
+                )
+            noise = np.random.normal(np.zeros_like(self.sz_map), self.sz_rms)
         tot_map = mod_maps[0] + mod_maps[1] + noise
 
         if filter_noise:
@@ -670,7 +731,7 @@ class PressureProfileFitter:
         all_taus = [[], []]
         print(
             f"I'll check convergence every {n_check} steps, and "
-            + f"stop when the autocorrelation length `tau` has changed by "
+            + "stop when the autocorrelation length `tau` has changed by "
             + f"less than {100*max_delta_tau:.1f}% twice in a row, and the "
             + f"chain is longer than {min_autocorr_times}*tau"
         )
@@ -701,7 +762,6 @@ class PressureProfileFitter:
                 tau_is_stable = dtau < max_delta_tau
                 chain_is_long = it > (mean_tau * min_autocorr_times)
 
-                print(tau_is_stable, tau_was_stable, chain_is_long)
                 print(
                     f"    {it} iterations = {it / mean_tau:.1f}*tau",
                     f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
@@ -745,22 +805,6 @@ class PressureProfileFitter:
 
         return chains
 
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
-    # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #
     # ---------------------------------------------------------------------- #
 

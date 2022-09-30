@@ -16,3 +16,8 @@ panco2.results
 ==============
 .. automodule:: panco2.results
    :members:
+
+panco2.noise_covariance
+=======================
+.. automodule:: panco2.noise_covariance
+   :members:

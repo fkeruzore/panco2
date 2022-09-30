@@ -360,7 +360,7 @@ def plot_profile(
 
     model = ppf.model
     if ax is None:
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6, 4))
 
     chains_arr = np.array(
         [model.par_dic2vec(dict(p)) for p in chains_clean[model.params].iloc()]
@@ -413,6 +413,7 @@ def plot_data_model_residuals(
     lims=None,
     cbar_label=None,
     cbar_fact=1.0,
+    cbar_hztl=False,
     cmap="RdBu_r",
     separate_ps_model=False,
     filename=None,
@@ -448,6 +449,8 @@ def plot_data_model_residuals(
         A factor by which all maps are to be multiplied
         before plotting. Useful for very small units
         like Compton-y or Jy/beam
+    cbar_hztl : bool
+        Makes the colorbar horizontal instead of vertical.
     cmap : str or mpl.colors.Colorbar
         The color map to use. Always make pretty plots!
     separate_ps_model : bool
@@ -501,7 +504,7 @@ def plot_data_model_residuals(
 
     else:
         if fig is None:
-            fig = plt.figure(figsize=(10, 5))
+            fig = plt.figure(figsize=(12, 4))
         if axs is None:
             axs = [
                 fig.add_subplot(131 + i, projection=ppf.wcs) for i in range(3)
@@ -520,8 +523,6 @@ def plot_data_model_residuals(
         noise = gaussian_filter(noise, smooth) / np.sqrt(
             2 * np.pi * smooth**2
         )
-    # if par_dic["conv"] < 0:
-    #    noise *= -1.0  # for negative SNR
 
     if isinstance(lims, (tuple, list, np.ndarray)):
         vmin, vmax = lims
@@ -554,11 +555,14 @@ def plot_data_model_residuals(
         )
         ax.set_xlabel("Right ascension (J2000)")
         if i == 0:
-            ax.set_ylabel("Declination (J200)")
+            ax.set_ylabel("Declination (J2000)")
         else:
             ax.set_ylabel(" ")
 
-    cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
+    if cbar_hztl:
+        cb = fig.colorbar(im, ax=axs, orientation="horizontal", aspect=40)
+    else:
+        cb = fig.colorbar(im, ax=axs, fraction=0.02, shrink=0.83, aspect=15)
     cb.set_label(cbar_label)
 
     if filename is not None:
@@ -644,7 +648,7 @@ def plot_data_model_residuals_1d(
         par_dic = ppf.model.par_vec2dic(par_vec)
 
     if (fig is None) and (ax is None):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6, 4))
 
     theta_2d = ppf.cluster.kpc2arcsec(ppf.radii["r_xy"])
 
@@ -687,11 +691,11 @@ def plot_data_model_residuals_1d(
         res_prof = np.percentile(np.array(all_res_profs), [16, 50, 84], axis=0)
 
         for prof, label in zip([mod_prof, res_prof], ["Model", "Residuals"]):
-            line = ax.plot(theta_1d, prof[1], label=label, lw=1.5)
+            line = ax.plot(theta_1d, y_fact * prof[1], label=label, lw=1.5)
             ax.fill_between(
                 theta_1d,
-                prof[0],
-                prof[2],
+                y_fact * prof[0],
+                y_fact * prof[2],
                 alpha=0.3,
                 ls="--",
                 color=line[0].get_color(),
@@ -702,7 +706,7 @@ def plot_data_model_residuals_1d(
         beam_sigma = ppf.beam_fwhm / (2 * np.sqrt(2 * np.log(2)))
         theta_range = np.linspace(0.0, theta_1d.max(), 1000)
         beam_prof = (
-            np.max(ppf.sz_map)
+            sz_data_1d[1, 1]
             * y_fact
             * np.exp(-0.5 * (theta_range / beam_sigma) ** 2)
         )
@@ -720,6 +724,7 @@ def plot_data_model_residuals_1d(
 
     if x_log:
         ax.set_xscale("log")
+        ax.set_xlim(ppf.pix_size / 2, ppf.map_size * 60 / np.sqrt(2))
 
     ax_bothticks(ax)
     ax.legend(frameon=False)

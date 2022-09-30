@@ -4,4 +4,4 @@ __author__ = "Florian Keruzore"
 __email__ = "fkeruzore@anl.gov"
 
 from .panco2 import PressureProfileFitter
-from . import results
+from . import results, noise_covariance, utils
