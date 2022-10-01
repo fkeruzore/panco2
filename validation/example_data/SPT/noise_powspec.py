@@ -22,7 +22,7 @@ theta_map = np.hypot(
     )
 )
 mask &= theta_map > 40
-ymap_masked = ymap * mask
+ymap_masked = ymap * mask / 1e6
 
 # fig, ax = plt.subplots()
 # im = ax.imshow(ymap_masked)
@@ -33,10 +33,10 @@ pk, k = nc.powspec(ymap_masked, 15.0, n_bins=half_npix)
 ell = 180.0 * 3600 * k
 c_ell = gaussian_filter1d(pk, 5)
 
-fig, ax = plt.subplots()
-ax.loglog(ell, pk, ".")
-ax.loglog(ell, c_ell, "-", lw=2)
-plt.show()
+# fig, ax = plt.subplots()
+# ax.loglog(ell, pk, ".")
+# ax.loglog(ell, c_ell, "-", lw=2)
+# plt.show()
 
 t = Table({"ell": ell, "c_ell": c_ell, "d_ell": ell * (ell + 1) * c_ell})
 t.write("./noise_powspec.csv", format="csv", overwrite=True)
