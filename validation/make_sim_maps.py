@@ -1,16 +1,9 @@
 import numpy as np
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import scipy.stats as ss
-import pandas as pd
-import seaborn as sns
-import cmocean
-import os
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
 import astropy.units as u
-from scipy.ndimage import gaussian_filter
 import sys
 
 sys.path.append("..")

@@ -1,6 +1,4 @@
-from random import gauss
 import numpy as np
-import matplotlib.pyplot as plt
 from astropy.table import Table
 from astropy.io import fits
 from scipy.ndimage import gaussian_filter1d
