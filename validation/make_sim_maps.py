@@ -68,7 +68,7 @@ def make_sim_map_nika2(
     ppf.write_sim_map(par_vec, file_out, filter_noise=False)
     if plot_map:
         fig, ax = mapview.fitsview(
-            "./results/C3/NIKA2/input_map.fits",
+            file_out,
             1,
             fwhm=18 * u.arcsec,
             cmap=cmap_nika2,
@@ -77,8 +77,6 @@ def make_sim_map_nika2(
             scale=1e3,
             cbar_label="NIKA2 150 GHz surface brightness [mJy/beam]",
         )
-        ax.set_xlabel(r"Right ascension [J2000]")
-        ax.set_ylabel(r"Declination [J2000]")
         ax.set_xlabel(r"Right ascension [J2000]")
         ax.set_ylabel(r"Declination [J2000]")
         fig.suptitle(
@@ -134,7 +132,9 @@ def make_sim_map_spt(
             ppf.pix_size,
             n_maps=1000,
             method="lw",
+            return_maps=True,
         )
+        # return covs
         ppf.add_covmat(covmat=covs[0], inv_covmat=covs[1])
 
     ppf.write_sim_map(
@@ -142,7 +142,7 @@ def make_sim_map_spt(
     )
     if plot_map:
         fig, ax = mapview.fitsview(
-            "./results/C1/SPT/input_map.fits",
+            file_out,
             1,
             fwhm=1.25 * u.arcmin,
             cmap=cmap_spt,
@@ -269,7 +269,7 @@ if __name__ == "__main__":
         # =================================================================== #
         print("==> NIKA2 map of C3...")
         np.random.seed(46)
-        make_sim_map_nika2(
+        fig, ax = make_sim_map_nika2(
             C3,
             "./results/C3/NIKA2/input_map.fits",
             map_size=6.6,
@@ -306,10 +306,10 @@ if __name__ == "__main__":
             "./results/C2_ptsources/NIKA2/input_map.fits",
             map_size=6.6,
             fact_noise=1.1,
-            ps_coords=[
+            ps_pos=[
                 SkyCoord("12h00m00s +00d00m30s"),
                 SkyCoord("12h00m05s +00d00m10s"),
             ],
-            ps_fluxes=[1e-3, 5e-2],
+            ps_fluxes=[1e-3, 1e-3],
         )
         pdf.savefig(fig)
