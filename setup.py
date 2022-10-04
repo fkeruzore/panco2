@@ -14,6 +14,7 @@ setup(
         "matplotlib",
         "pandas",
         "emcee",
+        "tqdm",
         "dill",
         "chainconsumer",
     ],
