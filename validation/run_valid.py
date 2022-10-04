@@ -1,11 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-import cmocean
-from astropy.table import Table
 from astropy.coordinates import SkyCoord
-from astropy.io import fits
-import astropy.units as u
 import scipy.stats as ss
 
 import sys
@@ -16,7 +11,7 @@ import panco2 as p2
 mcmc_params = {
     "n_chains": 30,
     "max_steps": 1e5,
-    "n_threads": 4,
+    "n_threads": 10,
     "n_check": 1e3,
     "max_delta_tau": 0.02,
     "min_autocorr_times": 20,
@@ -82,42 +77,46 @@ def get_binning(ppf, n_bins, beam_fwhm):
     return r_bins
 
 
-def run_valid(cluster, instrument, n_bins_P):
-
+def run_valid(cluster, instrument, n_bins_P, restore=False):
+    print(f"===>  CLUSTER {cluster['name']}, {instrument['name']} VIEW  <===")
     path = f"./results/{cluster['name']}/{instrument['name']}"
-    ppf = p2.PressureProfileFitter(
-        f"{path}/input_map.fits",
-        1,
-        5,
-        cluster["z"],
-        cluster["M_500"] * 1e14,
-        map_size=instrument["map_size"],
-        coords_center=SkyCoord("12h00m00s +00d00m00s"),
-    )
+    if restore:
+        ppf = p2.PressureProfileFitter.load_from_file(f"{path}/ppf.panco2")
+    else:
+        ppf = p2.PressureProfileFitter(
+            f"{path}/input_map.fits",
+            1,
+            5,
+            cluster["z"],
+            cluster["M_500"] * 1e14,
+            map_size=instrument["map_size"],
+            coords_center=SkyCoord("12h00m00s +00d00m00s"),
+        )
 
-    r_bins = get_binning(ppf, n_bins_P, instrument["beam"])
-    ppf.define_model("binned", r_bins)
-    P_bins = p2.utils.gNFW(r_bins, *ppf.cluster.A10_params)
+        r_bins = get_binning(ppf, n_bins_P, instrument["beam"])
+        print(r_bins)
+        ppf.define_model(r_bins)
+        P_bins = p2.utils.gNFW(r_bins, *ppf.cluster.A10_params)
 
-    ppf.add_filtering(beam_fwhm=instrument["beam"])
+        ppf.add_filtering(beam_fwhm=instrument["beam"])
 
-    ppf.define_priors(
-        P_bins=[ss.loguniform(0.01 * P, 100.0 * P) for P in P_bins],
-        conv=ss.norm(*instrument["conv"]),
-        zero=ss.norm(instrument["zero"]),
-    )
-    ppf.dump_to_file(f"{path}/ppf.panco2")
+        ppf.define_priors(
+            P_bins=[ss.loguniform(0.01 * P, 100.0 * P) for P in P_bins],
+            conv=ss.norm(*instrument["conv"]),
+            zero=ss.norm(*instrument["zero"]),
+        )
+        ppf.dump_to_file(f"{path}/ppf.panco2")
 
-    _ = ppf.run_mcmc(
-        mcmc_params["n_chains"],
-        mcmc_params["max_steps"],
-        mcmc_params["n_threads"],
-        n_check=mcmc_params["n_check"],
-        max_delta_tau=mcmc_params["max_delta_tau"],
-        min_autocorr_times=mcmc_params["min_autocorr_times"],
-        out_chains_file=f"{path}/raw_chains.npz",
-        plot_convergence=f"{path}/mcmc_convergence.pdf",
-    )
+        _ = ppf.run_mcmc(
+            mcmc_params["n_chains"],
+            mcmc_params["max_steps"],
+            mcmc_params["n_threads"],
+            n_check=mcmc_params["n_check"],
+            max_delta_tau=mcmc_params["max_delta_tau"],
+            min_autocorr_times=mcmc_params["min_autocorr_times"],
+            out_chains_file=f"{path}/raw_chains.npz",
+            plot_convergence=f"{path}/mcmc_convergence.pdf",
+        )
     chains_clean = p2.results.load_chains(
         f"{path}/raw_chains.npz",
         mcmc_params["n_burn"],
