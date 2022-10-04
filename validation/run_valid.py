@@ -132,6 +132,9 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
     _ = p2.results.mcmc_corner_plot(
         chains_clean, ppf=ppf, filename=f"{path}/mcmc_corner.pdf"
     )
+    _ = p2.results.mcmc_matrices_plot(
+        chains_clean, ppf, filename=f"{path}/mcmc_matrices.pdf"
+    )
 
     meds = dict(chains_clean.median())
     p2.results.plot_data_model_residuals(
