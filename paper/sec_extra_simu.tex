@@ -1,0 +1,47 @@
+% !TEX root = ./main.tex
+% ========================================================================== %
+\section{Additional simulated datasets} \label{sec:extra_simu}
+
+The simulations described in \S\ref{sec:simu} did not feature all the possibilities of pressure profile fitting offered by \panco.
+To extend the validation to these different analysis options, we create additional datasets, based on the same mock clusters and instrumental data coverages, but each featuring one more component to the modeling.
+
+% -------------------------------------------------------------------------- %
+\subsection{Correlated noise} \label{sec:simi:corr_noise}
+
+We create a mock SPT map of the C2 galaxy cluster featuring realistic correlated noise.
+We evaluate the power spectrum of noise in the SPT $y-$map from a $(5\degree \times 5\degree)$ patch of the \todo{minimum variance?} map published in \citet{bleem_cmbksz_2022}, in which astrophysical sources were masked.
+The power spectrum is used to create $10^4$ random noise realizations, that are used to compute the covariance matrix of the noise in map pixels.
+One of these noise realizations is added to the simulated tSZ signal, and the inverted noise covariance is used in the likelihood function of eq.~(\ref{eq:algo:likelihood}).
+
+The pressure profile fitting is performed the same way as described in \S\ref{sec:simu:fit}.
+The results are presented in figure \todo.
+
+% -------------------------------------------------------------------------- %
+\subsection{Two-dimensional transfer function} \label{sec:simu:2dtf}
+
+We create a mock SPT map of the C1 galaxy cluster featuring anisotropic filtering by a two-dimensional transfer function.
+Even though the published SPT $y-$maps have negligible ($<8\%$) filtering for angular scales $\ell < 2 \times 10^4$ \citep[see][]{bleem_cmbksz_2022}, single-band SPT maps are created with a \todo{very anisotropic transfer function to describe}.
+We create a mock map featuring an artificial anisotropic filtering mimicking this transfer function, which is accounted for in the forward modeling of the tSZ map.
+
+Results are shown in figure \todo.
+
+% -------------------------------------------------------------------------- %
+\subsection{Point source contamination} \label{sec:simu:ps}
+
+We generate a mock NIKA2 map of the C2 cluster in which point sources are added to the surface brightness map.
+We choose to add two point sources S1 and S2, each with a flux of $F = 1 \, {\rm mJy}$, and respectively located at $30''$ and $75''$ from the cluster center.
+They are added to the sky model with their true positions, and fluxes are treated as a model parameter as described in \S\ref{sec:algo:fwdmod}.
+
+The fitting is performed the same way as described in \S\ref{sec:simu:fit}.
+Priors on their fluxes are added as a Gaussian distribution for S1, with $p(F_1) = \mathcal{N}(1 \,{\rm mJy}, 0.2 \,{\rm mJy})$, and as an uniform distribution for S2, corresponding to an upper limit on the flux, with $p(F_2) = \mathcal{U}(0 \,{\rm mJy}, 2 \,{\rm mJy})$.
+The results are presented in figure \todo.
+
+% -------------------------------------------------------------------------- %
+\subsection{Integrated SZ signal constriant} \label{sec:simu:Ysz}
+
+Finally, we run the fit of the mock NIKA2 map of the C2 cluster discussed in \S\ref{sec:simu} with an added constraint on its integrated tSZ signal, as described in \S\ref{sec:algo:likelihood}.
+We use the $Y-M$ scaling relation of \citet{arnaud_universal_2010} to compute an estimated value of $Y_{500}$ (corresponding to the integrated tSZ signal within $R_{500}$) of $Y_{500} =$\todo.
+We consider an uncertainty of 10\%.
+The additional constrain is added to the log-likelihood using eq.~(\ref{eq:algo:likelihood_ysz}).
+
+Results are presented in \todo.

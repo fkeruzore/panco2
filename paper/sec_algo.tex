@@ -36,7 +36,8 @@ Additional inputs can be provided to account for various data features.
 \paragraph{Beam smearing} the user may provide the width of a Gaussian function to account for point spread function (PSF, hereafter referred to as ``beam'') filtering (see \S\ref{sec:algo:fwdmod});
 \paragraph{Transfer function} Fourier filtering due to data processing and/or scanning strategy can be accounted for in the analysis (see \S\ref{sec:algo:fwdmod});
 \paragraph{Point source contamination} the position on the sky of point sources, as well as their fluxes and uncertainties, can be used to account for the contamination and marginalize over its amplitude (see \S\ref{sec:algo:fwdmod});
-\paragraph{Correlated noise} the covariance matrix between the noise of pixels in the map can be provided (see \S\ref{sec:algo:likelihood}).
+\paragraph{Correlated noise} the covariance matrix between the noise of pixels in the map can be provided (see \S\ref{sec:algo:likelihood});
+\paragraph{Integrated SZ signal} an external measurement of the integrated Compton parameter, that may be used as a constraint on large-scale tSZ signal, can be given to \panco\ (see \S\ref{sec:algo:likelihood}).
 
 % -------------------------------------------------------------------------- %
 \subsection{Pressure profile model} \label{sec:algo:press}
@@ -154,10 +155,21 @@ where $D$ is the input map, $M(\vartheta)$ is the model map computed from the po
 If the noise in the map can be considered white, the noise values in the map pixels are uncorrelated, and $\mathbf{C}$ becomes diagonal.
 In that case, in order to reduce the computation time needed, the likelihood is rewritten as:
 \begin{equation}
-    \label{}
+    \label{eq:algo:likelihood_white}
     -2 \log \mathcal{L}(\vartheta) = \sum_i \left( \frac{D_i - M_i(\vartheta)}{\Sigma_i} \right)^2,
 \end{equation}
 where the sum runs over all pixels $i$ in the map, and $\Sigma$ is the noise RMS map.
+
+In some cases, especially with high angular resolution follow-ups of clusters, additional information may be known from SZ surveys, such as the integrated tSZ signal $Y_{<R}$ within a radius $R$ of the cluster.
+This knowledge can serve as an additional constraint on the model, by computing the value of the integrated tSZ signal from the model as the spherical integration of the pressure profile within the radius $R$.
+This value can then be compared to that known from independent measurement, providing an additional data point that can be added to the log-likelihood of eqs.~(\ref{eq:algo:likelihood} or \ref{eq:algo:likelihood_white}):
+\begin{equation}
+    \label{eq:algo:likelihood_ysz}
+    \left(\frac{Y_{<R}^{\rm meas.} - \frac{\sigma_\textsc{t}}{m_{\rm e}c^2}\int_{0}^{R} P_{\rm e}(r) \, r^2 \dd r}{\Delta Y_{<R}^{\rm meas.}} \right)^2,
+\end{equation}
+where $Y_{<R}^{\rm meas.}$ and $\Delta Y_{<R}^{\rm meas.}$ are the measured integrated SZ signal within $R$ and its uncertainty. \\
+This additional constraint can be especially useful when dealing with observations agressively filtering large scale signal, in which case it might effectively provide constraining power on the pressure profile at large radii.
+This approach is routinely used for NIKA2 tSZ follow-ups of SZ-detected clusters \citep[\eg][]{ruppin_first_2018,keruzore_exploiting_2020,munoz-echeverria_multi-probe_2022}.
 
 % -------------------------------------------------------------------------- %
 \subsection{Posterior distribution and MCMC sampling} \label{sec:algo:mcmc}
