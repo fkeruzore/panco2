@@ -101,7 +101,17 @@ def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
         ppf.define_model(r_bins)
         P_bins = p2.utils.gNFW(r_bins, *ppf.cluster.A10_params)
 
-        ppf.add_filtering(beam_fwhm=instrument["beam"])
+        if instrument["name"] == "NIKA2":
+            tf = Table.read("./example_data/NIKA2/nk2_tf.fits")
+            ppf.add_filtering(
+                beam_fwhm=18.0,
+                k=tf["k"].to("arcsec-1").value,
+                tf=tf["tf_2mm"].value,
+                pad=20,
+            )
+        else:
+            ppf.add_filtering(beam_fwhm=instrument["beam"])
+
         if corr_noise:
             if instrument["name"] == "SPT":
                 noise = Table.read(
@@ -204,8 +214,8 @@ if __name__ == "__main__":
     # run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
     # run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
     # run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
-    # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
-    run_valid(
-        clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, corr_noise=True
-    )
+    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    # run_valid(
+    #     clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, corr_noise=True
+    # )
