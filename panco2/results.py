@@ -305,7 +305,7 @@ def mcmc_matrices_plot(chains_clean, ppf, filename=None):
         interpolation=None,
         zorder=2,
     )
-    cb1 = fig.colorbar(im1, cax=axs[2], orientation="horizontal")
+    _ = fig.colorbar(im1, cax=axs[2], orientation="horizontal")
     axs[2].set_xlabel(r"Correlation $\rho_{i, j}$")
 
     norm = mpl.colors.LogNorm(
@@ -314,7 +314,7 @@ def mcmc_matrices_plot(chains_clean, ppf, filename=None):
     im2 = ax.matshow(
         covs_arr, cmap="YlGn", norm=norm, interpolation=None, zorder=1
     )
-    cb2 = fig.colorbar(im2, cax=axs[1])
+    _ = fig.colorbar(im2, cax=axs[1])
     axs[1].set_ylabel(r"Covariance $\left| \Sigma^2_{i, j} \right|$")
 
     ax.set_xticks(np.arange(0, len(ppf.model.params)))
@@ -706,7 +706,7 @@ def plot_data_model_residuals_1d(
         beam_sigma = ppf.beam_fwhm / (2 * np.sqrt(2 * np.log(2)))
         theta_range = np.linspace(0.0, theta_1d.max(), 1000)
         beam_prof = (
-            sz_data_1d[1, 1]
+            (sz_data_1d[1] if chains_clean is None else sz_data_1d[1, 1])
             * y_fact
             * np.exp(-0.5 * (theta_range / beam_sigma) ** 2)
         )

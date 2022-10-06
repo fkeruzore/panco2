@@ -143,3 +143,4 @@ paper/main.xdv
 *.pyc
 *.swp
 doc/latex
+.vscode
