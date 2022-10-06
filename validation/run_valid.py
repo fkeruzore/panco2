@@ -1,6 +1,10 @@
+import os
+
+os.environ["OPENBLAS_NUM_THREADS"] = "48"
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
+from astropy.table import Table
 import scipy.stats as ss
 
 import sys
@@ -8,13 +12,14 @@ import sys
 sys.path.append("..")
 import panco2 as p2
 
+
 mcmc_params = {
     "n_chains": 30,
     "max_steps": 1e5,
     "n_threads": 10,
     "n_check": 1e3,
-    "max_delta_tau": 0.02,
-    "min_autocorr_times": 20,
+    "max_delta_tau": 0.05,
+    "min_autocorr_times": 50,
     "n_burn": 500,
     "discard": 20,
     "clip_percent": 20.0,
@@ -33,7 +38,7 @@ instruments = {
     "SPT": {
         "name": "SPT",
         "beam": 75.0,
-        "map_size": 60.0,
+        "map_size": 30.0,
         "conv": (1.0, 0.05),
         "zero": (0.0, 1e-6),
         "cbar_fact": 1e5,
@@ -55,9 +60,8 @@ clusters = {
     "C1": {"name": "C1", "z": 0.05, "M_500": 9.0},
     "C2": {"name": "C2", "z": 0.5, "M_500": 6.0},
     "C3": {"name": "C3", "z": 1.0, "M_500": 3.0},
+    "C2_corrnoise": {"name": "C2_corrnoise", "z": 0.5, "M_500": 6.0},
 }
-
-instrument, cluster = instruments["Planck"], clusters["C1"]
 
 
 def get_binning(ppf, n_bins, beam_fwhm):
@@ -77,7 +81,7 @@ def get_binning(ppf, n_bins, beam_fwhm):
     return r_bins
 
 
-def run_valid(cluster, instrument, n_bins_P, restore=False):
+def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
     print(f"===>  CLUSTER {cluster['name']}, {instrument['name']} VIEW  <===")
     path = f"./results/{cluster['name']}/{instrument['name']}"
     if restore:
@@ -94,11 +98,29 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         )
 
         r_bins = get_binning(ppf, n_bins_P, instrument["beam"])
-        print(r_bins)
         ppf.define_model(r_bins)
         P_bins = p2.utils.gNFW(r_bins, *ppf.cluster.A10_params)
 
         ppf.add_filtering(beam_fwhm=instrument["beam"])
+        if corr_noise:
+            if instrument["name"] == "SPT":
+                noise = Table.read(
+                    "./example_data/SPT/noise_powspec.csv", format="csv"
+                )
+                ell, c_ell = noise["ell"].value, noise["c_ell"].value
+                covs = p2.noise_covariance.covmat_from_powspec(
+                    ell,
+                    c_ell,
+                    ppf.sz_map.shape[0],
+                    ppf.pix_size,
+                    n_maps=1000,
+                    method="lw",
+                    return_maps=False,
+                )
+                ppf.add_covmat(covmat=covs[0], inv_covmat=covs[1])
+                np.savez_compressed(
+                    f"{path}/covmats.npz", covmat=covs[0], inv_covmat=covs[1]
+                )
 
         ppf.define_priors(
             P_bins=[ss.loguniform(0.01 * P, 100.0 * P) for P in P_bins],
@@ -179,8 +201,11 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
 
 if __name__ == "__main__":
     n_bins_P = 5
-    run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
-    run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
-    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    # run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
+    # run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
+    # run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
+    # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
+    # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    run_valid(
+        clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, corr_noise=True
+    )
