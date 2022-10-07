@@ -48,7 +48,7 @@ For examples, clusters can be aspherical because they are an ongoing merger of t
 Observations of such systems can give precious insights on the dynamics of cluster mergers, and therefore on the physics of large-scale structure formation.
 Additionally, non-merging clusters may be aspherical because of their connection to the cosmic web, which can provide interesting insights on cosmic filaments.
 Therefore, the possibility to fit pressure distributions beyond spherical symmetry is interesting.
-Depending on the morphology of the system, this may be done by fitting for an ellipsoidal pressure distribution \addcite, or the sum of the contributions of two (possibly spherical) halos \citep[\eg][]{artis_psz2_2022}.
+Depending on the morphology of the system, this may be done by fitting for an ellipsoidal pressure distribution \citep[\eg][]{sarazin_deep_2016}, or the sum of the contributions of two (possibly spherical) halos \citep[\eg][]{artis_psz2_2022}.
 These possibilities are not implemented in \panco, but might be an interesting extension.
 
 \paragraph{Joint tSZ--X-ray analysis} % .................................... %
@@ -57,18 +57,18 @@ This radiation carries information on the ICM that is very complementary to that
 Namely, similarly to how tSZ signal is linked to the electron pressure in the ICM -- as seen in eq.~(\ref{eq:algo_ysz}) -- X-ray emission is linked to its (squared) electron density.
 Moreover, for sufficiently deep observations, X-ray data can also be used to study the spectral distribution of the detected photons, enabling measurements of the ICM electron temperature.
 The combination of X-ray and tSZ observations of clusters therefore offers a way to finely characterize ICM thermodynamics.
-This complementarity can be exploited \textit{a posteriori}, \eg\ by combining results from \panco\ with density and temperature profiles obtained independently from X-ray data \citep[\eg][]{keruzore_exploiting_2020}, or through a joint fit of the thermodynamic properties \citep[\eg][]{castagna_joxsz_2020-1}.
+This complementarity can be exploited \textit{a posteriori}, \eg\ by combining results from \panco\ with density and temperature profiles obtained independently of X-ray data \citep[\eg][]{keruzore_exploiting_2020}, or through a joint fit of the thermodynamic properties \citep[\eg][]{castagna_joxsz_2020-1}.
 The possibility of joint tSZ--X-ray fits could be added to \panco\ to take further advantage of this complementarity.
 
 % -------------------------------------------------------------------------- %
 \subsection{Recommendations to users}
 
-\todo{this is a terrible section title}
+\todo{this is a terrible section title, please help}
 
 As discussed in \S\ref{sec:algo:press}, the pressure model fitted on the data requires the user to define a set of radii used as nodes for the power-law interpolation of the profile.
 The choice of these radii is far from straightforward, as it depends on the angular scales present in the data to be fitted, as well as on the scientific goals of the analysis.
 This is the main downside of the radially binned model used in \panco, as the radii chosen may have a significant impact on the analysis results.
-The model dependence of products derived from radially-binned pressure profiles has been discussed by \citet{munoz-echeverria_multi-probe_2022}, who show that hydrostatic mass estimates, linked to the first derivative of the pressure profile, are particularily affected.
+The model dependence of products derived from radially-binned pressure profiles has been discussed by \citet{munoz-echeverria_multi-probe_2022}, who show that hydrostatic mass estimates, linked to the first derivative of the pressure profile, are particularly affected.
 
 In order to try to circumvent this shortcoming, we strongly advise \panco\ users to be cautious about their choice of binning, and, when possible, to try different binnings.
 We have implemented functions in \panco\ that allow users to easily simulate a mock tSZ map mimicking the data to be fitted.

@@ -9,7 +9,7 @@ In this section, we detail each step of the analysis, as well as the inputs to b
 
 \begin{figure*}[htp]
     \centering
-    \includegraphics[width=.9\linewidth]{Figures/workflow.drawio.pdf}
+    \includegraphics[width=.9\linewidth]{Figures/workflow.pdf}
     \caption{
         Schematic workflow of the \panco\ algorithm, from its inputs (blue), to the forward modeling and MCMC sampling (purple), and results (red).
         Required and optional inputs are denoted with boldface and italic fonts, respectively.
@@ -26,7 +26,7 @@ The map to be fitted must therefore be contained within a FITS file, that must i
 
 \begin{itemize}[leftmargin=*]
     \item An extension in which the data is the SZ map to be fitted, and the header includes the World Coordinate System (WCS) used to create the map;
-    \item An extension in which the data represent an estimate of the expected root mean squared (RMS) error for each pixel of the data map.
+    \item An extension in whichs the data represent an estimate of the expected root mean squared (RMS) error for each pixel of the data map.
 \end{itemize}
 
 Such a file constitutes the minimum data input for \panco\ to proceed fitting a pressure profile.
@@ -36,7 +36,8 @@ Additional inputs can be provided to account for various data features.
 \paragraph{Beam smearing} the user may provide the width of a Gaussian function to account for point spread function (PSF, hereafter referred to as ``beam'') filtering (see \S\ref{sec:algo:fwdmod});
 \paragraph{Transfer function} Fourier filtering due to data processing and/or scanning strategy can be accounted for in the analysis (see \S\ref{sec:algo:fwdmod});
 \paragraph{Point source contamination} the position on the sky of point sources, as well as their fluxes and uncertainties, can be used to account for the contamination and marginalize over its amplitude (see \S\ref{sec:algo:fwdmod});
-\paragraph{Correlated noise} the covariance matrix between the noise of pixels in the map can be provided (see \S\ref{sec:algo:likelihood});
+\paragraph{Correlated noise} the covariance matrix between the noise of pixels in the map can be provided (see \S\ref{sec:algo:likelihood}).
+\panco\ also offers routines to compute the covariance from various data inputs, such as the power spectrum of the residual noise;
 \paragraph{Integrated SZ signal} an external measurement of the integrated Compton parameter, that may be used as a constraint on large-scale tSZ signal, can be given to \panco\ (see \S\ref{sec:algo:likelihood}).
 
 % -------------------------------------------------------------------------- %
@@ -53,12 +54,12 @@ In this modeling, the model parameters are the values $P_i$ of the pressure prof
     P(r \in [R_i, R_{i+1}[) = P_i \left(r / R_i\right)^{-\alpha_i},
 \end{equation}
 where $\alpha_i = - \log(P_{i+1} / P_i) / \log(R_{i+1} / R_i)$. \\
-Outside of the radial bins, the pressure profile is extrapolated using the power-law evolution of the first (last) bin.
+Outside the radial bins, the pressure profile is extrapolated using the power-law evolution of the first (last) bin.
 In addition to being more flexible and having generally lesser correlations in the parameter space, this parametrization can be integrated along a line of sight analytically through Abell transform, by following \eg\ \citet{romero_multi-instrument_2018}.
 
 The main downside to this pressure profile modeling lies in the need to specify the radii $R_i$ used in \refeq{eq:algo:pressure_profile} \textit{a priori} when performing a fit.
 There is no obvious, fail-safe way to define this radial binning.
-A user may choose a binning motivated by the data coverage (\eg\ with radii that, projected on the sky plane, are separated the beam of the instrument used to build the map); but looking at the same data, another user may be motivated by sample studies over several cluster, and wish to define a binning in units of a characteristic radius of the cluster (\eg\ $R_{500}$).
+A user may choose a binning motivated by the data coverage (\eg\ with radii that, projected on the sky plane, are separated the beam of the instrument used to build the map); but looking at the same data, another user may be motivated by sample studies over several clusters, and wish to define a binning in units of a characteristic radius of the cluster (\eg\ $R_{500}$).
 As a result, model dependence may arise in the results produced by \panco.
 This point will be addressed in \S\ref{sec:end}.
 
@@ -79,7 +80,7 @@ This point will be addressed in \S\ref{sec:end}.
 The approach used by \panco\ to fit pressure profiles on SZ maps is forward modeling.
 In that framework, a pressure profile model -- determined by \refeq{eq:algo:pressure_profile} -- is used to generate a map that can be compared to data.
 This approach has been vastly used in the estimation of pressure profiles from tSZ maps, especially in the context of resolved follow-up of galaxy clusters with \eg\ NIKA2 \citep[\eg][]{munoz-echeverria_multi-probe_2022,keruzore_exploiting_2020}, MUSTANG(2) \citep[\eg][]{romero_galaxy_2017,romero_pressure_2020}, Bolocam \citep[\eg][]{sayers_evolution_2022}, or ALMA \citep[\eg][]{di_mascolo_joint_2019}.
-This section details the different steps used in that process, which is ilustrated in figure~\ref{fig:fwmod}.
+This section details the different steps used in that process, which is illustrated in figure~\ref{fig:fwmod}.
 
 \paragraph{Line of sight integration}
 
@@ -111,7 +112,7 @@ In its forward modeling approach, \panco\ is able to take into account this filt
 In addition, during the data reduction process used to create tSZ maps from raw data, filtering can occur, often suppressing signal at large angular scales.
 This filtering is usually accounted for through a transfer function, quantifying the signal filtering in the Fourier space, and evaluated during the data processing.
 \panco\ can account for this effect by filtering the map with a transfer function provided by the user.
-Two different types of transfer functions can be provided:
+Two different types of transfer functions can be provided: \todo{I want to make the code use $\ell$, not $k$. Correct this when done.}
 \begin{itemize}[leftmargin=*]
     \item a 1D transfer function: assuming that the filtering is isotropic, \panco\ can convolve model maps with a 1D kernel specified by the user as angular frequencies $k$ and their associated filtering ${\rm TF}(k)$;
     \item a 2D transfer function: if the filtering on the sky cannot be assumed to be isotropic, the user may specify 2D angular scales $(k_x, k_y)$ and their corresponding filter ${\rm TF}(k_x, k_y)$.

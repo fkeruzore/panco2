@@ -50,7 +50,7 @@ Tbe bottom panel of figure~\ref{fig:valid:sample} places the clusters in the ang
         \textit{Planck} & \multirow{2}{*}{$5\degree$} & \multirow{2}{*}{$2'$} & \multirow{2}{*}{$10'$} & \multirow{2}{*}{--} & Homogeneous \\
         (C1) & & & & & RMS=$4.12 \times 10^{-6} \; [y]$ \\
         \midrule
-        SPT & \multirow{2}{*}{$1\degree$} & \multirow{2}{*}{$15''$} & \multirow{2}{*}{$1.25'$} & -- & Homogeneous, \\
+        SPT & \multirow{2}{*}{$30'$} & \multirow{2}{*}{$15''$} & \multirow{2}{*}{$1.25'$} & -- & Homogeneous, \\
         (C1, C2) & & & & & RMS=$9.78 \times 10^{-6} \; [y]$ \\
         \midrule
         NIKA2 & \multirow{2}{*}{$6.5'$} & \multirow{2}{*}{$3''$} & \multirow{2}{*}{$18''$} & NIKA2-like & Isotropic \\
@@ -62,7 +62,6 @@ Tbe bottom panel of figure~\ref{fig:valid:sample} places the clusters in the ang
     }
     \label{tab:simu:map_props}
 \end{table*}
-
 
 We create mock maps for the three clusters by forward modeling their tSZ signal.
 We assume that each cluster has a pressure profile that follows the universal profile of \aten, scaled with its mass and redshift.
@@ -78,20 +77,19 @@ The characteristics of the maps are designed to mimic know cluster observations 
 The generated maps are shown on the left panels of figure~\ref{fig:valid:dmr_2d}.
 
 \paragraph{Planck-like data}  % ............................................ %
-Our mock \textit{Planck} dataset is designed to emulate the \textit{Planck} Compton$-y$ map of \citet{planck_collaboration_planck_2016}.
+Our mock \textit{Planck} dataset is designed to emulate the \textit{Planck} \texttt{MILCA} Compton$-y$ map of \citet{planck_collaboration_planck_2016}.
 The original data products for this map are in \texttt{healpix} format, which \panco\ cannot process, as it relies on the flat-sky approximation.
 We therefore create maps of $(5\degree \times 5\degree)$ patches of the sky using a gnomonic projection, with a pixel size of $2'$, and a Gaussian PSF of ${\rm FWHM} = 10'$.
 The noise in these maps is white and has an homogeneous distribution, with an RMS taken from the left panel of figure~13 in \citet{planck_collaboration_planck_2016}.
-\todo{filtering?}
-\todo{correlated noise?}
+We do not consider any filtering of the signal aside from the beam convolution, as the scales filtered out by the data processing are very large compared to the size of the patch considered \citep[see][]{planck_collaboration_planck_2016}.
 
 \paragraph{SPT-like data}  % ............................................... %
-Our SPT-like maps mimic the plublicly available $y-$maps released by the SPT collaboration \citep{bleem_cmbksz_2022}.
-We use the same projection as their flat-sky maps, \ie\ a Sanson-Flamsteed projection with $15''$ pixels, on a $(1\degree \times 1\degree)$ patch of the sky.
-The resolution of the map is Gaussian with ${\rm FWHM} = 1.25'$.
-We inject a white noise realization, the amplitude of which is evaluated by computing the RMS of the map in a $(5\degree \times 5\degree)$ patch of the sky, taking care of masking sources.
-\todo{filtering?}
-\todo{correlated noise?}
+Our SPT-like maps mimic the publicly available $y-$map released by the SPT collaboration \citep{bleem_cmbksz_2022}, specifically the ``minimum variance'' map.
+We use the same projection as their flat-sky maps, \ie\ a Sanson-Flamsteed projection with $15''$ pixels, on a $(30' \times 30')$ patch of the sky.
+The resolution of the maps is Gaussian with ${\rm FWHM} = 1.25'$.
+We inject white noise realizations, the amplitude of which is evaluated by computing the RMS of the map in a $(5\degree \times 5\degree)$ patch of the sky, taking care of masking sources.
+The SPT $y-$maps use information from the \textit{Planck} $y-$map in the Fourier space to compensate for large-scale filtering, making it negligible ($<8\%$ filtering for angular scales $\ell < 2 \times 10^4$).
+Therefore, we choose to consider no filtering in the creation of these maps.
 
 \paragraph{NIKA2-like data}  % ............................................. %
 Our NIKA2-like data imitates the NIKA2 150~GHz sky maps obtained by the NIKA2 SZ Large Program \citep{mayet_cluster_2020, perotto_nika2_2021}.
@@ -102,25 +100,6 @@ The noise in these NIKA2 maps is considered white and isotropic, but not homogen
 To accurately take into account this effect, we use the noise RMS map of \citet{keruzore_exploiting_2020}, which we multiply by a scalar value to account for different exposure times.
 Data produced by the NIKA2 collaboration is in NIKA2 150 GHz surface brightness units, usually presented in mJy/beam.
 The conversion coefficient of $y-$to$-$mJy/beam can be evaluated by integrating the tSZ spectral distortion in the NIKA2 150 GHz effective bandpass (accounting for atmospheric opacity at the time of the observations), and is usually of the order of $-12$ mJy/beam/$y$ \citep[\eg][]{keruzore_exploiting_2020}, therefore we choose this value for our map generation.
-
-% \begin{figure*}[t]
-%     \centering
-%     \includegraphics[page=1, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-%     \includegraphics[page=2, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-%     \includegraphics[page=3, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-%     \includegraphics[page=4, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-%     \includegraphics[page=5, width=0.49\linewidth, trim={1cm 0cm 1cm 1cm}, clip]{../validation/sim_maps.pdf}
-%     \caption{%
-%         Simulated maps of the three validation clusters.
-%         \textbf{Top:} C1 seen by \textit{Planck} (\textit{left}) and SPT (\textit{right});
-%         \textbf{Middle:} C2 seen by SPT (\textit{left}) and NIKA2 (\textit{right});
-%         \textbf{Bottom:} C3 seen by NIKA2.
-%         Map properties are summarized in table~\ref{tab:simu:map_props}, and the cluster properties in eq.~(\ref{eq:valid:clusters}).
-%         Each map is smoothed with a Gaussian filter with $\sigma = 1 \; {\rm pixel}$ for displaying purposes.
-%         The FWHM of the angular resolution of each map is shown as a hatched circle in its bottom left.
-%     }
-%     \label{fig:valid:maps}
-% \end{figure*}
 
 % -------------------------------------------------------------------------- %
 \subsection{Pressure profile fitting} \label{sec:simu:fit}
@@ -143,13 +122,12 @@ The prior on $P_i$ is then set as a log-uniform distribution around this value:
 The prior on the conversion coefficient is set as a Gaussian distribution.
 For \textit{Planck}- and SPT-like maps, the data is directly in units of Compton$-y$, therefore this distribution is centered around 1.
 For NIKA2 data, as discussed in \S\ref{sec:simu:mkdata}, the central value of the prior is set at $-12$ mJy/beam/$y$.
-For all data, the spread of the distribution is taken as $10\%$ of its central value.
-Finally, the prior on the zero-level of the map is set as \todo{what did I put?}.
+For all data, the spread of the distribution is taken as $5\%$ of its central value.
 
-The MCMC sampling is run as presented in \S\ref{sec:algo:mcmc}, with $30$ walkers, and setting $n_{\rm auto} = ?$ and $\Delta\tau_{\rm max} = ?$ \todo{values?}.
-For our tests, we used a 2021 MacBook Pro with an M1 Pro chip and a 10-core CPU \todo{is this necessary?}.
-With this setup and these criteria, each fit took 10 to 20 minutes to converge.
-The raw Markov chains are then saved, and cleaned for the exploitation as described in \S\ref{sec:algo:outputs}, with $n_{\rm burn} = ?$, $n_{\rm discard} = ?$, and $q_{\rm extr} = ?$ \todo{values}.
+The MCMC sampling is run as presented in \S\ref{sec:algo:mcmc}, with $30$ walkers, and setting $n_{\rm auto} = 50$ and $\Delta\tau_{\rm max} = 5\%$.
+For our tests, we used a 2021 MacBook Pro with an M1 Pro chip and a 10-core CPU, with the MCMC using 5 threads \todo{is this necessary?}.
+With this setup and these criteria, each fit took 5 to 10 minutes to converge.
+The raw Markov chains are then saved, and cleaned for the exploitation as described in \S\ref{sec:algo:outputs}, with $n_{\rm burn} = 500$, $n_{\rm discard} = 20$, and $q_{\rm extr} = 20\%$.
 
 % -------------------------------------------------------------------------- %
 \subsection{Results} \label{sec:simu:results}
@@ -175,7 +153,7 @@ For each data set, the agreement between the two curves across the considered ra
         Data (\textit{left}), model (\textit{center}), and residuals (\ie\ difference between data and model, \textit{right}) for the five validation fits:
         from top to bottom, C1 with \textit{Planck}, C1 with SPT, C2 with SPT, C2 with NIKA2, C3 with NIKA2.
         Maps are smoothed by a $1$ pixel Gaussian for display purposes.
-        Grey curves are signal-to-noise isocontours, starting at $3\sigma$ with a $2\sigma$ spacing.
+        % Grey curves are signal-to-noise isocontours, starting at $3\sigma$ with a $2\sigma$ spacing.
     }
     \label{fig:valid:dmr_2d}
 \end{figure*}
@@ -197,7 +175,6 @@ For each data set, the agreement between the two curves across the considered ra
         \textbf{Left:} Data, model, and residuals (\ie\ difference between data and model) azimuthal profiles for the five validation fits.
         The beam profile is shown in grey for comparison.
         The rows are identical to Figure~\ref{fig:valid:dmr_2d}.
-        For NIKA2 maps (bottom two rows), maps have been multiplied by $-1$ to show positive profiles.
         \textbf{Right:} Pressure profiles reconstructed for each validation fit (blue line).
         For each profile, the shaded area marks the region between the 16th and 84th percentiles of the posterior distribution.
         The dashed black line shows the true pressure profile used to generate each map.

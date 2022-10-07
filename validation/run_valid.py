@@ -1,6 +1,6 @@
-import os
-
-os.environ["OPENBLAS_NUM_THREADS"] = "48"
+# import os
+#
+# os.environ["OPENBLAS_NUM_THREADS"] = "48"
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
@@ -172,7 +172,7 @@ def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
     p2.results.plot_data_model_residuals(
         ppf,
         par_dic=meds,
-        smooth=0.5,
+        smooth=1.0,
         cbar_fact=instrument["cbar_fact"],
         lims=None if instrument["name"] == "SPT" else "sym",
         cbar_label=instrument["cbar_label"],
@@ -211,11 +211,11 @@ def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
 
 if __name__ == "__main__":
     n_bins_P = 5
-    # run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
-    # run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
-    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
+    run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
     # run_valid(
     #     clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, corr_noise=True
     # )

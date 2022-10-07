@@ -415,6 +415,7 @@ def plot_data_model_residuals(
     cbar_fact=1.0,
     cbar_hztl=False,
     cmap="RdBu_r",
+    snr_contours=None,
     separate_ps_model=False,
     filename=None,
 ):
@@ -453,6 +454,9 @@ def plot_data_model_residuals(
         Makes the colorbar horizontal instead of vertical.
     cmap : str or mpl.colors.Colorbar
         The color map to use. Always make pretty plots!
+    snr_contours : None or array-like
+        Signal-to-noise levels to be overplotted as contours,
+        in numbers of sigma.
     separate_ps_model : bool
         If your model fits both SZ and point sources, makes the
         model and residuals for SZ/PS/SZ+PS (i.e. 5 total plots)
@@ -543,16 +547,15 @@ def plot_data_model_residuals(
             interpolation="gaussian",
             cmap=cmap,
         )
-        ct = ax.contour(
-            m / noise,
-            origin="lower",
-            linestyles="-",
-            colors="#00000077",
-            linewidths=0.5,
-            levels=np.concatenate(
-                (np.arange(-50, -2, 2), np.arange(3, 50, 2))
-            ),
-        )
+        if snr_contours is not None:
+            _ = ax.contour(
+                m / noise,
+                origin="lower",
+                linestyles="-",
+                colors="#00000077",
+                linewidths=0.5,
+                levels=snr_contours,
+            )
         ax.set_xlabel("Right ascension (J2000)")
         if i == 0:
             ax.set_ylabel("Declination (J2000)")
@@ -651,10 +654,11 @@ def plot_data_model_residuals_1d(
         fig, ax = plt.subplots(figsize=(6, 4))
 
     theta_2d = ppf.cluster.kpc2arcsec(ppf.radii["r_xy"])
+    bin_width = 1 * ppf.pix_size
 
     # Data profile
     theta_1d, sz_data_1d = utils.map2prof(
-        ppf.sz_map, theta_2d, width=2 * ppf.pix_size
+        ppf.sz_map, theta_2d, width=bin_width
     )
     ax.plot(theta_1d, y_fact * sz_data_1d[:, 1], label="Data", lw=1.5)
 
@@ -666,9 +670,7 @@ def plot_data_model_residuals_1d(
             [mod_map, res_map],
             ["Model", "Residuals"],
         ):
-            theta_1d, m_1d = utils.map2prof(
-                m, theta_2d, width=2 * ppf.pix_size
-            )
+            theta_1d, m_1d = utils.map2prof(m, theta_2d, width=bin_width)
             ax.plot(theta_1d, y_fact * m_1d[:, 1], label=label, lw=1.5)
 
     # Model and residuals -- confidence intervals
@@ -680,11 +682,11 @@ def plot_data_model_residuals_1d(
         ]
         all_res_maps = [(ppf.sz_map - m) for m in all_mod_maps]
         all_mod_profs = [
-            utils.map2prof(m, theta_2d, width=2 * ppf.pix_size)[1][:, 1]
+            utils.map2prof(m, theta_2d, width=bin_width)[1][:, 1]
             for m in all_mod_maps
         ]
         all_res_profs = [
-            utils.map2prof(m, theta_2d, width=2 * ppf.pix_size)[1][:, 1]
+            utils.map2prof(m, theta_2d, width=bin_width)[1][:, 1]
             for m in all_res_maps
         ]
         mod_prof = np.percentile(np.array(all_mod_profs), [16, 50, 84], axis=0)

@@ -161,4 +161,4 @@ for ax, letter in zip(axs, "ABCDE"):
 fig.subplots_adjust(left=0.18)
 fig.align_ylabels(axs)
 fig.align_ylabels(axs_cbars)
-fig.savefig("./fwmod.pdf")
+fig.savefig("./fwmod.svg")
