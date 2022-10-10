@@ -293,7 +293,7 @@ if __name__ == "__main__":
 
         # =================================================================== #
         print("==> NIKA2 map of C2 with point sources...")
-        np.random.seed(49)
+        np.random.seed(46)
         fig, ax = make_sim_map_nika2(
             C2_ptsources,
             "./results/C2_ptsources/NIKA2/input_map.fits",

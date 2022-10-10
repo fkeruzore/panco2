@@ -61,6 +61,7 @@ clusters = {
     "C2": {"name": "C2", "z": 0.5, "M_500": 6.0},
     "C3": {"name": "C3", "z": 1.0, "M_500": 3.0},
     "C2_corrnoise": {"name": "C2_corrnoise", "z": 0.5, "M_500": 6.0},
+    "C2_ptsources": {"name": "C2_ptsources", "z": 0.5, "M_500": 6.0},
 }
 
 
@@ -81,7 +82,7 @@ def get_binning(ppf, n_bins, beam_fwhm):
     return r_bins
 
 
-def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
+def run_valid(cluster, instrument, n_bins_P, restore=False):
     print(f"===>  CLUSTER {cluster['name']}, {instrument['name']} VIEW  <===")
     path = f"./results/{cluster['name']}/{instrument['name']}"
     if restore:
@@ -112,30 +113,39 @@ def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
         else:
             ppf.add_filtering(beam_fwhm=instrument["beam"])
 
-        if corr_noise:
-            if instrument["name"] == "SPT":
-                noise = Table.read(
-                    "./example_data/SPT/noise_powspec.csv", format="csv"
-                )
-                ell, c_ell = noise["ell"].value, noise["c_ell"].value
-                covs = p2.noise_covariance.covmat_from_powspec(
-                    ell,
-                    c_ell,
-                    ppf.sz_map.shape[0],
-                    ppf.pix_size,
-                    n_maps=1000,
-                    method="lw",
-                    return_maps=False,
-                )
-                ppf.add_covmat(covmat=covs[0], inv_covmat=covs[1])
-                np.savez_compressed(
-                    f"{path}/covmats.npz", covmat=covs[0], inv_covmat=covs[1]
-                )
+        if cluster["name"] == "C2_corrnoise":
+            noise = Table.read(
+                "./example_data/SPT/noise_powspec.csv", format="csv"
+            )
+            ell, c_ell = noise["ell"].value, noise["c_ell"].value
+            covs = p2.noise_covariance.covmat_from_powspec(
+                ell,
+                c_ell,
+                ppf.sz_map.shape[0],
+                ppf.pix_size,
+                n_maps=1000,
+                method="lw",
+                return_maps=False,
+            )
+            ppf.add_covmat(covmat=covs[0], inv_covmat=covs[1])
+            np.savez_compressed(
+                f"{path}/covmats.npz", covmat=covs[0], inv_covmat=covs[1]
+            )
+        elif cluster["name"] == "C2_ptsources":
+            ps_pos = [
+                SkyCoord("12h00m00s +00d00m30s"),
+                SkyCoord("12h00m05s +00d00m10s"),
+            ]
+            ps_fluxes_priors = [ss.norm(1e-3, 2e-4), ss.uniform(0.0, 2e-3)]
+            ppf.add_point_sources(ps_pos, instrument["beam"])
 
         ppf.define_priors(
             P_bins=[ss.loguniform(0.01 * P, 100.0 * P) for P in P_bins],
             conv=ss.norm(*instrument["conv"]),
             zero=ss.norm(*instrument["zero"]),
+            ps_fluxes=(
+                ps_fluxes_priors if cluster["name"] == "C2_ptsources" else []
+            ),
         )
         ppf.dump_to_file(f"{path}/ppf.panco2")
 
@@ -178,6 +188,7 @@ def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
         cbar_label=instrument["cbar_label"],
         filename=f"{path}/data_model_residuals_maps.pdf",
         cmap=instrument["cmap"],
+        separate_ps_model=(cluster["name"] == "C2_ptsources"),
     )
     p2.results.plot_data_model_residuals_1d(
         ppf,
@@ -211,11 +222,10 @@ def run_valid(cluster, instrument, n_bins_P, corr_noise=False, restore=False):
 
 if __name__ == "__main__":
     n_bins_P = 5
-    run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
-    run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
-    # run_valid(
-    #     clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, corr_noise=True
-    # )
+    # run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
+    # run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
+    # run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
+    # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
+    # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
