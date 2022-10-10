@@ -62,6 +62,7 @@ clusters = {
     "C3": {"name": "C3", "z": 1.0, "M_500": 3.0},
     "C2_corrnoise": {"name": "C2_corrnoise", "z": 0.5, "M_500": 6.0},
     "C2_ptsources": {"name": "C2_ptsources", "z": 0.5, "M_500": 6.0},
+    "C2_Y500const": {"name": "C2_Y500const", "z": 0.5, "M_500": 6.0},
 }
 
 
@@ -102,6 +103,8 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         ppf.define_model(r_bins)
         P_bins = p2.utils.gNFW(r_bins, *ppf.cluster.A10_params)
 
+        # ========  <INDIVIDUAL OPTIONS>  ======== #
+        # FILTERING
         if instrument["name"] == "NIKA2":
             tf = Table.read("./example_data/NIKA2/nk2_tf.fits")
             ppf.add_filtering(
@@ -113,6 +116,7 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         else:
             ppf.add_filtering(beam_fwhm=instrument["beam"])
 
+        # CORRELATED NOISE
         if cluster["name"] == "C2_corrnoise":
             noise = Table.read(
                 "./example_data/SPT/noise_powspec.csv", format="csv"
@@ -131,6 +135,8 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
             np.savez_compressed(
                 f"{path}/covmats.npz", covmat=covs[0], inv_covmat=covs[1]
             )
+
+        # POINT SOURCES
         elif cluster["name"] == "C2_ptsources":
             ps_pos = [
                 SkyCoord("12h00m00s +00d00m30s"),
@@ -139,6 +145,11 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
             ps_fluxes_priors = [ss.norm(1e-3, 2e-4), ss.uniform(0.0, 2e-3)]
             ppf.add_point_sources(ps_pos, instrument["beam"])
 
+        # INTEGRATED SZ
+        elif cluster["name"] == "C2_Y500const":
+            ppf.add_integ_Y(75.46, 7.55, ppf.cluster.R_500)
+
+        # ========  </INDIVIDUAL OPTIONS>  ======== #
         ppf.define_priors(
             P_bins=[ss.loguniform(0.01 * P, 100.0 * P) for P in P_bins],
             conv=ss.norm(*instrument["conv"]),
@@ -228,4 +239,5 @@ if __name__ == "__main__":
     # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
     # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
     # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
+    # run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P)
