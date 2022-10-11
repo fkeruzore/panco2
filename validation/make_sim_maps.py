@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
@@ -16,6 +17,8 @@ cmap_planck = mpl.colors.ListedColormap(
 )
 cmap_spt = "twilight_shifted"
 cmap_nika2 = "RdBu_r"
+
+plt.ion()
 
 
 def make_sim_map_nika2(
@@ -49,7 +52,7 @@ def make_sim_map_nika2(
 
     tf = Table.read("./example_data/NIKA2/nk2_tf.fits")
     ppf.add_filtering(
-        beam_fwhm=18.0,
+        # beam_fwhm=18.0,
         k=tf["k"].to("arcsec-1").value,
         tf=tf["tf_2mm"].value,
         pad=20,
@@ -89,6 +92,7 @@ def make_sim_map_spt(
     ps_pos=[],
     ps_fluxes=[],
     corr_noise=False,
+    tf2d=False,
     plot_map=True,
 ):
     z, M_500 = cluster["z"], cluster["M_500"]
@@ -112,7 +116,6 @@ def make_sim_map_spt(
     P_bins = p2.utils.gNFW(ppf.model.r_bins, *ppf.cluster.A10_params)
     par_vec = np.append(P_bins, [conv, zero, *ps_fluxes])
 
-    ppf.add_filtering(beam_fwhm=75.0)
     if corr_noise:
         noise = Table.read(
             "./example_data/SPT/noise_powspec.csv", format="csv"
@@ -129,6 +132,20 @@ def make_sim_map_spt(
         )
         # return covs
         ppf.add_covmat(covmat=covs[0], inv_covmat=covs[1])
+
+    if tf2d:
+        tf = np.load("./example_data/SPT/tf2d.npz")
+        ppf.add_filtering(
+            beam_fwhm=75.0,
+            k=(
+                tf["ell_x"][0, :] / (180.0 * 3600),
+                tf["ell_y"][:, 0] / (180.0 * 3600),
+            ),
+            tf=tf["tf"],
+            pad=30,
+        )
+    else:
+        ppf.add_filtering(beam_fwhm=75.0)
 
     ppf.write_sim_map(
         par_vec, file_out, filter_noise=False, corr_noise=corr_noise
@@ -234,7 +251,7 @@ if __name__ == "__main__":
         fig, ax = make_sim_map_spt(
             C1,
             "./results/C1/SPT/input_map.fits",
-            map_size=61.0,
+            map_size=31.0,
         )
         pdf.savefig(fig)
 
@@ -244,7 +261,7 @@ if __name__ == "__main__":
         fig, ax = make_sim_map_spt(
             C2,
             "./results/C2/SPT/input_map.fits",
-            map_size=61.0,
+            map_size=31.0,
         )
         pdf.savefig(fig)
 
@@ -283,11 +300,12 @@ if __name__ == "__main__":
 
         # =================================================================== #
         print("==> SPT map of C2 with 2D filtering ...")
-        np.random.seed(48)
+        np.random.seed(44)
         fig, ax = make_sim_map_spt(
             C2_2d_filter,
             "./results/C2_2d_filter/SPT/input_map.fits",
-            map_size=21.0,
+            map_size=31.0,
+            tf2d=True,
         )
         pdf.savefig(fig)
 
