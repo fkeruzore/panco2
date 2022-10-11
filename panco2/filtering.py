@@ -73,7 +73,7 @@ class Filter2d(Filter):
         ky_map = np.copy(kx_map)
 
         interp = interp2d(kx, ky, tf, bounds_error=False, fill_value=0.0)
-        tf_map_2d = interp(kx_map, ky_map)
+        tf_map_2d = np.fft.fftshift(interp(kx_map, ky_map))
 
         super().__init__(
             beam_sigma_pix=beam_sigma_pix, tf=tf_map_2d, pad_pix=pad
