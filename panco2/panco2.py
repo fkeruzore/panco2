@@ -292,8 +292,8 @@ class PressureProfileFitter:
             and `tf` should be 1D arrays of same shape
 
           - For a 2D transfer function, `k` should be a tuple of
-            two 2D arrays (kx and ky), and `tf` should be a 2D
-            array with the same shape as `kx` and `ky`
+            two 1D arrays (kx and ky), and `tf` should be a 2D
+            array with shape as (`kx`, `ky`)
 
         """
 
@@ -329,9 +329,15 @@ class PressureProfileFitter:
                 k[1], np.ndarray
             )
             assert botharr, "kx and ky are not arrays"
-            assert (
-                k[0].shape == k[1].shape and k[0].shape == tf.shape
-            ), "kx, ky, tf don't have the same shape"
+            assert k[0].shape == k[1].shape, "kx, ky don't have the same shape"
+            assert (len(k[0].shape) == 1) and (
+                len(k[1].shape) == 1
+            ), "kx, ky are not 1D"
+            assert tf.shape == (
+                len(k[0]),
+                len(k[1]),
+            ), "k and tf shapes incompatible"
+
             self.model.filter = filtering.Filter2d(
                 self.sz_map.shape[0],
                 self.pix_size,
