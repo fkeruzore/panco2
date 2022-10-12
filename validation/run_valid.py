@@ -107,21 +107,19 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         # ========  <INDIVIDUAL OPTIONS>  ======== #
         # FILTERING
         if instrument["name"] == "NIKA2":
-            tf = Table.read("./example_data/NIKA2/nk2_tf.fits")
+            tf = np.load("./example_data/NIKA2/nk2_tf.npz")
             ppf.add_filtering(
                 beam_fwhm=18.0,
-                k=tf["k"].to("arcsec-1").value,
-                tf=tf["tf_2mm"].value,
+                ell=tf["ell"],
+                tf=tf["tf_150GHz"],
                 pad=20,
             )
+            tf = Table.read("./example_data/NIKA2/nk2_tf.fits")
         elif cluster["name"] == "C2_2d_filter":
             tf = np.load("./example_data/SPT/tf2d.npz")
             ppf.add_filtering(
                 beam_fwhm=instrument["beam"],
-                k=(
-                    tf["ell_x"][0, :] / (180.0 * 3600),
-                    tf["ell_y"][:, 0] / (180.0 * 3600),
-                ),
+                ell=(tf["ell_x"][0, :], tf["ell_y"][:, 0]),
                 tf=tf["tf"],
                 pad=30,
             )
@@ -248,9 +246,9 @@ if __name__ == "__main__":
     # run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
     # run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
     # run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
-    # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
     # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
     run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
-    # run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P)

@@ -50,11 +50,11 @@ def make_sim_map_nika2(
     ppf.define_model(r_bins)
     ppf.add_point_sources(ps_pos, 18.0)
 
-    tf = Table.read("./example_data/NIKA2/nk2_tf.fits")
+    tf = np.load("./example_data/NIKA2/nk2_tf.npz")
     ppf.add_filtering(
-        # beam_fwhm=18.0,
-        k=tf["k"].to("arcsec-1").value,
-        tf=tf["tf_2mm"].value,
+        beam_fwhm=18.0,
+        ell=tf["ell"],
+        tf=tf["tf_150GHz"],
         pad=20,
     )
 
@@ -130,17 +130,13 @@ def make_sim_map_spt(
             method="lw",
             return_maps=True,
         )
-        # return covs
         ppf.add_covmat(covmat=covs[0], inv_covmat=covs[1])
 
     if tf2d:
         tf = np.load("./example_data/SPT/tf2d.npz")
         ppf.add_filtering(
             beam_fwhm=75.0,
-            k=(
-                tf["ell_x"][0, :] / (180.0 * 3600),
-                tf["ell_y"][:, 0] / (180.0 * 3600),
-            ),
+            ell=(tf["ell_x"][0, :], tf["ell_y"][:, 0]),
             tf=tf["tf"],
             pad=30,
         )

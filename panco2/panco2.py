@@ -260,7 +260,7 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def add_filtering(self, beam_fwhm=0.0, pad=0, k=None, tf=None):
+    def add_filtering(self, beam_fwhm=0.0, pad=0, ell=None, tf=None):
         """
         Initialize convolution by a beam and
         transfer function in the model computation.
@@ -271,29 +271,26 @@ class PressureProfileFitter:
             The FWHM of your gaussian beam.
             Can be set to 0 if you don't want beam confolution
             (e.g. if the beam is already in the transfer function).
-        tf_k : array
+        tf : array
             Filtering measurement.
-        k : array [arcmin-1] or tuple of arrays
-            Angular frequencies at which the filtering was measured.
-            Can be a tuple of `kx` and `ky` in the same units, see Notes.
+        ell : array | tuple of arrays
+            Multipole moments at which the filtering was measured.
+            Can be a tuple of `ellx` and `elly`, see Notes.
         pad : int
             Padding to be added to the sides of the map before convolution,
             in pixels.
 
         Notes
         =====
-        * The convention used for `k` is the same as the `numpy` one,
-          i.e. the largest 1D mode is 1/(pixel size).
-
         * The code can deal with 1D or 2D transfer functions, depending
           on the inputs:
 
-          - For a 1D transfer function (isotropic filtering), `k`
+          - For a 1D transfer function (isotropic filtering), `ell`
             and `tf` should be 1D arrays of same shape
 
-          - For a 2D transfer function, `k` should be a tuple of
-            two 1D arrays (kx and ky), and `tf` should be a 2D
-            array with shape as (`kx`, `ky`)
+          - For a 2D transfer function, `ell` should be a tuple of
+            two 1D arrays (ell_x and ell_y), and `tf` should be a 2D
+            array with shape as the outer product (`ell_x` x `ell_y`)
 
         """
 
@@ -308,13 +305,13 @@ class PressureProfileFitter:
             self.model.filter = filtering.Filter(beam_sigma_pix)
 
         # Case 2: beam (or not), 1D transfer function
-        elif (tf is not None) and isinstance(k, np.ndarray):
+        elif (tf is not None) and isinstance(ell, np.ndarray):
             print("Adding filtering: beam and 1D transfer function")
-            assert tf.shape == k.shape, "tf and k don't have the same shape"
+            assert tf.shape == ell.shape, "tf and k don't have the same shape"
             self.model.filter = filtering.Filter1d(
                 self.sz_map.shape[0],
                 self.pix_size,
-                k,
+                ell / (180.0 * 3600),  # flat sky ell = k
                 tf,
                 beam_sigma_pix=beam_sigma_pix,
                 pad_pix=pad,
@@ -322,27 +319,29 @@ class PressureProfileFitter:
 
         # Case 2: beam (or not), 1D transfer function
         elif (tf is not None) and (
-            isinstance(k, tuple) or isinstance(k, list)
+            isinstance(ell, tuple) or isinstance(ell, list)
         ):
             print("Adding filtering: beam and 2D transfer function")
-            botharr = isinstance(k[0], np.ndarray) and isinstance(
-                k[1], np.ndarray
+            botharr = isinstance(ell[0], np.ndarray) and isinstance(
+                ell[1], np.ndarray
             )
-            assert botharr, "kx and ky are not arrays"
-            assert k[0].shape == k[1].shape, "kx, ky don't have the same shape"
-            assert (len(k[0].shape) == 1) and (
-                len(k[1].shape) == 1
-            ), "kx, ky are not 1D"
+            assert botharr, "ell_x and ell_y are not arrays"
+            assert (
+                ell[0].shape == ell[1].shape
+            ), "ell_x, ell_y don't have the same shape"
+            assert (len(ell[0].shape) == 1) and (
+                len(ell[1].shape) == 1
+            ), "ell_x, ell_y are not 1D"
             assert tf.shape == (
-                len(k[0]),
-                len(k[1]),
-            ), "k and tf shapes incompatible"
+                len(ell[0]),
+                len(ell[1]),
+            ), "ell and tf shapes incompatible"
 
             self.model.filter = filtering.Filter2d(
                 self.sz_map.shape[0],
                 self.pix_size,
-                k[0],
-                k[1],
+                ell[0] / (180.0 * 3600),  # flat sky ell_x = k_x
+                ell[1] / (180.0 * 3600),  # flat sky ell_y = k_y
                 tf,
                 beam_sigma_pix=beam_sigma_pix,
                 pad_pix=pad,
