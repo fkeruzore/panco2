@@ -17,5 +17,6 @@ setup(
         "tqdm",
         "dill",
         "chainconsumer",
+        "sklearn",
     ],
 )
