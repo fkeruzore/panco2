@@ -1,2 +1,2 @@
-**/*.ipynb linguist-language=Python
-**/*.html linguist-vendored
+example/*.ipynb linguist-language=Python
+example/*.html linguist-vendored
