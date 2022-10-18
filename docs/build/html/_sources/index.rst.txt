@@ -6,13 +6,17 @@
 Welcome to panco2's documentation!
 ==================================
 
+panco2 is a Python library dedicated to extracting measurements of the pressure profile of the hot gas inside galaxy clusters from millimeter-wave observations.
+The extraction is performed using forward modeling the millimeter-wave signal of clusters and MCMC sampling of a posterior distribution for the parameters given the input data.
+Many characteristic features of millimeter-wave observations can be taken into account, such as filtering (both through PSF smearing and transfer functions), point source contamination, and correlated noise.
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
-   intro
-   physics
-   algo
+   fwmod
+   mcmc
+   example_C2_NIKA2.ipynb
    api
    refs
 

@@ -1,90 +1,325 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; panco2 0.1 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-    <script src="_static/js/theme.js"></script>
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>API &#8212; panco2 0.1 documentation</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="References" href="refs.html" />
-    <link rel="prev" title="PANCO2’s algorithm" href="algo.html" /> 
-</head>
+    <link rel="prev" title="Running example: Pressure profile of a mock cluster from a mock NIKA2 map" href="example_C2_NIKA2.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> panco2
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="physics.html">The physics probed by NIKA2 observations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="algo.html">PANCO2’s algorithm</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#panco2-panco2">panco2.panco2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-panco2.results">panco2.results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-panco2.noise_covariance">panco2.noise_covariance</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
-</ul>
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
 
-        </div>
-      </div>
-    </nav>
+    
+    <div class="container-fluid" id="banner"></div>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">panco2</a>
-      </nav>
+    
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>API</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
-      </li>
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">panco2 0.1 documentation</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="fwmod.html">
+   Forward modeling of thermal SZ maps
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="mcmc.html">
+   Pressure profile fitting
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="example_C2_NIKA2.html">
+   Running example: Pressure profile of a mock cluster from a mock NIKA2 map
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="current reference internal" href="#">
+   API
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
   </ul>
-  <hr/>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="refs.html">
+   References
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="_sources/api.rst.txt"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.rst</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#panco2-panco2">
+   panco2.panco2
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-panco2.results">
+   panco2.results
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-panco2.noise_covariance">
+   panco2.noise_covariance
+  </a>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>API</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#panco2-panco2">
+   panco2.panco2
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-panco2.results">
+   panco2.results
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-panco2.noise_covariance">
+   panco2.noise_covariance
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
   <section id="api">
-<h1>API<a class="headerlink" href="#api" title="Permalink to this heading"></a></h1>
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <section id="panco2-panco2">
-<h2>panco2.panco2<a class="headerlink" href="#panco2-panco2" title="Permalink to this heading"></a></h2>
+<h2>panco2.panco2<a class="headerlink" href="#panco2-panco2" title="Permalink to this headline">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">panco2.</span></span><span class="sig-name descname"><span class="pre">PressureProfileFitter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sz_map_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hdu_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hdu_rms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_center=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_size=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo=FlatLambdaCDM(H0=70</span> <span class="pre">km</span> <span class="pre">/</span> <span class="pre">(Mpc</span> <span class="pre">s)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Om0=0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tcmb0=0</span> <span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Neff=3.04</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_nu=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ob0=None)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">panco2.</span></span><span class="sig-name descname"><span class="pre">PressureProfileFitter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sz_map_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hdu_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hdu_rms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_center=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_size=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo=FlatLambdaCDM(H0=70.0</span> <span class="pre">km</span> <span class="pre">/</span> <span class="pre">(Mpc</span> <span class="pre">s)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Om0=0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tcmb0=0.0</span> <span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Neff=3.04</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_nu=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ob0=None)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter" title="Permalink to this definition">#</a></dt>
 <dd><p>The main class of panco2, that manages data loading, model
 definition, and MCMC sampling.</p>
 <dl class="field-list simple">
@@ -107,7 +342,7 @@ Defaults to flat LCDM with h=0.7, Om0=0.3.</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.add_covmat">
-<span class="sig-name descname"><span class="pre">add_covmat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_covmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_covmat" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add_covmat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_covmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_covmat" title="Permalink to this definition">#</a></dt>
 <dd><p>Adds in a (inverse) noise covariance matrix to be used in the
 log-likelihood computation, in order to account for spatial
 correlations in the noise.
@@ -138,7 +373,7 @@ the matrix product C &#64; C-1 is close to identity.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.add_filtering">
-<span class="sig-name descname"><span class="pre">add_filtering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beam_fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_filtering" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add_filtering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beam_fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_filtering" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize convolution by a beam and
 transfer function in the model computation.</p>
 <dl class="field-list simple">
@@ -147,9 +382,9 @@ transfer function in the model computation.</p>
 <li><p><strong>beam_fwhm</strong> (<em>float</em><em> [</em><em>arcsec</em><em>]</em><em>, </em><em>optional</em>) – The FWHM of your gaussian beam.
 Can be set to 0 if you don’t want beam confolution
 (e.g. if the beam is already in the transfer function).</p></li>
-<li><p><strong>tf_k</strong> (<em>array</em>) – Filtering measurement.</p></li>
-<li><p><strong>k</strong> (<em>array</em><em> [</em><em>arcmin-1</em><em>] or </em><em>tuple of arrays</em>) – Angular frequencies at which the filtering was measured.
-Can be a tuple of <cite>kx</cite> and <cite>ky</cite> in the same units, see Notes.</p></li>
+<li><p><strong>tf</strong> (<em>array</em>) – Filtering measurement.</p></li>
+<li><p><strong>ell</strong> (<em>array</em><em> | </em><em>tuple of arrays</em>) – Multipole moments at which the filtering was measured.
+Can be a tuple of <cite>ellx</cite> and <cite>elly</cite>, see Notes.</p></li>
 <li><p><strong>pad</strong> (<em>int</em>) – Padding to be added to the sides of the map before convolution,
 in pixels.</p></li>
 </ul>
@@ -157,16 +392,14 @@ in pixels.</p></li>
 </dl>
 <p class="rubric">Notes</p>
 <ul class="simple">
-<li><p>The convention used for <cite>k</cite> is the same as the <cite>numpy</cite> one,
-i.e. the largest 1D mode is 1/(pixel size).</p></li>
 <li><p>The code can deal with 1D or 2D transfer functions, depending
 on the inputs:</p>
 <ul>
-<li><p>For a 1D transfer function (isotropic filtering), <cite>k</cite>
+<li><p>For a 1D transfer function (isotropic filtering), <cite>ell</cite>
 and <cite>tf</cite> should be 1D arrays of same shape</p></li>
-<li><p>For a 2D transfer function, <cite>k</cite> should be a tuple of
-two 2D arrays (kx and ky), and <cite>tf</cite> should be a 2D
-array with the same shape as <cite>kx</cite> and <cite>ky</cite></p></li>
+<li><p>For a 2D transfer function, <cite>ell</cite> should be a tuple of
+two 1D arrays (ell_x and ell_y), and <cite>tf</cite> should be a 2D
+array with shape as the outer product (<cite>ell_x</cite> x <cite>ell_y</cite>)</p></li>
 </ul>
 </li>
 </ul>
@@ -174,7 +407,7 @@ array with the same shape as <cite>kx</cite> and <cite>ky</cite></p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.add_integ_Y">
-<span class="sig-name descname"><span class="pre">add_integ_Y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_integ_Y" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add_integ_Y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.add_integ_Y" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a constraint on the integrated Compton parameter
 to the fit.</p>
 <dl class="field-list simple">
@@ -190,7 +423,7 @@ to the fit.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.define_priors">
-<span class="sig-name descname"><span class="pre">define_priors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P_bins=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gNFW_params=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv=&lt;scipy.stats._distn_infrastructure.rv_frozen</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero=&lt;scipy.stats._distn_infrastructure.rv_frozen</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ps_fluxes=[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.define_priors" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">define_priors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P_bins=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gNFW_params=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv=&lt;scipy.stats._distn_infrastructure.rv_continuous_frozen</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero=&lt;scipy.stats._distn_infrastructure.rv_continuous_frozen</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ps_fluxes=[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.define_priors" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -230,7 +463,7 @@ Defaults to N(0, 1).</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.dump_to_file">
-<span class="sig-name descname"><span class="pre">dump_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.dump_to_file" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">dump_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.dump_to_file" title="Permalink to this definition">#</a></dt>
 <dd><p>Writes a <cite>PressureProfileFitter</cite> object as a <cite>dill</cite> serialized
 file.</p>
 <dl class="field-list simple">
@@ -246,7 +479,7 @@ file.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.load_from_file">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.load_from_file" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.load_from_file" title="Permalink to this definition">#</a></dt>
 <dd><p>Load a <cite>PressureProfileFitter</cite> object from a <cite>dill</cite> serialized
 file.</p>
 <dl class="field-list simple">
@@ -268,7 +501,7 @@ file.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.run_mcmc">
-<span class="sig-name descname"><span class="pre">run_mcmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_chains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_threads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_delta_tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_autocorr_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_chains_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./chains.npz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_convergence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.run_mcmc" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">run_mcmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_chains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_threads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_delta_tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_autocorr_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_chains_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./chains.npz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_convergence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.run_mcmc" title="Permalink to this definition">#</a></dt>
 <dd><p>Runs MCMC sampling of the posterior distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -316,7 +549,7 @@ the current mean autocorrelation time.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="panco2.PressureProfileFitter.write_sim_map">
-<span class="sig-name descname"><span class="pre">write_sim_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par_vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corr_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.write_sim_map" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">write_sim_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par_vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corr_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.PressureProfileFitter.write_sim_map" title="Permalink to this definition">#</a></dt>
 <dd><p>Write a FITS map with given parameter values</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -349,10 +582,10 @@ fit, and the headers are adjusted accordingly.</p>
 
 </section>
 <section id="module-panco2.results">
-<span id="panco2-results"></span><h2>panco2.results<a class="headerlink" href="#module-panco2.results" title="Permalink to this heading"></a></h2>
+<span id="panco2-results"></span><h2>panco2.results<a class="headerlink" href="#module-panco2.results" title="Permalink to this headline">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.results.load_chains">
-<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">load_chains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_chains_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discard</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_percent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.load_chains" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">load_chains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_chains_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discard</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_percent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.load_chains" title="Permalink to this definition">#</a></dt>
 <dd><p>Loads raw Markov chains, cleans them, and arranges them
 in a convenient data frame.</p>
 <dl class="field-list simple">
@@ -391,7 +624,7 @@ discard them.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.results.mcmc_corner_plot">
-<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_corner_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_corner_plot" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_corner_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_corner_plot" title="Permalink to this definition">#</a></dt>
 <dd><p>Plots 1D and 2D posterior sampled by the MCMC.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -415,7 +648,7 @@ shown for comparison with the posterior.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.results.mcmc_matrices_plot">
-<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_matrices_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_matrices_plot" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_matrices_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_matrices_plot" title="Permalink to this definition">#</a></dt>
 <dd><p>Produces an overly complicated plot of the correlation and
 covariance matrices of Markov chains, where:</p>
 <ul class="simple">
@@ -440,7 +673,7 @@ absolute covariance between parameters.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.results.mcmc_trace_plot">
-<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_trace_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_trace_plot" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">mcmc_trace_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.mcmc_trace_plot" title="Permalink to this definition">#</a></dt>
 <dd><p>Create MCMC trace plots, i.e. chains evolution with steps.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -459,7 +692,7 @@ should be shown along with the parameters</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.results.plot_data_model_residuals">
-<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_data_model_residuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_hztl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RdBu_r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separate_ps_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_data_model_residuals" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_data_model_residuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_hztl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RdBu_r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snr_contours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separate_ps_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_data_model_residuals" title="Permalink to this definition">#</a></dt>
 <dd><p>Plot data, model, and residuals maps.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -483,6 +716,8 @@ before plotting. Useful for very small units
 like Compton-y or Jy/beam</p></li>
 <li><p><strong>cbar_hztl</strong> (<em>bool</em>) – Makes the colorbar horizontal instead of vertical.</p></li>
 <li><p><strong>cmap</strong> (<em>str</em><em> or </em><em>mpl.colors.Colorbar</em>) – The color map to use. Always make pretty plots!</p></li>
+<li><p><strong>snr_contours</strong> (<em>None</em><em> or </em><em>array-like</em>) – Signal-to-noise levels to be overplotted as contours,
+in numbers of sigma.</p></li>
 <li><p><strong>separate_ps_model</strong> (<em>bool</em>) – If your model fits both SZ and point sources, makes the
 model and residuals for SZ/PS/SZ+PS (i.e. 5 total plots)</p></li>
 <li><p><strong>filename</strong> (<em>str</em><em> or </em><em>None</em>) – Filename to save the plot</p></li>
@@ -499,7 +734,7 @@ model and residuals for SZ/PS/SZ+PS (i.e. 5 total plots)</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.results.plot_data_model_residuals_1d">
-<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_data_model_residuals_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_beam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_data_model_residuals_1d" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_data_model_residuals_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_beam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_data_model_residuals_1d" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -541,7 +776,7 @@ making the process slower.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.results.plot_profile">
-<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_profile" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.results.</span></span><span class="sig-name descname"><span class="pre">plot_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains_clean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.results.plot_profile" title="Permalink to this definition">#</a></dt>
 <dd><p>Plots the pressure profile recovered by PANCO2 from the
 Markov chains.</p>
 <dl class="field-list simple">
@@ -564,10 +799,10 @@ Markov chains.</p>
 
 </section>
 <section id="module-panco2.noise_covariance">
-<span id="panco2-noise-covariance"></span><h2>panco2.noise_covariance<a class="headerlink" href="#module-panco2.noise_covariance" title="Permalink to this heading"></a></h2>
+<span id="panco2-noise-covariance"></span><h2>panco2.noise_covariance<a class="headerlink" href="#module-panco2.noise_covariance" title="Permalink to this headline">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.noise_covariance.check_inversion">
-<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">check_inversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.check_inversion" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">check_inversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.check_inversion" title="Permalink to this definition">#</a></dt>
 <dd><p>Asserts that two matrices are the inverse of one another by
 checking that C &#64; C^-1 = I.</p>
 <dl class="field-list simple">
@@ -582,7 +817,7 @@ checking that C &#64; C^-1 = I.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.noise_covariance.covmat_from_noise_maps">
-<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">covmat_from_noise_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lw'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.covmat_from_noise_maps" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">covmat_from_noise_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lw'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.covmat_from_noise_maps" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the pixel noise covariance matrix and its inverse
 from random noise realizations.</p>
 <dl class="field-list simple">
@@ -611,7 +846,7 @@ using <cite>sklearn.covariance.ledoit_wolf()</cite> (default).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.noise_covariance.covmat_from_powspec">
-<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">covmat_from_powspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_ell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.covmat_from_powspec" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">covmat_from_powspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_ell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.covmat_from_powspec" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the pixel noise covariance matrix and its inverse
 from a noise power spectrum by generating many random
 maps with the input power spectrum.</p>
@@ -647,7 +882,7 @@ covariance, shape=(n_maps, nx, nx)</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.noise_covariance.covmats_from_noise_map">
-<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">covmats_from_noise_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.covmats_from_noise_map" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">covmats_from_noise_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.covmats_from_noise_map" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the pixel noise covariance matrix and its inverse
 from a noise map by generating many random realizations
 with the same power spectrum.</p>
@@ -680,7 +915,7 @@ covariance, shape=(n_maps, nx, nx)</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.noise_covariance.make_maps_with_same_pk">
-<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">make_maps_with_same_pk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.make_maps_with_same_pk" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">make_maps_with_same_pk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.make_maps_with_same_pk" title="Permalink to this definition">#</a></dt>
 <dd><p>Generates a number of random maps with the same power spectrum
 as an input map.</p>
 <dl class="field-list simple">
@@ -706,7 +941,7 @@ shape=(n_maps, nx, ny)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.noise_covariance.powspec">
-<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">powspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.powspec" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">powspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.powspec" title="Permalink to this definition">#</a></dt>
 <dd><p>Power spectrum of a map in the flat-sky approximation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -732,7 +967,7 @@ i.e. the largest 1D mode is 1/(pixel size).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="panco2.noise_covariance.powspec_to_maps">
-<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">powspec_to_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.powspec_to_maps" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">panco2.noise_covariance.</span></span><span class="sig-name descname"><span class="pre">powspec_to_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_maps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#panco2.noise_covariance.powspec_to_maps" title="Permalink to this definition">#</a></dt>
 <dd><p>Creates a random map realization from a power spectrum.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -762,34 +997,50 @@ i.e. the largest 1D mode is 1/(pixel size).</p>
 </section>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="algo.html" class="btn btn-neutral float-left" title="PANCO2’s algorithm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="refs.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2022, Florian Kéruzoré.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="example_C2_NIKA2.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Running example: Pressure profile of a mock cluster from a mock NIKA2 map</p>
         </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+    </a>
+    <a class='right-next' id="next-link" href="refs.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">References</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Florian Kéruzoré, Frédéric Mayet, Juan Francisco Macías-Pérez, Laurence Perotto, Florian Ruppin<br/>
+  
+      &copy; Copyright 2022, Florian Kéruzoré.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
 
-</body>
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
 </html>

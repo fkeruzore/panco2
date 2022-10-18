@@ -1,64 +1,37 @@
-PANCO2's algorithm
+panco2's algorithm
 ******************
 
-This section describes the step-by-step algorithm implemented in ``PANCO2`` to infer a measurement of the pressure profile and thermodynamical properties of the ICM from NIKA2 observations.
+This section describes the step-by-step algorithm implemented in ``panco2`` to infer a measurement of the pressure profile and thermodynamic properties of the ICM from a tSZ map.
 
 Physical modeling of the ICM
 ============================
 
-The spherical symmetry of the ICM is assumed by ``PANCO2``.  Therefore, the pressure distribution is described by a pressure profile, :math:`P(r)`.
-Two models can be used:
+``panco2`` assumes spherical symmetry of the ICM pressure distribution, which is described by a pressure profile, :math:`P(r)`.
+It uses a radially-binned model, where the pressure profile of the ICM is written as
 
-- A parametric, generalized Navarro-Frenk-White (gNFW) model :cite:`zhao_analytical_1996,nagai_effects_2007`: in this case, the pressure profile of the ICM is written as
-
-    .. math:: P(r) = P_0 \left(\frac{r}{r_p}\right)^{-c}
-                 \left[1 + \left(\frac{r}{r_p}\right)^a \right]^\frac{c-b}{a},
-       :label: gnfw
-
-  where the pressure profile is described by *five* parameters: a normalization :math:`P_0`, external and internal slopes :math:`b` and :math:`b`, a characteristic radius of transition between the two regimes, :math:`r_p`, and the smoothness of this transition :math:`a`.
-
-- A non-parametric model, where the pressure profile of the ICM is written as
-
-    .. math:: P(R_i < r < R_{i+1}) = P_i \left(\frac{r}{R_i}\right)^{-\alpha_i} .
+    .. math:: P(R_i < r < R_{i+1}) = P_i \left(\frac{r}{R_i}\right)^{-\alpha_i},
        :label: nonparam
 
-  where a radial binning covering the cluster's spatial extension is defined, and the value of the pressure profile at each radial bin is a parameter of the model.
-  The value of the pressure between two bins is computed by a power law interpolation between the two closest bins.  The number of parameters of the model therefore depends on the binning chosen by the user.
-
-Each model has its advantages and drawbacks.
-The gNFW model is smooth (and therefore easily extrapolated), and widely used in the literature.
-Nonetheless, performing non-parametric fits is strongly recommended for several reasons.
-Non-parametric profiles offer the ability to detect features that may be smoothed in a gNFW profile (such as local overpressures).
-But, as far as running time is concerned, the most important advantage of non-parametric fits over gNFW is the relatively weak correlation between the model parameters.
-The degeneracy of the parameters in a gNFW profile is well known, and is the source of many technical complications when trying to fit a model on data.
-As a consequence, the running time of ``PANCO2`` in non-parametric mode is much faster than in gNFW mode on the same map (:math:`\sim 15` minutes vs :math:`\sim 4` hours with the same resources).
-It is therefore highly recommended to use non-parametric models.
+where a radial binning covering the cluster's spatial extension is defined, and the value of the pressure profile at each radial bin is a parameter of the model.
+The value of the pressure between two bins is computed by a power law interpolation between the two closest bins.  The number of parameters of the model therefore depends on the binning chosen by the user.
 
 *Conventions and notations*
 
 The sky plane will be designed as the :math:`(x, y)` plane.  The :math:`z` direction will refer to the line of sight.
-For each cluster, a characteristic radius :math:`R_{500}` can be defined, corresponding to the radius inside which the average density is 500 times higher than :math:`\rho_c(z)`, the critical density of the Universe at the cluster's redshift :math:`z`.
-Quantities with a 500 subscript refer to properties of the cluster inside this radius.
 
-Model computation
-=================
-
-Regardless of the user's choice of pressure profile model, ``PANCO2``'s model computation follows the same procedure to compute a model to be compared with the input data.
+Forward modeling of the tSZ signal
+==================================
 
 Compton parameter map computation
 ---------------------------------
 
 The first step is to compute the Compton parameter profile :math:`y(r)` on a radial range that entirely covers the one covered by the input NIKA2 map.
 
-**In gNFW mode**, the pressure is computed in the :math:`(x, z)` plane. 
-The :math:`x` direction is binned as the center of the pixels in the input map, while the :math:`z` direction is binned with 500 log-spaced points from 1 pc to :math:`5R_{500}`.
-The pressure is then integrated along the :math:`z` direction.
-
-**In non-parametric mode**, the pressure profile is analytically integrated from 0 to infinity on the :math:`z` axis, following the work of :cite:`romero_multi-instrument_2018`.
+The pressure profile is analytically integrated from 0 to infinity on the :math:`z` axis, following the work of :cite:`romero_multi-instrument_2018`.
 
 In both cases, this procedure yields a Compton parameter profile as described by eq. :eq:`compton`, computed at the radii of each pixel from the center of the map to its edge.
 
-This Compton parameter map is then interpolated at the radii corresponding to each pixel in the input map.
+This Compton parameter profile is then interpolated at the radii corresponding to each pixel in the input map.
 This approach is much shorter than computing the line-of-sight integration for each pixel of the map.
 
 Filtered surface brightness map
@@ -67,7 +40,7 @@ Filtered surface brightness map
 The Compton parameter map obtained must be converted to surface brightness units in order to be comparable with observed data.
 The unit used for NIKA2 maps is the Jy/beam.
 The conversion from :math:`y` to Jy/beam depends on NIKA2 bandpasses, as well as its instrumental beam, and must be computed for each run separately.
-In practice, ``PANCO2`` uses a *calibration factor*, for which the user must provide an input value and uncertainty, and which is treated as a parameter of the fit.
+In practice, ``panco2`` uses a *calibration factor*, for which the user must provide an input value and uncertainty, and which is treated as a parameter of the fit.
 This allows one to propagate the uncertainty on the calibration of NIKA2 maps to our measurement of the pressure profile of galaxy clusters.
 
 The map obtained by multiplying the Compton parameter map with the calibration factor is then convolved with a gaussian kernel of :math:`{\rm FWHM} = 17.6 "` to account for the NIKA2 instrumental filtering, yielding a map in Jy/beam.
@@ -81,10 +54,10 @@ Point source contamination
 --------------------------
 
 SZ observations are very prone to contamination by point sources.
-To take it into account, ``PANCO2`` can use the methodology described in :cite:`keruzore_exploiting_2020`, which consists in treating the fluxes of known point sources as parameters of the fit, constrained by a prior knowledge of each source's flux.
-This allows to propagate the uncertainty in the point sources fluxes to ``PANCO2``'s results.
+To take it into account, ``panco2`` can use the methodology described in :cite:`keruzore_exploiting_2020`, which consists in treating the fluxes of known point sources as parameters of the fit, constrained by a prior knowledge of each source's flux.
+This allows to propagate the uncertainty in the point sources fluxes to ``panco2``'s results.
 
-If asked, ``PANCO2`` will therefore add for each source a 2D gaussian function representing
+If asked, ``panco2`` will therefore add for each source a 2D gaussian function representing
 the NIKA2 instrumental beam, with an amplitude given by the flux of the source.  This
 addition is performed before the convolution by the transfer function, as the point
 sources re just as affected by the filtering as the SZ signal.
@@ -92,7 +65,7 @@ sources re just as affected by the filtering as the SZ signal.
 Integrated signal
 -----------------
 
-As ``PANCO2`` was designed for the NIKA2 SZ Large Program (LPSZ,
+As ``panco2`` was designed for the NIKA2 SZ Large Program (LPSZ,
 :cite:`mayet_cluster_2020`), it uses the knowledge of the integrated SZ flux of the
 cluster, which is always available for LPSZ clusters from the ACT and *Planck* surveys.
 Therefore, along with the model map computation, a model integrated SZ signal is
@@ -108,7 +81,7 @@ way to constrain large-scale emission of the cluster.
 Summary
 -------
 
-The parameters of the model used by PANCO can be summarized in a vector
+The parameters of the model used by panco can be summarized in a vector
 :math:`\vartheta` composed of:
 
 - The parameters of the pressure profile: :math:`P_0,\,r_p,\,a,\,b,\,c` for a gNFW fit,
@@ -126,7 +99,7 @@ spherically-integrated SZ signal :math:`Y`.
 Model adjustment
 ================
 
-``PANCO2`` aims at finding the probability distribution for the parameters of the chosen model
+``panco2`` aims at finding the probability distribution for the parameters of the chosen model
 given the input data.  It does so by using Bayesian Monte Carlo Markov Chains (MCMC)
 sampling: let :math:`D` be the input data and :math:`\vartheta` the set of parameters of
 the model.  The probability for :math:`\theta` to accurately describe the data is given
@@ -144,7 +117,7 @@ normalization constant.
 The likelihood function
 -----------------------
 
-``PANCO2`` uses a multivariate gaussian likelihood function to compare the model to data.
+``panco2`` uses a multivariate gaussian likelihood function to compare the model to data.
 Starting from ``v1.1_dec20``, each data point (*i.e.* each pixel of the map) can either be considered independent or correlated to the others: for a
 parameter set :math:`\vartheta`,
 
@@ -162,7 +135,7 @@ where :math:`D` is the measured NIKA2 map, :math:`\Sigma` is the noise covarianc
 :math:`Y_R(\vartheta)` is the integrated SZ signal computed from Eq.  :eq:`yinteg`, and
 :math:`Y_R^{\rm meas.}` and :math:`\Delta Y_R^{\rm meas.}` are the measured integrated
 SZ signal and its uncertainty, respectively.
-The noise covariance matrix can be computed in ``PANCO2`` if the user provides a set of correlated noise realizations (as produced by ``SZ_IMCM``).
+The noise covariance matrix can be computed in ``panco2`` if the user provides a set of correlated noise realizations (as produced by ``SZ_IMCM``).
 Otherwise, the noise is considered to be white and the pixels uncorrelated, simplifying Eq. :eq:`loglike` and greatly improving the computation time.
 
 In gNFW mode, if X-ray data are available, a term :math:`\Delta_{\rm mass}` is added,
@@ -178,7 +151,7 @@ radius:
 The prior distribution
 ----------------------
 
-``PANCO2`` uses a prior distribution where all parameters are assumed uncorrelated.  Some
+``panco2`` uses a prior distribution where all parameters are assumed uncorrelated.  Some
 parameters accept a wide variety of priors, that we detail here.
 
 Pressure profile parameters
@@ -223,7 +196,7 @@ Posterior distribution sampling
 
 The fit is performed by Monte Carlo Markov Chain (MCMC) sampling of the posterior
 probability distribution of Eq.  :eq:`post`.  This section quickly reviews this
-statistical technique and presents the specific implementation done in ``PANCO2``.
+statistical technique and presents the specific implementation done in ``panco2``.
 
 Monte-Carlo Markov Chain sampling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -247,7 +220,7 @@ can be described by the Metropolis-Hastings algorithm:
 
 The set of accepted positions in the parameter space constitutes a random walk called a
 Markov chain.  The algorithm can be run simultaneously by several independent chains,
-providing an easy way to parallelize the sampling.  In ``PANCO2``, the sampler used is the
+providing an easy way to parallelize the sampling.  In ``panco2``, the sampler used is the
 affine-invariant sampler implemented in the ``emcee`` Python library
 :cite:`foreman-mackey_emcee_2019`, where the parameter space is explored by "walkers",
 the key difference being that walkers are not independent and communicate with each
@@ -259,7 +232,7 @@ Starting point
 The starting point of the Markov chains in the parameter space is an input of any MCMC
 analysis.  The sampling can either be started from a random position -- in which case
 the sampler needs to find the optimal region -- or from an initial guess of the user.
-For ``PANCO2``, we chose the latter, in order to speed up the process.
+For ``panco2``, we chose the latter, in order to speed up the process.
 
 **In gNFW mode,** the parameters maximizing the posterior distribution of Eq.
 :eq:`post` are found using the ``migrad`` algorithm of ``iMinuit``, the Python
@@ -310,9 +283,6 @@ Once the chains have reached convergence, they constitute a random sample for wh
 probability distribution is the posterior distribution of Eq.  :eq:`post`.  These are
 used to infer measurements of the physical properties of the ICM.
 
-The ICM pressure profile
-------------------------
-
 The pressure profile of the ICM is the property directly probed by our fit.  Its value
 is given by the computation of our model for the set of parameters that maximize the
 posterior distribution sampled in our fit.  Each set of parameters sampled in the MCMC
@@ -327,70 +297,5 @@ data points. Sampling a posterior distribution is therefore tedious without tigh
 Still, a module is implemented to allow the user to perform such a fit, using MCMC as
 well as a maximum-likelihood approach is implemented, where the user may use ``MIGRAD``
 to find the gNFW profile that best describe the pressure profile. In each case, the full
-posterior distribution of ``PANCO2``'s first MCMC is used in the fit (*i.e.* the
+posterior distribution of ``panco2``'s first MCMC is used in the fit (*i.e.* the
 correlations between the different bins are taken into account).
-
-Other thermodynamical profiles
-------------------------------
-
-If X-ray data are available for the cluster, ``PANCO2`` will also combine them with the
-resulting pressure profile to infer more measurements of thermodynamical properties.
-Namely, the pressure profile from NIKA2 :math:`P(r)` will be combined with the density
-profile from X-ray data :math:`n(r)` to compute the radial profiles of the ICM
-temperature :math:`k_{\rm B}T(r) = P(r) / n(r)`, entropy :math:`K(r) = P(r) \,
-n^{-5/3}(r)`, hydrostatic mass through the equation of hydrostatic equilibrium
-:eq:`mhse`.  The statistical error on each profile are computed the same way as for the
-pressure profile (see :numref:`The ICM pressure profile`).
-
-Integrated quantities
----------------------
-
-One of the goals of the NIKA2 LPSZ is to compute the scaling relation between
-:math:`Y_{500}` and :math:`M_{500}`, namely the integrated SZ signal and mass contained
-in a radius :math:`R_{500}`.  These quantities are computed by ``PANCO2``.
-
-If X-ray data are available, a measurement of :math:`R_{500}` can be computed by finding
-the radius inside which the average density contrast is 500, *i.e.* by solving
-
-.. math:: \delta_c (R_{500})
-	= \frac{M_{\rm HSE}(R_{500})}{\rho_c(z) \times \frac{4}{3} \pi R_{500}^3} = 500
-
-where :math:`\rho_c(z)` is the critical density of the Universe at the redshift of the
-cluster :math:`z`.  Computing it for all sets of parameter sampled by our MCMC gives the
-probability distribution of :math:`R_{500}`.  Similarly, the integrated SZ signal
-:math:`Y_{500}` and hydrostatic mass :math:`M_{500}` can be computed for all the sampled
-pressure profiles.
-
-Integrated quantities for non-parametric fits
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-As seen in Eq.  :eq:`mhse`, the hydrostatic mass profile is proportional to the
-derivative of the pressure profile with respect to radius.  A consequence is that for
-non-parametric profiles, which are not smooth functions of the radius, mass profiles can
-present undesirable features such as discontinuities.  This can potentially have strong
-effects on the measurement of :math:`R_{500}` and :math:`M_{500}`.
-
-We bypass this problem by using spline interpolations.  The samples of the posterior
-distribution (*i.e.* the value of the pressure bins sampled during the MCMC) are each
-interpolated in the log-log plane using a spline.  The derivative of the pressure needed
-to evaluate the hydrostatic mass is then computed as the derivative of the spline.  This
-smoothes the pressure profile, making its derivation more stable.
-
-Error bars on integrated quantities
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Since :math:`Y_{500}` and :math:`M_{500}` are both computed inside a radius
-:math:`R_{500}`, the correlation between the three variables is obviously important.  A
-consequence is that the values can be evaluated in two distinct ways:
-
-* Each sampled pressure profile can be used to compute a value of :math:`R_{500}`,
-  inside which we compute the integrated quantities :math:`Y_{500}` and :math:`M_{500}` ;
-
-* The best-fitting pressure profile cam be used to compute a fixed value of
-  :math:`R_{500}`, inside which we compute the integrated quantities :math:`Y_{500}` and
-  :math:`M_{500}` for each sampled profile.
-
-The latter leads to significantly smaller error bars on the integrated quantities, as it
-does not allow to propagate the uncertainty on :math:`R_{500}` to the integrated
-quantities.  Both ways are implemented in ``PANCO2``, although by default the former
-approach will be used.
