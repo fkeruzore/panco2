@@ -112,10 +112,10 @@ In its forward modeling approach, \panco\ is able to take into account this filt
 In addition, during the data reduction process used to create tSZ maps from raw data, filtering can occur, often suppressing signal at large angular scales.
 This filtering is usually accounted for through a transfer function, quantifying the signal filtering in the Fourier space, and evaluated during the data processing.
 \panco\ can account for this effect by filtering the map with a transfer function provided by the user.
-Two different types of transfer functions can be provided: \todo{I want to make the code use $\ell$, not $k$. Correct this when done.}
+Two different types of transfer functions can be provided:
 \begin{itemize}[leftmargin=*]
-    \item a 1D transfer function: assuming that the filtering is isotropic, \panco\ can convolve model maps with a 1D kernel specified by the user as angular frequencies $k$ and their associated filtering ${\rm TF}(k)$;
-    \item a 2D transfer function: if the filtering on the sky cannot be assumed to be isotropic, the user may specify 2D angular scales $(k_x, k_y)$ and their corresponding filter ${\rm TF}(k_x, k_y)$.
+    \item a 1D transfer function: assuming that the filtering is isotropic, \panco\ can convolve model maps with a 1D kernel specified by the user as multipole moments $\ell$ and their associated filtering ${\rm TF}(\ell)$;
+    \item a 2D transfer function: if the filtering on the sky cannot be assumed to be isotropic, the user may specify 2D multipoles $(\ell_x, \ell_y)$ and their corresponding filter ${\rm TF}(\ell_x, \ell_y)$.
 \end{itemize}
 A thorough discussion of the impact of choosing a 1D or 2D transfer function -- in the case of NIKA2 data, in which the filtering is mildly anisotropic -- can be found in \citet{munoz-echeverria_multi-probe_2022}.
 

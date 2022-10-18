@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # Paper
+paper
 paper/main.aux
 paper/main.blg
 paper/main.fdb_latexmk
