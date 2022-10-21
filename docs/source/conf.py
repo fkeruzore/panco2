@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "nbsphinx",
+    "sphinx_gallery.load_style",
 ]
 
 # List of bibtex files

@@ -14,8 +14,8 @@ Many characteristic features of millimeter-wave observations can be taken into a
    :maxdepth: 2
    :caption: Contents:
 
-   .. method
-   example_C2_NIKA2.ipynb
+   method
+   examples
    api
    refs
 
