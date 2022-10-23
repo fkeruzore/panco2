@@ -9,3 +9,14 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 nbsphinx==0.8.9
 pydata-sphinx-theme==0.8.1
+sphinx_gallery==0.11.1
+numpy==1.22.3
+astropy==5.1
+scipy==1.9.1
+matplotlib==3.5.1
+pandas==1.4.2
+emcee==3.1.1
+tqdm==4.64.0
+dill==0.3.4
+sklearn==0.0
+chainconsumer==0.34.0

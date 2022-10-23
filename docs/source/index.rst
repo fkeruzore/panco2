@@ -11,12 +11,11 @@ The extraction is performed using forward modeling the millimeter-wave signal of
 Many characteristic features of millimeter-wave observations can be taken into account, such as filtering (both through PSF smearing and transfer functions), point source contamination, and correlated noise.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
 
-   fwmod
-   mcmc
-   example_C2_NIKA2.ipynb
+   method
+   examples
    api
    refs
 
