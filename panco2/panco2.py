@@ -121,9 +121,10 @@ class PressureProfileFitter:
 
         sz_shape = self.sz_map.shape
         rms_shape = self.sz_rms.shape
-        assert np.all(
-            np.array(sz_shape) == np.array(rms_shape)
-        ), f"SZ map and RMS have incompatible shapes: {sz_shape, rms_shape}"
+        assert sz_shape == rms_shape, (
+            "SZ map and RMS have incompatible shapes: "
+            + f"{sz_shape, rms_shape}"
+        )
         assert np.all(
             np.array(sz_shape) % 2 == 1
         ), f"SZ map has an even number of pixels: {sz_shape}"
@@ -193,7 +194,7 @@ class PressureProfileFitter:
         mask : np.ndarray
             Boolean mask, where `True` means the data _is masked_.
         """
-        print("Adding mask")
+        print("==> Adding mask")
         assert isinstance(mask, np.ndarray), "`mask` is not an array"
         assert mask.shape == self.sz_map.shape, (
             "Incompatible shapes: "
@@ -248,11 +249,11 @@ class PressureProfileFitter:
         szsh = self.sz_map.shape
 
         if (inv_covmat is not None) and (covmat is not None):
-            print("Adding correlated noise: covariance matrix & inverse")
+            print("==> Adding correlated noise: covariance matrix & inverse")
         elif (inv_covmat is None) and (covmat is not None):
-            print("Adding correlated noise: covariance matrix to be inverted")
+            print("==> Adding correlated noise: covariance matrix")
         elif (inv_covmat is not None) and (covmat is None):
-            print("Adding correlated noise: inverse covariance matrix")
+            print("==> Adding correlated noise: inverse covariance matrix")
         else:
             raise Exception("Either `covmat` or `inv_covmat` must be provided")
 
@@ -330,12 +331,12 @@ class PressureProfileFitter:
 
         # Case 1: just beam, no transfer function
         if tf is None:
-            print("Adding filtering: beam only")
+            print("==> Adding filtering: beam only")
             self.model.filter = filtering.Filter(beam_sigma_pix)
 
         # Case 2: beam (or not), 1D transfer function
         elif (tf is not None) and isinstance(ell, np.ndarray):
-            print("Adding filtering: beam and 1D transfer function")
+            print("==> Adding filtering: beam and 1D transfer function")
             assert tf.shape == ell.shape, "tf and k don't have the same shape"
             self.model.filter = filtering.Filter1d(
                 self.sz_map.shape[0],
@@ -350,7 +351,7 @@ class PressureProfileFitter:
         elif (tf is not None) and (
             isinstance(ell, tuple) or isinstance(ell, list)
         ):
-            print("Adding filtering: beam and 2D transfer function")
+            print("==> Adding filtering: beam and 2D transfer function")
             botharr = isinstance(ell[0], np.ndarray) and isinstance(
                 ell[1], np.ndarray
             )
@@ -420,6 +421,7 @@ class PressureProfileFitter:
     # ---------------------------------------------------------------------- #
 
     def add_point_sources(self, coords, beam_fwhm):
+        print(f"==> Adding {len(coords)} point sources")
         beam_sigma_pix = (
             beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
         )
@@ -441,6 +443,7 @@ class PressureProfileFitter:
         r : float [kpc]
             Radius within which the Compton parameter was integrated
         """
+        print("==> Adding integrated Y constraint")
         self.integ_Y = (Y, dY)
         self.r_integ_Y = r
         self.model.init_integ_Y(r)
