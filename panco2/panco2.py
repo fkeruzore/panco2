@@ -118,6 +118,7 @@ class PressureProfileFitter:
         self.inv_covmat = None
         self.has_covmat = False
         self.has_integ_Y = False
+        self.has_mask = False
 
         sz_shape = self.sz_map.shape
         rms_shape = self.sz_rms.shape
@@ -210,6 +211,7 @@ class PressureProfileFitter:
         # ones_msk = np.ma.array(ones, mask=msk)
         self.sz_map = np.ma.array(self.sz_map, mask=mask)
         self.sz_rms = np.ma.array(self.sz_rms, mask=mask)
+        self.has_mask = True
 
     # ---------------------------------------------------------------------- #
 
