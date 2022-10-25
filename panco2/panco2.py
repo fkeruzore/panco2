@@ -13,6 +13,7 @@ from scipy import linalg
 import scipy.stats as ss
 import dill
 import time
+import warnings
 from multiprocessing import Pool
 from . import utils, model, results, filtering, noise_covariance
 from .cluster import Cluster
@@ -180,6 +181,34 @@ class PressureProfileFitter:
         r_bins = np.array([pix_kpc * (beam_pix**i) for i in range(100)])
         r_bins = r_bins[: int(np.max(np.where(r_bins < map_kpc)) + 2)]
         return r_bins
+
+    # ---------------------------------------------------------------------- #
+
+    def add_mask(self, mask):
+        """
+        Add a mask to discard part of the data in the model fitting.
+
+        Parameters
+        ----------
+        mask : np.ndarray
+            Boolean mask, where `True` means the data _is masked_.
+        """
+        print("Adding mask")
+        assert isinstance(mask, np.ndarray), "`mask` is not an array"
+        assert mask.shape == self.sz_map.shape, (
+            "Incompatible shapes: "
+            + f"input data is {self.sz_map.shape}, "
+            + f"`mask` is {mask.shape}"
+        )
+        print(f"Masking {mask.sum():.0f} / {mask.size:.0f} pixels")
+        if mask.sum() > 0.5 * mask.size:
+            warnings.warn(
+                "You are adding a mask that will discard most of your data. "
+                + "You might have the boolean mask backwards -- see doc"
+            )
+        # ones_msk = np.ma.array(ones, mask=msk)
+        self.sz_map = np.ma.array(self.sz_map, mask=mask)
+        self.sz_rms = np.ma.array(self.sz_rms, mask=mask)
 
     # ---------------------------------------------------------------------- #
 
