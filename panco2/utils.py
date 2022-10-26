@@ -78,12 +78,18 @@ def map2prof(m_2d, r_2d, width=0):
     m_1d: ndarray, shape=(N, 3)
         [16th, 50th, 84th] percentile for the profile at each radius
     """
+    # Manage masked data
+    if isinstance(m_2d, np.ma.MaskedArray):
+        m_2d_2 = np.ma.filled(m_2d, np.nan)
+    else:
+        m_2d_2 = m_2d
+
     r_1d = np.unique(r_2d)
     m_1d = np.zeros((r_1d.size, 3))
     for i, r in enumerate(r_1d):
         is_ok = (r_2d >= r - width) & (r_2d <= r + width)
-        which_m = m_2d[is_ok]
-        m_1d[i, :] = np.percentile(which_m, [16.0, 50.0, 84.0])
+        which_m = m_2d_2[is_ok]
+        m_1d[i, :] = np.nanpercentile(which_m, [16.0, 50.0, 84.0])
     return r_1d, m_1d
 
 

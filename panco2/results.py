@@ -99,7 +99,7 @@ def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
             f" -> {n_chains2} chains remaining",
         )
         print(
-            f"-> Final sampling size:",
+            "-> Final sampling size:",
             f"{n_chains2} chains * {n_steps2} samples per chain",
             f"= {n_chains2 * n_steps2} total samples",
         )
@@ -540,7 +540,7 @@ def plot_data_model_residuals(
 
     for i, (ax, m) in enumerate(zip(axs, maps_toplot)):
         im = ax.imshow(
-            m,
+            np.ma.array(m, mask=ppf.sz_map.mask) if ppf.has_mask else m,
             origin="lower",
             vmin=vmin,
             vmax=vmax,
@@ -676,10 +676,19 @@ def plot_data_model_residuals_1d(
     # Model and residuals -- confidence intervals
     else:
         which_chains = np.random.randint(0, len(chains_clean), 100)
-        all_mod_maps = [
-            ppf.model.sz_map(ppf.model.par_dic2vec(dict(pos)))
-            for pos in chains_clean.iloc[which_chains].iloc
-        ]
+        if ppf.has_mask:
+            all_mod_maps = [
+                np.ma.array(
+                    ppf.model.sz_map(ppf.model.par_dic2vec(dict(pos))),
+                    mask=ppf.sz_map.mask,
+                )
+                for pos in chains_clean.iloc[which_chains].iloc
+            ]
+        else:
+            all_mod_maps = [
+                ppf.model.sz_map(ppf.model.par_dic2vec(dict(pos)))
+                for pos in chains_clean.iloc[which_chains].iloc
+            ]
         all_res_maps = [(ppf.sz_map - m) for m in all_mod_maps]
         all_mod_profs = [
             utils.map2prof(m, theta_2d, width=bin_width)[1][:, 1]
