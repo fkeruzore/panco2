@@ -145,5 +145,4 @@ paper/main.xdv
 *.swp
 doc/latex
 .vscode
-tests/playground.ipynb
 playground
