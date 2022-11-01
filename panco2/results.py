@@ -148,8 +148,8 @@ def mcmc_trace_plot(chains_clean, show_probs=True, filename=None):
     for i in range(chains_clean["chain"].max() + 1):
         cc.add_chain(chains_clean[chains_clean["chain"] == i][params])
     cc.configure(
-        serif=False,
-        usetex=False,
+        serif=plt.rcParams["font.family"][0] == "serif",
+        usetex=plt.rcParams["text.usetex"],
         cmap="Spectral_r",
     )
     fig = cc.plotter.plot_walks()
@@ -220,8 +220,8 @@ def mcmc_corner_plot(
         lims = None
     cc.add_chain(chains_clean[params], name="PANCO2")
     cc.configure(
-        serif=False,
-        usetex=False,
+        serif=plt.rcParams["font.family"][0] == "serif",
+        usetex=plt.rcParams["text.usetex"],
         summary=False,
         cmap="Spectral" + ("_r" if ppf is None else ""),
         shade_alpha=0.3,
@@ -272,6 +272,7 @@ def mcmc_matrices_plot(chains_clean, ppf, filename=None):
     -------
     fig, ax
     """
+
     corrs = chains_clean[ppf.model.params].corr()
     covs = chains_clean[ppf.model.params].cov()
 
@@ -372,15 +373,19 @@ def plot_profile(
 
     perc = np.percentile(all_profs, [16.0, 50.0, 84.0], axis=0)
 
-    ax.fill_between(r_range, perc[0], perc[2], alpha=0.3, ls="--", zorder=3)
-    ax.plot(r_range, perc[1], "-", label=label, zorder=4, **kwargs)
+    zorder = np.max([_.zorder for _ in ax.get_children()])
+    ax.fill_between(
+        r_range, perc[0], perc[2], alpha=0.3, zorder=zorder + 1, **kwargs
+    )
+    ax.plot(r_range, perc[1], "-", label=label, zorder=zorder + 2, **kwargs)
     ax.plot(
         model.r_bins,
         model.pressure_profile(
             model.r_bins, model.par_dic2vec(chains_clean.median())
         ),
         "o",
-        color="tab:blue",
+        zorder=zorder + 3,
+        **kwargs,
     )
 
     ax.set_xscale("log")
@@ -796,10 +801,3 @@ def plot_acf(ppf, max_delta_tau=None, min_autocorr_times=None):
 def ax_bothticks(ax):
     ax.xaxis.set_ticks_position("both")
     ax.yaxis.set_ticks_position("both")
-
-
-def set_plot_style(style):
-    plt.style.use("default")
-    if style == "paper":
-        style = "./paper.mplstyle"
-    plt.style.use(style)
