@@ -91,6 +91,8 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
     path = f"./results/{cluster['name']}/{instrument['name']}"
     if restore:
         ppf = p2.PressureProfileFitter.load_from_file(f"{path}/ppf.panco2")
+        if not hasattr(ppf, "has_mask"):
+            ppf.has_mask = isinstance(ppf.sz_map, np.ma.MaskedArray)
     else:
         ppf = p2.PressureProfileFitter(
             f"{path}/input_map.fits",
@@ -219,26 +221,34 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
     )
 
     meds = dict(chains_clean.median())
-    p2.results.plot_data_model_residuals(
+    plt.rcParams.update(
+        {'xtick.labelsize': 'small', 'ytick.labelsize': 'small'}
+    )
+    fig, _ = p2.results.plot_data_model_residuals(
         ppf,
         par_dic=meds,
         smooth=1.0,
         cbar_fact=instrument["cbar_fact"],
         lims=None if instrument["name"] == "SPT" else "sym",
         cbar_label=instrument["cbar_label"],
-        filename=f"{path}/data_model_residuals_maps.pdf",
         cmap=instrument["cmap"],
-        separate_ps_model=(cluster["name"] == "C2_ptsources"),
+        separate_ps_model=False,  # (cluster["name"] == "C2_ptsources"),
     )
-    p2.results.plot_data_model_residuals_1d(
+    fig.savefig(f"{path}/data_model_residuals_maps.pdf")
+
+    plt.rcParams.update(
+        {'xtick.labelsize': 'medium', 'ytick.labelsize': 'medium'}
+    )
+    fig, _ = p2.results.plot_data_model_residuals_1d(
         ppf,
         chains_clean=chains_clean,
         y_fact=instrument["cbar_fact"],
         plot_beam=True,
         y_label=instrument["cbar_label"],
-        filename=f"{path}/data_model_residuals_profiles.pdf",
         x_log=True,
     )
+    fig.subplots_adjust(top=0.85, right=0.95, bottom=0.15, left=0.15)
+    fig.savefig(f"{path}/data_model_residuals_profiles.pdf")
 
     r_range = np.logspace(
         np.log10(ppf.cluster.arcsec2kpc(ppf.pix_size / 2)),
@@ -246,7 +256,7 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         100,
     )
     fig, ax = p2.results.plot_profile(
-        chains_clean, ppf, r_range=r_range, label="panco2"
+        chains_clean, ppf, r_range=r_range, label="\\texttt{panco2}", color="tab:blue"
     )
     ax.plot(
         r_range,
@@ -255,22 +265,29 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         label="Truth",
     )
     ax.legend(frameon=False)
+    fig.subplots_adjust(top=0.85, right=0.95, bottom=0.15, left=0.15)
     fig.savefig(f"{path}/pressure_profile.pdf")
 
 
 # =========================================================================== #
 
 if __name__ == "__main__":
-    n_bins_P = 5
-    # run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
-    # run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
-    # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
-    # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P)
-    # run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
-    run_valid(
-        clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P, restore=True
+    plt.rcParams.update(
+        {
+            "text.usetex": True,
+            "text.latex.preamble": "\\usepackage{txfonts}",
+            "font.family": "serif",
+            "font.size": 16.0,
+        }
     )
-    # run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P)
+    n_bins_P = 5
+    run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
+    run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
+    # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P, restore=True)
