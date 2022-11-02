@@ -100,7 +100,8 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
             5,
             cluster["z"],
             cluster["M_500"] * 1e14,
-            map_size=instrument["map_size"],
+            map_size=instrument["map_size"] if cluster["name"] != "C2_corrnoise" else 15.0,
+            # map_size=instrument["map_size"],
             coords_center=SkyCoord("12h00m00s +00d00m00s"),
         )
 
@@ -281,13 +282,13 @@ if __name__ == "__main__":
         }
     )
     n_bins_P = 5
-    run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
-    run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
-    # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P, restore=True)
+    # run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
+    # run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
+    # run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
+    # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
+    # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, restore=False)
+    # run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P, restore=True)
+    # run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P, restore=True)
+    # run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P, restore=True)
+    # run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P, restore=True)
