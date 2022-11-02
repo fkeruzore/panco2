@@ -10,8 +10,8 @@ kxx, kyy = np.meshgrid(kx, ky, indexing="xy")
 
 ellxx, ellyy = [k * 180.0 * 3600.0 for k in (kxx, kyy)]
 ell = np.hypot(ellxx, ellyy)
-filt = np.logical_and(np.abs(ell) > 1000, np.abs(ellxx) > 500).astype(float)
-filt *= 0.8 + (0.1 * np.abs(ellxx)) / np.max(ellxx)
+filt = np.logical_and(np.abs(ell) > 500, np.abs(ellxx) > 300).astype(float)
+filt *= 1.0 - (0.1 * np.abs(ellxx)) / np.max(ellxx)
 
 np.savez_compressed("tf2d.npz", ell_x=ellxx, ell_y=ellyy, tf=filt)
 
