@@ -575,7 +575,7 @@ class PressureProfileFitter:
     # ---------------------------------------------------------------------- #
 
     def write_sim_map(
-        self, par_vec, out_file, filter_noise=True, corr_noise=False
+        self, par_vec, out_file, filter_noise=False, corr_noise=False
     ):
         """
         Write a FITS map with given parameter values
