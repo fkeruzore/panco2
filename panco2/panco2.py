@@ -694,6 +694,8 @@ class PressureProfileFitter:
         min_autocorr_times=100,
         out_chains_file="./chains.npz",
         plot_convergence=None,
+        progress=True,
+        verbose_monitor=True,
     ):
         """
         Runs MCMC sampling of the posterior distribution.
@@ -720,10 +722,15 @@ class PressureProfileFitter:
         out_chains_file : str
             Path to a `.npz` file in which the chains
             will be stored.
-        plot_convergence: str or None
+        plot_convergence : str or None
             Filename to save a plot of the autocorrelation
             function evolution and convergence test.
             If None, the plot is not produced.
+        progress : bool
+            If True, displays a progressbar showing the sampling
+            progression.
+        verbose_monitor : bool
+            If True, prints the result of each convergence check.
 
         Returns
         =======
@@ -786,7 +793,7 @@ class PressureProfileFitter:
             )
 
             for sample in sampler.sample(
-                starts, iterations=max_steps, progress=True
+                starts, iterations=max_steps, progress=progress
             ):
 
                 it = sampler.iteration
@@ -801,11 +808,12 @@ class PressureProfileFitter:
                 tau_is_stable = dtau < max_delta_tau
                 chain_is_long = it > (mean_tau * min_autocorr_times)
 
-                print(
-                    f"    {it} iterations = {it / mean_tau:.1f}*tau",
-                    f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
-                    end="\n",
-                )
+                if verbose_monitor:
+                    print(
+                        f"    {it} iterations = {it / mean_tau:.1f}*tau",
+                        f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
+                        end="\n",
+                    )
 
                 if tau_is_stable and tau_was_stable and chain_is_long:
                     print("    -> Convergence achieved")
