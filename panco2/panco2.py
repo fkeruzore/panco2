@@ -343,7 +343,7 @@ class PressureProfileFitter:
             self.model.filter = filtering.Filter1d(
                 self.sz_map.shape[0],
                 self.pix_size,
-                ell / (180.0 * 3600),  # flat sky ell = k
+                ell / (360.0 * 3600),  # flat sky ell = k
                 tf,
                 beam_sigma_pix=beam_sigma_pix,
                 pad_pix=pad,
@@ -372,8 +372,8 @@ class PressureProfileFitter:
             self.model.filter = filtering.Filter2d(
                 self.sz_map.shape[0],
                 self.pix_size,
-                ell[0] / (180.0 * 3600),  # flat sky ell_x = k_x
-                ell[1] / (180.0 * 3600),  # flat sky ell_y = k_y
+                ell[0] / (360.0 * 3600),  # flat sky ell_x = k_x
+                ell[1] / (360.0 * 3600),  # flat sky ell_y = k_y
                 tf,
                 beam_sigma_pix=beam_sigma_pix,
                 pad_pix=pad,
