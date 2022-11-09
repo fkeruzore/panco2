@@ -100,7 +100,9 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
             5,
             cluster["z"],
             cluster["M_500"] * 1e14,
-            map_size=instrument["map_size"] if cluster["name"] != "C2_corrnoise" else 15.0,
+            map_size=instrument["map_size"]
+            if cluster["name"] != "C2_corrnoise"
+            else 15.0,
             # map_size=instrument["map_size"],
             coords_center=SkyCoord("12h00m00s +00d00m00s"),
         )
@@ -223,7 +225,7 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
 
     meds = dict(chains_clean.median())
     plt.rcParams.update(
-        {'xtick.labelsize': 'small', 'ytick.labelsize': 'small'}
+        {"xtick.labelsize": "small", "ytick.labelsize": "small"}
     )
     fig, _ = p2.results.plot_data_model_residuals(
         ppf,
@@ -238,7 +240,7 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
     fig.savefig(f"{path}/data_model_residuals_maps.pdf")
 
     plt.rcParams.update(
-        {'xtick.labelsize': 'medium', 'ytick.labelsize': 'medium'}
+        {"xtick.labelsize": "medium", "ytick.labelsize": "medium"}
     )
     fig, _ = p2.results.plot_data_model_residuals_1d(
         ppf,
@@ -257,7 +259,11 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         100,
     )
     fig, ax = p2.results.plot_profile(
-        chains_clean, ppf, r_range=r_range, label="\\texttt{panco2}", color="tab:blue"
+        chains_clean,
+        ppf,
+        r_range=r_range,
+        label="\\texttt{panco2}",
+        color="tab:blue",
     )
     ax.plot(
         r_range,
@@ -282,13 +288,13 @@ if __name__ == "__main__":
         }
     )
     n_bins_P = 5
-    # run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
-    # run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
-    # run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
-    # run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
-    # run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, restore=False)
-    # run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P, restore=True)
-    # run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P, restore=True)
-    # run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P, restore=True)
-    # run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
+    run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P)
