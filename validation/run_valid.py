@@ -293,7 +293,7 @@ if __name__ == "__main__":
     run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
     run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
     run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
-    # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
     run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P)
     run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
     run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P)
