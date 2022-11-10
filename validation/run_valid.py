@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 import scipy.stats as ss
-import copy
 
 import sys
 
@@ -100,7 +99,10 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
             5,
             cluster["z"],
             cluster["M_500"] * 1e14,
-            map_size=instrument["map_size"],
+            map_size=instrument["map_size"]
+            if cluster["name"] != "C2_corrnoise"
+            else 15.0,
+            # map_size=instrument["map_size"],
             coords_center=SkyCoord("12h00m00s +00d00m00s"),
         )
 
@@ -160,21 +162,9 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
 
         # POINT SOURCES BUT MASKED
         elif cluster["name"] == "C2_ptsmasked":
-            ppf2 = copy.deepcopy(ppf)
-            ps_pos = [
-                SkyCoord("12h00m00s +00d00m30s"),
-                SkyCoord("12h00m05s +00d00m10s"),
-            ]
-            mask = np.zeros_like(ppf.sz_map, dtype=bool)
-            ppf2.add_point_sources(ps_pos, instrument["beam"])
             npix_mask = 0.51 * instrument["beam"] / ppf.pix_size
-            for i in range(ppf2.model.n_ps):
-                r = np.hypot(
-                    ppf2.model.ps_xymaps["x"][i], ppf2.model.ps_xymaps["y"][i]
-                )
-                mask[r <= npix_mask] = True
+            mask = p2.masks.mask_holes(ppf, ps_pos, npix_mask)
             ppf.add_mask(mask)
-            del ppf2
 
         # INTEGRATED SZ
         elif cluster["name"] == "C2_Y500const":
@@ -222,7 +212,7 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
 
     meds = dict(chains_clean.median())
     plt.rcParams.update(
-        {'xtick.labelsize': 'small', 'ytick.labelsize': 'small'}
+        {"xtick.labelsize": "small", "ytick.labelsize": "small"}
     )
     fig, _ = p2.results.plot_data_model_residuals(
         ppf,
@@ -237,7 +227,7 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
     fig.savefig(f"{path}/data_model_residuals_maps.pdf")
 
     plt.rcParams.update(
-        {'xtick.labelsize': 'medium', 'ytick.labelsize': 'medium'}
+        {"xtick.labelsize": "medium", "ytick.labelsize": "medium"}
     )
     fig, _ = p2.results.plot_data_model_residuals_1d(
         ppf,
@@ -256,7 +246,11 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         100,
     )
     fig, ax = p2.results.plot_profile(
-        chains_clean, ppf, r_range=r_range, label="\\texttt{panco2}", color="tab:blue"
+        chains_clean,
+        ppf,
+        r_range=r_range,
+        label="\\texttt{panco2}",
+        color="tab:blue",
     )
     ax.plot(
         r_range,
@@ -281,13 +275,13 @@ if __name__ == "__main__":
         }
     )
     n_bins_P = 5
-    run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
-    run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
-    # run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P, restore=True)
-    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P, restore=True)
-    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
+    run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P)
+    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P)

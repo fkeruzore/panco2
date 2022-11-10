@@ -420,6 +420,7 @@ def plot_data_model_residuals(
     cbar_fact=1.0,
     cbar_hztl=False,
     cmap="RdBu_r",
+    mask_color="0.75",
     snr_contours=None,
     separate_ps_model=False,
     filename=None,
@@ -459,12 +460,14 @@ def plot_data_model_residuals(
         Makes the colorbar horizontal instead of vertical.
     cmap : str or mpl.colors.Colorbar
         The color map to use. Always make pretty plots!
+    mask_color : matplotlib color
+        Color to fill the masked pixels with.
     snr_contours : None or array-like
         Signal-to-noise levels to be overplotted as contours,
         in numbers of sigma.
     separate_ps_model : bool
         If your model fits both SZ and point sources, makes the
-        model and residuals for SZ/PS/SZ+PS (i.e. 5 total plots)
+        model and residuals for SZ/PS/SZ+PS (i.e. 7 total plots)
     filename : str or None
         Filename to save the plot
 
@@ -532,6 +535,10 @@ def plot_data_model_residuals(
         noise = gaussian_filter(noise, smooth) / np.sqrt(
             2 * np.pi * smooth**2
         )
+
+    if isinstance(cmap, str):
+        cmap = plt.cm.get_cmap(cmap)
+    cmap = cmap.with_extremes(bad=mask_color)
 
     if isinstance(lims, (tuple, list, np.ndarray)):
         vmin, vmax = lims

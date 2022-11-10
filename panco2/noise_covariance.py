@@ -3,6 +3,43 @@ from scipy.interpolate import interp1d
 from scipy import linalg
 from sklearn import covariance
 
+"""
+Note on conventions in this code because I'm tired of forgetting them
+=====================================================================
+
+- The user should not have to provide values of `k`. When they
+    appear, they are defined with the numpy convention: for a 
+    map with `n*n` pixels each of size `d`, the 1D modes are:
+
+    f = [0, 1, ...,   n/2-1,     -n/2, ..., -1] / (d*n)   if n is even
+    f = [0, 1, ..., (n-1)/2, -(n-1)/2, ..., -1] / (d*n)   if n is odd
+
+    `k` variables are in arcsec-1
+
+- The relation between `ell` and `k` is then:
+
+    ell = 360 * 3600 * (k / arcsec-1)
+
+- Our FFT uses the numpy "orthogonal" normalization, in which
+    the direct transform is normalized by 1/sqrt(n):
+
+    A_k = n^-0.5 \sum_j a_j exp(-i*2\pi j*k/n)
+
+    and the inverse transform also has 1/sqrt(n) normalization:
+
+    a_j = n^-0.5 \sum_k A_k exp(+i*2\pi jk/n)
+
+    See the `norm_fftt` variable, set to "forward".
+    This is the notation used by e.g. the IDL FFT
+
+- The flat-sky power spectrum of a map `M` with pixel size `d`
+    in arcsec is `p_k` such that
+
+    p_k = Re[FFT(M) * conj(FFT(M))] * d^2
+"""
+
+norm_fft = "ortho"
+
 
 def powspec(in_map, pix_size, n_bins=None):
     """
@@ -22,7 +59,8 @@ def powspec(in_map, pix_size, n_bins=None):
     Returns
     -------
     tuple
-        [0] the power spectrum [1] the angular scales
+        [0] the power spectrum in (map units^2 arcsec^2)
+        [1] the angular scales in arcsec-1
 
     Notes
     =====
@@ -37,15 +75,16 @@ def powspec(in_map, pix_size, n_bins=None):
     kx, ky = np.fft.fftfreq(nx, d=pix_size), np.fft.fftfreq(ny, d=pix_size)
     k = np.hypot(*np.meshgrid(kx, ky, indexing="ij"))
 
-    ft_in_map = np.fft.fft2(in_map, norm="ortho")
+    ft_in_map = np.fft.fft2(in_map, norm=norm_fft)
     pk_in_map = np.real(ft_in_map * np.conj(ft_in_map))
+    pk_in_map *= pix_size**2
 
     pk, k_edges = np.histogram(k, bins=n_bins, range=None, weights=pk_in_map)
     norm, _ = np.histogram(k, bins=n_bins, range=None)
     with np.errstate(invalid="ignore"):
         pk /= norm
 
-    k_bins = k_edges[:-1] + np.ediff1d(k_edges)
+    k_bins = k_edges[:-1] + 0.5 * np.ediff1d(k_edges)
     msk = np.ones_like(k_bins, dtype=bool)  # k_bins < (0.5 / pix_size)
     return pk[msk], k_bins[msk]
 
@@ -91,15 +130,18 @@ def powspec_to_maps(k, pk, nx, ny, pix_size, n_maps):
 
     with np.errstate(invalid="ignore"):
         filt_fct = interp1d(
-            np.log10(k), np.log10(sqpk), bounds_error=False, fill_value=-np.inf
+            np.log10(k),
+            np.log10(sqpk / pix_size),
+            bounds_error=False,
+            fill_value=-np.inf,
         )
         filt = 10 ** filt_fct(np.log10(k_filt))
         filt[k_filt == 0] = 0.0
     ft_colored_maps = (
-        np.fft.fft2(white_maps, axes=(-2, -1), norm="ortho")
+        np.fft.fft2(white_maps, axes=(-2, -1), norm=norm_fft)
         * filt[np.newaxis, :, :]
     )
-    colored_maps = np.fft.ifft2(ft_colored_maps, axes=(-2, -1), norm="ortho")
+    colored_maps = np.fft.ifft2(ft_colored_maps, axes=(-2, -1), norm=norm_fft)
     return np.real(colored_maps)
 
 
@@ -238,8 +280,10 @@ def covmat_from_powspec(
         If `return_maps` is True, the noise maps used to compute the
         covariance, shape=(n_maps, nx, nx)
     """
-    k = ell / (180.0 * 3600.0)  # arcsec-1
-    noise_maps = powspec_to_maps(k, C_ell, n_pix, n_pix, pix_size, int(n_maps))
+    k = ell / (360.0 * 3600.0)  # arcsec-1
+    # pk = C_ell / ((n_pix * pix_size * np.pi / (180.0 * 3600.0)) ** 2)
+    pk = C_ell * (180 * 3600 / np.pi) ** 2  # to [map units]^2 * [arcsec]^2
+    noise_maps = powspec_to_maps(k, pk, n_pix, n_pix, pix_size, int(n_maps))
     cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
     if return_maps:
         return cov, inv_cov, noise_maps

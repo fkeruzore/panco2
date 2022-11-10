@@ -232,7 +232,7 @@ if __name__ == "__main__":
     with PdfPages("sim_maps.pdf") as pdf:
 
         # =================================================================== #
-        print("==> Planck map of C1...")
+        print("====> Planck map of C1...")
         np.random.seed(42)
         fig, ax = make_sim_map_planck(
             C1,
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         pdf.savefig(fig)
 
         # =================================================================== #
-        print("==> SPT map of C1...")
+        print("====> SPT map of C1...")
         np.random.seed(43)
         fig, ax = make_sim_map_spt(
             C1,
@@ -252,7 +252,7 @@ if __name__ == "__main__":
         pdf.savefig(fig)
 
         # =================================================================== #
-        print("==> SPT map of C2...")
+        print("====> SPT map of C2...")
         np.random.seed(44)
         fig, ax = make_sim_map_spt(
             C2,
@@ -262,7 +262,7 @@ if __name__ == "__main__":
         pdf.savefig(fig)
 
         # =================================================================== #
-        print("==> NIKA2 map of C2...")
+        print("====> NIKA2 map of C2...")
         np.random.seed(45)
         fig, ax = make_sim_map_nika2(
             C2,
@@ -273,7 +273,7 @@ if __name__ == "__main__":
         pdf.savefig(fig)
 
         # =================================================================== #
-        print("==> NIKA2 map of C3...")
+        print("====> NIKA2 map of C3...")
         np.random.seed(46)
         fig, ax = make_sim_map_nika2(
             C3,
@@ -284,18 +284,18 @@ if __name__ == "__main__":
         pdf.savefig(fig)
 
         # =================================================================== #
-        print("==> SPT map of C2 with correlated noise...")
-        np.random.seed(47)
+        print("====> SPT map of C2 with correlated noise...")
+        np.random.seed(44)
         fig, ax = make_sim_map_spt(
             C2_corrnoise,
             "./results/C2_corrnoise/SPT/input_map.fits",
-            map_size=21.0,
+            map_size=16.0,
             corr_noise=True,
         )
         pdf.savefig(fig)
 
         # =================================================================== #
-        print("==> SPT map of C2 with 2D filtering ...")
+        print("====> SPT map of C2 with 2D filtering ...")
         np.random.seed(44)
         fig, ax = make_sim_map_spt(
             C2_2d_filter,
@@ -306,8 +306,8 @@ if __name__ == "__main__":
         pdf.savefig(fig)
 
         # =================================================================== #
-        print("==> NIKA2 map of C2 with point sources...")
-        np.random.seed(46)
+        print("====> NIKA2 map of C2 with point sources...")
+        np.random.seed(45)
         fig, ax = make_sim_map_nika2(
             C2_ptsources,
             "./results/C2_ptsources/NIKA2/input_map.fits",

@@ -189,11 +189,13 @@ class PressureProfileFitter:
     def add_mask(self, mask):
         """
         Add a mask to discard part of the data in the model fitting.
+        The `panco2.masks` module offers ways to create this mask for
+        some standard usecases -- see documentation.
 
         Parameters
         ----------
         mask : np.ndarray
-            Boolean mask, where `True` means the data _is masked_.
+            Boolean mask, where True means the pixel *is masked*.
         """
         print("==> Adding mask")
         assert isinstance(mask, np.ndarray), "`mask` is not an array"
@@ -202,13 +204,13 @@ class PressureProfileFitter:
             + f"input data is {self.sz_map.shape}, "
             + f"`mask` is {mask.shape}"
         )
-        print(f"Masking {mask.sum():.0f} / {mask.size:.0f} pixels")
+        print(f"    Masking {mask.sum():.0f} / {mask.size:.0f} pixels")
         if mask.sum() > 0.5 * mask.size:
             warnings.warn(
                 "You are adding a mask that will discard most of your data. "
-                + "You might have the boolean mask backwards -- see doc"
+                + "You might have the boolean mask backwards -- the mask must "
+                + "be True where the data must be masked (see doc)"
             )
-        # ones_msk = np.ma.array(ones, mask=msk)
         self.sz_map = np.ma.array(self.sz_map, mask=mask)
         self.sz_rms = np.ma.array(self.sz_rms, mask=mask)
         self.has_mask = True
@@ -343,7 +345,7 @@ class PressureProfileFitter:
             self.model.filter = filtering.Filter1d(
                 self.sz_map.shape[0],
                 self.pix_size,
-                ell / (180.0 * 3600),  # flat sky ell = k
+                ell / (360.0 * 3600),  # flat sky ell = k
                 tf,
                 beam_sigma_pix=beam_sigma_pix,
                 pad_pix=pad,
@@ -372,8 +374,8 @@ class PressureProfileFitter:
             self.model.filter = filtering.Filter2d(
                 self.sz_map.shape[0],
                 self.pix_size,
-                ell[0] / (180.0 * 3600),  # flat sky ell_x = k_x
-                ell[1] / (180.0 * 3600),  # flat sky ell_y = k_y
+                ell[0] / (360.0 * 3600),  # flat sky ell_x = k_x
+                ell[1] / (360.0 * 3600),  # flat sky ell_y = k_y
                 tf,
                 beam_sigma_pix=beam_sigma_pix,
                 pad_pix=pad,
@@ -575,7 +577,7 @@ class PressureProfileFitter:
     # ---------------------------------------------------------------------- #
 
     def write_sim_map(
-        self, par_vec, out_file, filter_noise=True, corr_noise=False
+        self, par_vec, out_file, filter_noise=False, corr_noise=False
     ):
         """
         Write a FITS map with given parameter values
@@ -694,6 +696,8 @@ class PressureProfileFitter:
         min_autocorr_times=100,
         out_chains_file="./chains.npz",
         plot_convergence=None,
+        progress=True,
+        verbose_monitor=True,
     ):
         """
         Runs MCMC sampling of the posterior distribution.
@@ -720,10 +724,15 @@ class PressureProfileFitter:
         out_chains_file : str
             Path to a `.npz` file in which the chains
             will be stored.
-        plot_convergence: str or None
+        plot_convergence : str or None
             Filename to save a plot of the autocorrelation
             function evolution and convergence test.
             If None, the plot is not produced.
+        progress : bool
+            If True, displays a progressbar showing the sampling
+            progression.
+        verbose_monitor : bool
+            If True, prints the result of each convergence check.
 
         Returns
         =======
@@ -786,7 +795,7 @@ class PressureProfileFitter:
             )
 
             for sample in sampler.sample(
-                starts, iterations=max_steps, progress=True
+                starts, iterations=max_steps, progress=progress
             ):
 
                 it = sampler.iteration
@@ -801,11 +810,12 @@ class PressureProfileFitter:
                 tau_is_stable = dtau < max_delta_tau
                 chain_is_long = it > (mean_tau * min_autocorr_times)
 
-                print(
-                    f"    {it} iterations = {it / mean_tau:.1f}*tau",
-                    f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
-                    end="\n",
-                )
+                if verbose_monitor:
+                    print(
+                        f"    {it} iterations = {it / mean_tau:.1f}*tau",
+                        f"(tau = {mean_tau:.1f} -> dtau/tau = {dtau:.4f})",
+                        end="\n",
+                    )
 
                 if tau_is_stable and tau_was_stable and chain_is_long:
                     print("    -> Convergence achieved")
