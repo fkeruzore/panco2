@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 import scipy.stats as ss
-import copy
 
 import sys
 
@@ -163,21 +162,9 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
 
         # POINT SOURCES BUT MASKED
         elif cluster["name"] == "C2_ptsmasked":
-            ppf2 = copy.deepcopy(ppf)
-            ps_pos = [
-                SkyCoord("12h00m00s +00d00m30s"),
-                SkyCoord("12h00m05s +00d00m10s"),
-            ]
-            mask = np.zeros_like(ppf.sz_map, dtype=bool)
-            ppf2.add_point_sources(ps_pos, instrument["beam"])
             npix_mask = 0.51 * instrument["beam"] / ppf.pix_size
-            for i in range(ppf2.model.n_ps):
-                r = np.hypot(
-                    ppf2.model.ps_xymaps["x"][i], ppf2.model.ps_xymaps["y"][i]
-                )
-                mask[r <= npix_mask] = True
+            mask = p2.masks.mask_holes(ppf, ps_pos, npix_mask)
             ppf.add_mask(mask)
-            del ppf2
 
         # INTEGRATED SZ
         elif cluster["name"] == "C2_Y500const":
