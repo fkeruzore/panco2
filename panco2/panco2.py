@@ -569,6 +569,12 @@ class PressureProfileFitter:
         diff = (self.sz_map - mod).flatten()
         m2ll = diff @ self.inv_covmat @ diff
         ll = -0.5 * np.sum(m2ll)
+
+        if self.has_integ_Y:
+            Y = self.model.integ_Y(par_vec)
+            ll_integY = -0.5 * ((Y - self.integ_Y[0]) / self.integ_Y[1]) ** 2
+            ll += ll_integY
+
         if np.isfinite(ll):
             return ll
         else:
