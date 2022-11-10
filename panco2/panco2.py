@@ -189,11 +189,13 @@ class PressureProfileFitter:
     def add_mask(self, mask):
         """
         Add a mask to discard part of the data in the model fitting.
+        The `panco2.masks` module offers ways to create this mask for
+        some standard usecases -- see documentation.
 
         Parameters
         ----------
         mask : np.ndarray
-            Boolean mask, where `True` means the data _is masked_.
+            Boolean mask, where True means the pixel *is masked*.
         """
         print("==> Adding mask")
         assert isinstance(mask, np.ndarray), "`mask` is not an array"
@@ -202,13 +204,13 @@ class PressureProfileFitter:
             + f"input data is {self.sz_map.shape}, "
             + f"`mask` is {mask.shape}"
         )
-        print(f"Masking {mask.sum():.0f} / {mask.size:.0f} pixels")
+        print(f"    Masking {mask.sum():.0f} / {mask.size:.0f} pixels")
         if mask.sum() > 0.5 * mask.size:
             warnings.warn(
                 "You are adding a mask that will discard most of your data. "
-                + "You might have the boolean mask backwards -- see doc"
+                + "You might have the boolean mask backwards -- the mask must "
+                + "be True where the data must be masked (see doc)"
             )
-        # ones_msk = np.ma.array(ones, mask=msk)
         self.sz_map = np.ma.array(self.sz_map, mask=mask)
         self.sz_rms = np.ma.array(self.sz_rms, mask=mask)
         self.has_mask = True
