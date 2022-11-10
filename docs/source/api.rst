@@ -21,3 +21,8 @@ panco2.noise_covariance
 =======================
 .. automodule:: panco2.noise_covariance
    :members:
+
+panco2.masks
+============
+.. automodule:: panco2.masks
+   :members:
