@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.interpolate import interp1d
 from scipy import linalg
+from scipy.interpolate import interp1d
 from sklearn import covariance
 
 """
@@ -8,7 +8,7 @@ Note on conventions in this code because I'm tired of forgetting them
 =====================================================================
 
 - The user should not have to provide values of `k`. When they
-    appear, they are defined with the numpy convention: for a 
+    appear, they are defined with the numpy convention: for a
     map with `n*n` pixels each of size `d`, the 1D modes are:
 
     f = [0, 1, ...,   n/2-1,     -n/2, ..., -1] / (d*n)   if n is even
@@ -41,20 +41,19 @@ Note on conventions in this code because I'm tired of forgetting them
 norm_fft = "ortho"
 
 
-def powspec(in_map, pix_size, n_bins=None):
+def _powspec(in_map, pix_size, n_bins=None):
     """
     Power spectrum of a map in the flat-sky approximation.
 
     Parameters
     ----------
     in_map : ndarray
-        The input map.
+        The input map
     pix_size : float
         The size of one pixel in the map [arcsec]
     n_bins : int, optional
-        Number of bins to use in k.
-        If None (default), takes 0.25 times the number of
-        pixels on the side of the map.
+        Number of bins to use in k. If None (default), takes 0.25 times
+        the number of pixels on the side of the map.
 
     Returns
     -------
@@ -89,16 +88,16 @@ def powspec(in_map, pix_size, n_bins=None):
     return pk[msk], k_bins[msk]
 
 
-def powspec_to_maps(k, pk, nx, ny, pix_size, n_maps):
+def _powspec_to_maps(k, pk, nx, ny, pix_size, n_maps):
     """
     Creates a random map realization from a power spectrum.
 
     Parameters
     ----------
     k : ndarray
-        Angular scales
+        Angular scales [arcsec-1]
     pk : ndarray
-        Power spectrum values
+        Power spectrum values [map units**2 arcsec**-2]
     nx : int
         Number of pixels on the `x` dimension of the map
     ny : int
@@ -145,7 +144,7 @@ def powspec_to_maps(k, pk, nx, ny, pix_size, n_maps):
     return np.real(colored_maps)
 
 
-def make_maps_with_same_pk(in_map, pix_size, n_maps, n_bins=None):
+def _make_maps_with_same_pk(in_map, pix_size, n_maps, n_bins=None):
     """
     Generates a number of random maps with the same power spectrum
     as an input map.
@@ -153,15 +152,14 @@ def make_maps_with_same_pk(in_map, pix_size, n_maps, n_bins=None):
     Parameters
     ----------
     in_map : ndarray
-        The input map to get the power spectrum from.
+        The input map to get the power spectrum from
     pix_size : float
         The size of one pixel in the map [arcsec]
     n_maps : int
         Number of maps to be created
     n_bins : int, optional
-        Number of bins to use in k.
-        If None (default), takes 0.25 times the number of
-        pixels on the side of the map.
+        Number of bins to use in k. If None (default), takes 0.25 times
+        the number of pixels on the side of the map.
 
     Returns
     -------
@@ -172,12 +170,12 @@ def make_maps_with_same_pk(in_map, pix_size, n_maps, n_bins=None):
     nx, ny = in_map.shape
     if n_bins is None:
         n_bins = int(np.min([nx, ny]) / 4)
-    pk, k = powspec(in_map, pix_size, n_bins)
-    maps = powspec_to_maps(k, pk, nx, ny, pix_size, int(n_maps))
+    pk, k = _powspec(in_map, pix_size, n_bins)
+    maps = _powspec_to_maps(k, pk, nx, ny, pix_size, int(n_maps))
     return maps
 
 
-def check_inversion(m, invm):
+def _check_inversion(m, invm):
     """
     Asserts that two matrices are the inverse of one another by
     checking that C @ C^-1 = I.
@@ -234,7 +232,7 @@ def covmat_from_noise_maps(noise_maps, method="lw"):
             + "Please refer to documentation."
         )
     inv_cov = linalg.pinv(cov)
-    check_inversion(cov, inv_cov)
+    _check_inversion(cov, inv_cov)
     return cov, inv_cov
 
 
@@ -246,7 +244,6 @@ def covmat_from_powspec(
     from a noise power spectrum by generating many random
     maps with the input power spectrum.
 
-
     Parameters
     ----------
     ell : ndarray
@@ -257,7 +254,7 @@ def covmat_from_powspec(
         Number of pixels on each dimension of the map
         (i.e. the map is n_pix * n_pix)
     pix_size : float
-        The size of one pixel in the map [arcsec]
+        Size of one pixel in the map [arcsec]
     n_maps : int, optional
         Number of maps to be created. Defaults to 1000.
     method : str, optional
@@ -283,7 +280,7 @@ def covmat_from_powspec(
     k = ell / (360.0 * 3600.0)  # arcsec-1
     # pk = C_ell / ((n_pix * pix_size * np.pi / (180.0 * 3600.0)) ** 2)
     pk = C_ell * (180 * 3600 / np.pi) ** 2  # to [map units]^2 * [arcsec]^2
-    noise_maps = powspec_to_maps(k, pk, n_pix, n_pix, pix_size, int(n_maps))
+    noise_maps = _powspec_to_maps(k, pk, n_pix, n_pix, pix_size, int(n_maps))
     cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
     if return_maps:
         return cov, inv_cov, noise_maps
@@ -327,7 +324,7 @@ def covmats_from_noise_map(
         If `return_maps` is True, the noise maps used to compute the
         covariance, shape=(n_maps, nx, nx)
     """
-    noise_maps = make_maps_with_same_pk(noise_map, pix_size, int(n_maps))
+    noise_maps = _make_maps_with_same_pk(noise_map, pix_size, int(n_maps))
     cov, inv_cov = covmat_from_noise_maps(noise_maps, method=method)
     if return_maps:
         return cov, inv_cov, noise_maps

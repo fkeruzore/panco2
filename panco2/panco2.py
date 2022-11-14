@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import numpy as np
 import astropy.units as u
 from astropy.io import fits
@@ -35,14 +34,14 @@ class PressureProfileFitter:
     z : float
         Cluster's redshift
     M_500 : float
-        A guess of the cluster's mass [Msun]
+        A guess of the cluster's mass [Msun].
         This is used to build the starting point of the MCMC.
     coords_center : astropy.coordinates.SkyCoord, optional
         Coordinate to consider as the center of the map.
-        If not provided, the center of the FITS map is used.
+        If None (default), the center of the FITS map is used.
     map_size : float, optional
         The size of the map to be considered [arcmin].
-        If not provided, the entire FITS map is used.
+        If None (default), the entire FITS map is used.
     cosmo : astropy.cosmology.Cosmology, optional
         The cosmology to assume for distance computations.
         Defaults to flat LCDM with h=0.7, Om0=0.3.
@@ -175,7 +174,7 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def default_radial_binning(self, bin2_arcsec):
+    def _default_radial_binning(self, bin2_arcsec):
         pix_kpc = self.cluster.arcsec2kpc(self.pix_size)
         map_kpc = self.cluster.arcsec2kpc(self.map_size * 60 / 2)
         beam_kpc = self.cluster.arcsec2kpc(bin2_arcsec)
@@ -196,6 +195,14 @@ class PressureProfileFitter:
         ----------
         mask : np.ndarray
             Boolean mask, where True means the pixel *is masked*.
+            shape=(n_pix_map, n_pix_map).
+
+        Raises
+        ------
+        Exception
+            If the mask is not an array of the right shape.
+        Warning
+            If more than half the map pixels are masked.
         """
         print("==> Adding mask")
         assert isinstance(mask, np.ndarray), "`mask` is not an array"
@@ -229,11 +236,11 @@ class PressureProfileFitter:
         Parameters
         ----------
         covmat : ndarray, optional
-            Noise covariance matrix, in squared data units.
-            shape=(n_pix**2, n_pix**2)
+            Noise covariance matrix [data units**2].
+            shape=(n_pix_map**2, n_pix_map**2).
         inv_covmat : ndarray, optional
-            Inverse noise covariance matrix, in squared data units.
-            shape=(n_pix**2, n_pix**2)
+            Inverse noise covariance matrix [data units**2].
+            shape=(n_pix_map**2, n_pix_map**2).
 
         Raises
         ------
@@ -301,9 +308,9 @@ class PressureProfileFitter:
 
         Parameters
         ----------
-        beam_fwhm : float [arcsec], optional
-            The FWHM of your gaussian beam.
-            Can be set to 0 if you don't want beam confolution
+        beam_fwhm : float, optional
+            The FWHM of your gaussian beam [arcsec].
+            Can be set to 0 if you don't want beam convolution
             (e.g. if the beam is already in the transfer function).
         tf : array
             Filtering measurement.
@@ -311,8 +318,8 @@ class PressureProfileFitter:
             Multipole moments at which the filtering was measured.
             Can be a tuple of `ellx` and `elly`, see Notes.
         pad : int
-            Padding to be added to the sides of the map before convolution,
-            in pixels.
+            Padding to be added to the sides of the map before
+            convolution [pixels].
 
         Notes
         =====
@@ -393,8 +400,18 @@ class PressureProfileFitter:
         self,
         r_bins,
         zero_level=True,
-        integ_Y=None,
     ):
+        """
+        Define options of the model to be used to fit the map.
+
+        Parameters
+        ----------
+        r_bins : array
+            List of radial bins [kpc].
+        zero_level : bool, optional
+            If True (default), a constant zero level in the map is also
+            fitted.
+        """
 
         d_a = self.cluster.d_a
         npix = self.sz_map.shape[0]
@@ -425,6 +442,16 @@ class PressureProfileFitter:
     # ---------------------------------------------------------------------- #
 
     def add_point_sources(self, coords, beam_fwhm):
+        """
+        Add point sources to the model.
+
+        Parameters
+        ----------
+        coords : list of `astropy.coordinates.SkyCoord`
+            The positions of each source in the sky
+        beam_fwhm : float [arcsec]
+            The FWHM of the Gaussian model to be used for point sources
+        """
         print(f"==> Adding {len(coords)} point sources")
         beam_sigma_pix = (
             beam_fwhm / (2 * np.sqrt(2 * np.log(2))) / self.pix_size
@@ -440,12 +467,13 @@ class PressureProfileFitter:
 
         Parameters
         ----------
-        Y : float [kpc2]
-            Integrated Compton parameter value
-        dY : float [kpc2]
-            Uncertainty on Y
-        r : float [kpc]
+        Y : float
+            Integrated Compton parameter value [kpc2]
+        dY : float
+            1 sigma uncertainty on Y [kpc2]
+        r : float
             Radius within which the Compton parameter was integrated
+            [kpc]
         """
         print("==> Adding integrated Y constraint")
         self.integ_Y = (Y, dY)
@@ -459,7 +487,6 @@ class PressureProfileFitter:
     def define_priors(
         self,
         P_bins=None,
-        gNFW_params=None,
         conv=ss.norm(0.0, 0.1),
         zero=ss.norm(0.0, 0.1),
         ps_fluxes=[],
@@ -472,20 +499,24 @@ class PressureProfileFitter:
             Priors on the pressure bins in binned profile mode.
             If only one distribution, all bins will have the same
             prior. If a list, the length should be the number of bins.
-        gNFW_params : #TODO
+            [keV cm-3]
         conv : ss.distributions instance
             Prior on the conversion coefficient.
             Defaults to N(0, 1).
+            [map units]
         zero : ss.distributions instance
             Prior on the zero level of the map.
             Defaults to N(0, 1).
+            [map units]
         ps_fluxes : list of ss.distributions
-            Priors on the flux of each point source, in map units.
+            Priors on the flux of each point source [map units]
 
         Raises
         ======
         Exception
-            If something happens #TODO
+            If the list of priors don't have the same size as the list
+            of parameters (for the point source fluxes or the pressure
+            bins).
 
         Notes
         =====
@@ -527,9 +558,6 @@ class PressureProfileFitter:
                     f"Invalid priors for `P_bins` in a binned model: {P_bins}"
                 )
 
-        elif self.model.type == "gnfw":
-            pass  # TODO
-
         # Conversion coefficient
         priors["conv"] = conv
 
@@ -539,7 +567,7 @@ class PressureProfileFitter:
         # Point sources
         if len(ps_fluxes) == self.model.n_ps:
             for i, F in enumerate(ps_fluxes):
-                priors[f"F_{i+1}"] = F  # TODO this is 1-indexed, is this evil?
+                priors[f"F_{i+1}"] = F
         else:
             raise Exception("`ps_fluxes` is a list but has the wrong length")
 
@@ -547,7 +575,7 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def log_lhood(self, par_vec):
+    def _log_lhood(self, par_vec):
         mod = self.model.sz_map(par_vec) + self.model.ps_map(par_vec)
         sqrtll = (self.sz_map - mod) / self.sz_rms
         ll = -0.5 * np.sum(sqrtll**2)
@@ -564,11 +592,17 @@ class PressureProfileFitter:
 
     # ---------------------------------------------------------------------- #
 
-    def log_lhood_covmat(self, par_vec):
+    def _log_lhood_covmat(self, par_vec):
         mod = self.model.sz_map(par_vec) + self.model.ps_map(par_vec)
         diff = (self.sz_map - mod).flatten()
         m2ll = diff @ self.inv_covmat @ diff
         ll = -0.5 * np.sum(m2ll)
+
+        if self.has_integ_Y:
+            Y = self.model.integ_Y(par_vec)
+            ll_integY = -0.5 * ((Y - self.integ_Y[0]) / self.integ_Y[1]) ** 2
+            ll += ll_integY
+
         if np.isfinite(ll):
             return ll
         else:
@@ -585,16 +619,16 @@ class PressureProfileFitter:
         Parameters
         ----------
         par_vec : list or array
-            Vector in the parameter space.
+            Vector in the parameter space
         out_file : str
             Path to a FITS file to which the map will be written.
             If the file already exists, it will be overwritten.
         filter_noise : bool
             If True, convolve the noise realization by your
-            filtering kernel.
+            filtering kernel. Defaults to False.
         corr_noise : bool
             If True, the random noise realization will be drawn
-            using the noise covariance matrix.
+            using the noise covariance matrix. Defaults to False.
 
         Notes
         =====
@@ -676,7 +710,7 @@ class PressureProfileFitter:
         # Fast fit by minimizing -log posterior
         def tomin(par_vec):
             post, _, _ = log_post(
-                par_vec, self.log_lhood, self.model.log_prior
+                par_vec, self._log_lhood, self.model.log_prior
             )
             return -2.0 * post
 
@@ -705,40 +739,40 @@ class PressureProfileFitter:
         Parameters
         ----------
         n_chains : int
-            Number of emcee walkers.
+            Number of emcee walkers
         max_steps : int
-            Maximum number of steps in the Markov chains.
-            The final number of points can be lower if
-            convergence is accepted before `max_steps` is
-            reached -- see Notes.
+            Maximum number of steps in the Markov chains.  The final
+            number of points can be lower if convergence is accepted
+            before `max_steps` is reached -- see Notes.
         n_threads : int
-            Number of parallel threads to use.
+            Number of parallel threads to use
         n_check : int
-            Number of steps between two convergence checks.
+            Number of steps between two convergence checks
         max_delta_tau : float
-            Maximum relative difference of the autocorrelation
-            length between two convergence checks to end sampling.
+            Maximum relative difference of the autocorrelation length
+            between two convergence checks to end sampling
         min_autocorr_times : int
             Minimum ratio between the chains length and the
-            autocorrelation length to end samlling.
+            autocorrelation length to end samlling
         out_chains_file : str
-            Path to a `.npz` file in which the chains
-            will be stored.
+            Path to a `.npz` file in which the chains will be stored.
+            Default: "./chains.npz".
         plot_convergence : str or None
-            Filename to save a plot of the autocorrelation
-            function evolution and convergence test.
-            If None, the plot is not produced.
+            Filename to save a plot of the autocorrelation function
+            evolution and convergence test. If None (default), the plot
+            is not produced.
         progress : bool
-            If True, displays a progressbar showing the sampling
-            progression.
+            If True (default), displays a progressbar showing the
+            sampling progression
         verbose_monitor : bool
-            If True, prints the result of each convergence check.
+            If True (default), prints the result of each convergence
+            check
 
         Returns
         =======
         chains : dict
-            Markov chains. Each key is a parameter, and the
-            values are 2D arrays of shape (n_chains, n_steps).
+            Markov chains. Each key is a parameter, and the values are
+            2D arrays of shape (n_chains, n_steps).
 
         Notes
         =====
@@ -768,7 +802,7 @@ class PressureProfileFitter:
 
         # Crash now if you want to crash
         log_lhood = (
-            self.log_lhood_covmat if self.has_covmat else self.log_lhood
+            self._log_lhood_covmat if self.has_covmat else self._log_lhood
         )
         _ = log_post(starts[0], log_lhood, self.model.log_prior)
 
