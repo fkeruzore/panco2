@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation Status](https://readthedocs.org/projects/panco2/badge/?version=latest)](https://panco2.readthedocs.io/en/latest/?badge=latest)
+[![arXiv](https://img.shields.io/badge/arXiv-2212.01439-b31b1b.svg?style=flat)](https://arxiv.org/abs/2212.01439)
 
 ``panco2`` is a Python library for pressure profile measurements in SZ observations of galaxy clusters.
 
@@ -28,9 +29,19 @@ Copyright 2022 Florian Kéruzoré and contributors.
 If you use panco2 in your research, please cite:
 
 ```bib
-@article{panco2,
-  title = {panco2: a Python library to measure intracluster medium pressure profiles from Sunyaev-Zeldovich observations},
-  author = {K{\'e}ruzor{\'e}, Florian and others},
-  year = {in prep.}
+@ARTICLE{2022arXiv221201439K,
+       author = {{K{\'e}ruzor{\'e}}, F. and {Mayet}, F. and {Artis}, E. and {Mac{\'\i}as-P{\'e}rez}, J. -F. and {Mu{\~n}oz-Echeverr{\'\i}a}, M. and {Perotto}, L. and {Ruppin}, F.},
+        title = "{panco2: a Python library to measure intracluster medium pressure profiles from Sunyaev-Zeldovich observations}",
+      journal = {arXiv e-prints},
+     keywords = {Astrophysics - Instrumentation and Methods for Astrophysics, Astrophysics - Cosmology and Nongalactic Astrophysics},
+         year = 2022,
+        month = dec,
+          eid = {arXiv:2212.01439},
+        pages = {arXiv:2212.01439},
+archivePrefix = {arXiv},
+       eprint = {2212.01439},
+ primaryClass = {astro-ph.IM},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2022arXiv221201439K},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 ```
