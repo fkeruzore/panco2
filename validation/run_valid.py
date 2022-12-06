@@ -223,8 +223,9 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         cbar_label=instrument["cbar_label"],
         cmap=instrument["cmap"],
         separate_ps_model=False,  # (cluster["name"] == "C2_ptsources"),
+        filename_plot=f"{path}/data_model_residuals_maps.pdf",
+        filename_maps=f"{path}/data_model_residuals_maps.fits",
     )
-    fig.savefig(f"{path}/data_model_residuals_maps.pdf")
 
     plt.rcParams.update(
         {"xtick.labelsize": "medium", "ytick.labelsize": "medium"}
@@ -275,13 +276,23 @@ if __name__ == "__main__":
         }
     )
     n_bins_P = 5
-    run_valid(clusters["C1"], instruments["Planck"], n_bins_P)
-    run_valid(clusters["C1"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P)
-    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P)
-    run_valid(clusters["C2_corrnoise"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2_2d_filter"], instruments["SPT"], n_bins_P)
-    run_valid(clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P)
-    run_valid(clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P)
-    run_valid(clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P)
+    run_valid(clusters["C1"], instruments["Planck"], n_bins_P, restore=True)
+    run_valid(clusters["C1"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2"], instruments["SPT"], n_bins_P, restore=True)
+    run_valid(clusters["C2"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(clusters["C3"], instruments["NIKA2"], n_bins_P, restore=True)
+    run_valid(
+        clusters["C2_corrnoise"], instruments["SPT"], n_bins_P, restore=True
+    )
+    run_valid(
+        clusters["C2_2d_filter"], instruments["SPT"], n_bins_P, restore=True
+    )
+    run_valid(
+        clusters["C2_ptsources"], instruments["NIKA2"], n_bins_P, restore=True
+    )
+    run_valid(
+        clusters["C2_ptsmasked"], instruments["NIKA2"], n_bins_P, restore=True
+    )
+    run_valid(
+        clusters["C2_Y500const"], instruments["NIKA2"], n_bins_P, restore=True
+    )

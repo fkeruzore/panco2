@@ -1,2 +1,2 @@
-example/*.ipynb linguist-vendored
-*/*.html linguist-vendored
+examples/*/*.ipynb linguist-vendored
+docs/source/notebooks/* linguist-vendored

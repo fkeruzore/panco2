@@ -1,7 +1,0 @@
-name: panco2
-channels:
-  - defaults
-dependencies:
-  - pip
-  - python
-prefix: /Users/fkeruzore/.miniconda3/envs/panco2

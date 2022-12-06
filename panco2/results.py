@@ -3,6 +3,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import pandas as pd
+from astropy.io import fits
 from scipy.ndimage import gaussian_filter
 from chainconsumer import ChainConsumer
 from copy import copy
@@ -423,7 +424,8 @@ def plot_data_model_residuals(
     mask_color="0.75",
     snr_contours=None,
     separate_ps_model=False,
-    filename=None,
+    filename_plot=None,
+    filename_maps=None,
 ):
     """
     Plot data, model, and residuals maps.
@@ -468,8 +470,10 @@ def plot_data_model_residuals(
     separate_ps_model : bool
         If your model fits both SZ and point sources, makes the
         model and residuals for SZ/PS/SZ+PS (i.e. 7 total plots)
-    filename : str or None
+    filename_plot : str or None
         Filename to save the plot
+    filename_maps : str or None
+        Filename to save the maps in FITS format
 
     Returns
     -------
@@ -501,17 +505,14 @@ def plot_data_model_residuals(
             ]
         mod_sz = ppf.model.sz_map(par_vec)
         mod_ps = ppf.model.ps_map(par_vec)
-        maps_toplot = [
-            gaussian_filter(m, smooth) * cbar_fact
-            for m in [
-                ppf.sz_map,
-                mod_sz,
-                ppf.sz_map - mod_sz,
-                mod_sz + mod_ps,
-                ppf.sz_map - mod_sz - mod_ps,
-                mod_ps,
-                ppf.sz_map - mod_ps,
-            ]
+        maps = [
+            ppf.sz_map,
+            mod_sz,
+            ppf.sz_map - mod_sz,
+            mod_sz + mod_ps,
+            ppf.sz_map - mod_sz - mod_ps,
+            mod_ps,
+            ppf.sz_map - mod_ps,
         ]
 
     else:
@@ -525,11 +526,9 @@ def plot_data_model_residuals(
         mod = ppf.model.sz_map(par_vec)
         if do_ps:
             mod += ppf.model.ps_map(par_vec)
-        maps_toplot = [
-            gaussian_filter(m, smooth) * cbar_fact
-            for m in [ppf.sz_map, mod, ppf.sz_map - mod]
-        ]
+        maps = [ppf.sz_map, mod, ppf.sz_map - mod]
 
+    maps_toplot = [cbar_fact * gaussian_filter(m, smooth) for m in maps]
     noise = ppf.sz_rms * cbar_fact
     if smooth != 0.0:
         noise = gaussian_filter(noise, smooth) / np.sqrt(
@@ -580,8 +579,31 @@ def plot_data_model_residuals(
         cb = fig.colorbar(im, ax=axs, fraction=0.02, shrink=0.83, aspect=15)
     cb.set_label(cbar_label)
 
-    if filename is not None:
-        fig.savefig(filename)
+    if filename_plot is not None:
+        fig.savefig(filename_plot)
+
+    if filename_maps is not None:
+        header = ppf.wcs.to_header()
+        hdus = [fits.PrimaryHDU(header=header)]
+        if do_ps and separate_ps_model:
+            names = [
+                "DATA",
+                "SZ_MODEL",
+                "DATA-SZ_MODEL",
+                "TOTAL_MODEL",
+                "RESIDUALS",
+                "PS_MODEL",
+                "DATA-PS_MODEL",
+            ]
+        else:
+            names = ["DATA", "MODEL", "RESIDUALS"]
+        for m, name in zip(maps, names):
+            hdus.append(
+                fits.ImageHDU(data=np.array(m), header=header, name=name)
+            )
+        hdulist = fits.HDUList(hdus)
+        hdulist.writeto(filename_maps, overwrite=True)
+
     return fig, axs
 
 
