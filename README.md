@@ -26,7 +26,7 @@ Copyright 2022 Florian Kéruzoré and contributors.
 
 ``panco2`` is free software made available under the MIT License. For details see the ``LICENSE.md`` file.
 
-If you use panco2 in your research, please cite:
+If you use ``panco2`` in your research, please cite:
 
 ```bib
 @ARTICLE{2022arXiv221201439K,
