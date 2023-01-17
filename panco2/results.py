@@ -117,6 +117,47 @@ def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
     return pd.DataFrame(chains_clean)
 
 
+def _latexify_params(chains, ndof=None):
+    """
+    Makes parameter names fancy LaTeX in dictionnary keys
+
+    Parameters
+    ----------
+    chains : pd.DataFrame or dict
+        dict (or dataframe) in the parameter space
+    ndof : float, optional
+        number of degrees of freedom in the fit, by default None.
+        If provided, used to convert log-likelihood to reduced chi2
+
+    Returns
+    -------
+    dict
+        the input "chains", in dict format, with keys changed to
+        LaTeX strings.
+    """
+    old_chains = {k: np.array(v) for k, v in dict(chains).items()}
+    new_chains = {}
+    for k, v in old_chains.items():
+        if k.startswith("P_"):
+            new_chains["$P_{" + k[2:] + "}$"] = v
+        elif k.startswith("F_"):
+            new_chains["$F_{" + k[2:] + "}$"] = v
+        elif k == "conv":
+            new_chains["$C_{\\rm conv}$"] = v
+        elif k == "zero":
+            new_chains["$Z$"] = v
+        elif k == "lnprior":
+            new_chains["${\\rm ln} \, p(\\vartheta)$"] = v
+        elif k == "lnlike":
+            if ndof is not None:
+                new_chains["$\\bar{\chi}^2 - 1$"] = (-2.0 * v / ndof) - 1.0
+            else:
+                new_chains["${\\rm ln} \, \\mathcal{L}(\\vartheta)$"] = v
+        else:
+            print(f"Parameter {k} is unusual and will not be displayed")
+    return new_chains
+
+
 def mcmc_trace_plot(chains_clean, show_probs=True, filename=None):
     """
     Create MCMC trace plots, i.e. chains evolution with steps.
@@ -147,7 +188,9 @@ def mcmc_trace_plot(chains_clean, show_probs=True, filename=None):
 
     cc = ChainConsumer()
     for i in range(chains_clean["chain"].max() + 1):
-        cc.add_chain(chains_clean[chains_clean["chain"] == i][params])
+        cc.add_chain(
+            _latexify_params(chains_clean[chains_clean["chain"] == i][params])
+        )
     cc.configure(
         serif=plt.rcParams["font.family"][0] == "serif",
         usetex=plt.rcParams["text.usetex"],
@@ -202,13 +245,15 @@ def mcmc_corner_plot(
         params = [p for p in params if (p not in ["chain", "step"])]
 
     n = len(params)
+    ndof = None if ppf is None else ppf.sz_map.size - len(ppf.model.indices)
+
     cc = ChainConsumer()
     if ppf is not None:
         prior_sample = {
             p: rv.rvs(int(1e5)) for p, rv in ppf.model.priors.items()
         }
         cc.add_chain(
-            prior_sample,
+            _latexify_params(prior_sample, ndof=ndof),
             show_as_1d_prior=True,
             name="Priors",
             color="#7D7E7F",
@@ -217,9 +262,14 @@ def mcmc_corner_plot(
         lims = {
             p: list(chains_clean[p].quantile([0.01, 0.99])) for p in params
         }
+        lims = _latexify_params(lims, ndof=ndof)
     else:
         lims = None
-    cc.add_chain(chains_clean[params], name="PANCO2")
+
+    chains_toadd = {
+        k: np.array(v) for k, v in dict(chains_clean[params]).items()
+    }
+    cc.add_chain(_latexify_params(chains_toadd, ndof=ndof), name="PANCO2")
     cc.configure(
         serif=plt.rcParams["font.family"][0] == "serif",
         usetex=plt.rcParams["text.usetex"],
