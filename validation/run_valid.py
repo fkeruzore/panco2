@@ -246,20 +246,15 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         np.log10(ppf.cluster.arcsec2kpc(ppf.map_size * 60 / np.sqrt(2))),
         100,
     )
-    fig, ax = p2.results.plot_profile(
+    fig, axs = p2.results.plot_profile(
         chains_clean,
         ppf,
         r_range=r_range,
         label="\\texttt{panco2}",
+        P_compare=p2.utils.gNFW(r_range, *ppf.cluster.A10_params),
+        kwargs_compare={"label": "Truth", "ls": "--", "color": "k"},
         color="tab:blue",
     )
-    ax.plot(
-        r_range,
-        p2.utils.gNFW(r_range, *ppf.cluster.A10_params),
-        "k--",
-        label="Truth",
-    )
-    ax.legend(frameon=False)
     fig.subplots_adjust(top=0.85, right=0.95, bottom=0.15, left=0.15)
     fig.savefig(f"{path}/pressure_profile.pdf")
 
@@ -272,7 +267,7 @@ if __name__ == "__main__":
             "text.usetex": True,
             "text.latex.preamble": "\\usepackage{txfonts}",
             "font.family": "serif",
-            "font.size": 16.0,
+            "font.size": 15.0,
         }
     )
     n_bins_P = 5
