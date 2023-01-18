@@ -382,7 +382,14 @@ def mcmc_matrices_plot(chains_clean, ppf, filename=None):
 
 
 def plot_profile(
-    chains_clean, ppf, r_range, ax=None, label=None, filename=None, **kwargs
+    chains_clean,
+    ppf,
+    r_range,
+    P_compare=None,
+    kwargs_compare={},
+    label=None,
+    filename=None,
+    **kwargs,
 ):
     """
     Plots the pressure profile recovered by PANCO2 from the
@@ -396,8 +403,16 @@ def plot_profile(
         The main `panco2.PressureProfileFitter` instance.
     r_range : np.array [kpc]
         The radial range on which to show the profile.
-    ax : plt.Axis or None
-        If provided, an existing axis can be used
+    P_compare : np.array [keV cm-3] or None
+        A profile to compare panco2's results with, such as
+        the true profile when using simulated maps.
+        Must be the same shape as r_range.
+        If provided, a bottom panel will be added showing the
+        ratio between results and P_compare.
+    kwargs_compare: dict
+        keyword arguments to pass `plt.plot` for the compared
+        profile (should include `label`, and any other style
+        info you want)
     label : str or None
         Label of the curve for legend purposes
     filename : str or None
@@ -407,12 +422,20 @@ def plot_profile(
 
     Returns
     -------
-    fig, ax
+    fig, axs
     """
 
     model = ppf.model
-    if ax is None:
-        fig, ax = plt.subplots(figsize=(6, 4))
+    fig = plt.figure(figsize=(6, 4))
+
+    has_compare = P_compare is not None
+    if has_compare:
+        gs = GridSpec(2, 1, height_ratios=[3, 1], wspace=0.0, hspace=0.0)
+        axs = [fig.add_subplot(gs[i]) for i in range(2)]
+    else:
+        axs = [fig.add_subplot(111)]
+    for ax in axs:
+        ax.set_xlim(r_range.min(), r_range.max())
 
     chains_arr = np.array(
         [model.par_dic2vec(dict(p)) for p in chains_clean[model.params].iloc()]
@@ -421,42 +444,73 @@ def plot_profile(
     all_profs = np.array(
         [model.pressure_profile(r_range, ch) for ch in chains_arr]
     )
-
     perc = np.percentile(all_profs, [16.0, 50.0, 84.0], axis=0)
+    points_median = model.pressure_profile(
+        model.r_bins, model.par_dic2vec(chains_clean.median())
+    )
 
+    ax = axs[0]
     zorder = np.max([_.zorder for _ in ax.get_children()])
     ax.fill_between(
         r_range, perc[0], perc[2], alpha=0.3, zorder=zorder + 1, **kwargs
     )
     ax.plot(r_range, perc[1], "-", label=label, zorder=zorder + 2, **kwargs)
-    ax.plot(
-        model.r_bins,
-        model.pressure_profile(
-            model.r_bins, model.par_dic2vec(chains_clean.median())
-        ),
-        "o",
-        zorder=zorder + 3,
-        **kwargs,
-    )
+    ax.plot(model.r_bins, points_median, "o", zorder=zorder + 3, **kwargs)
 
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-    ax.set_xlabel(r"$r \; [{\rm kpc}]$")
-    ax.set_ylabel(r"$P_{\rm e}(r) \; [{\rm keV \cdot cm^{-3}}]$")
+    if has_compare:
+        ax.plot(r_range, P_compare, zorder=zorder, **kwargs_compare)
+
+        ax = axs[1]
+        zorder = np.max([_.zorder for _ in ax.get_children()])
+        ax.plot(
+            r_range, np.zeros_like(P_compare), zorder=zorder, **kwargs_compare
+        )
+        ax.fill_between(
+            r_range,
+            perc[0] / P_compare - 1,
+            perc[2] / P_compare - 1,
+            alpha=0.3,
+            zorder=zorder + 1,
+            **kwargs,
+        )
+        ax.plot(
+            r_range,
+            perc[1] / P_compare - 1,
+            "-",
+            label=label,
+            zorder=zorder + 2,
+            **kwargs,
+        )
 
     lines_toplot = {
         "Pixel size": ppf.cluster.arcsec2kpc(ppf.pix_size),
         "Beam HWHM": ppf.cluster.arcsec2kpc(ppf.beam_fwhm / 2.0),
         "Half map size": ppf.cluster.arcsec2kpc(ppf.map_size * 60.0 / 2.0),
     }
-    for label, line in lines_toplot.items():
-        ax.axvline(line, 0, 1, color="k", alpha=0.5, ls=":", zorder=1)
-    ax_bothticks(ax)
+    for ax in axs:
+        ax.set_xscale("log")
+        ax.set_xlabel(r"$r \; [{\rm kpc}]$")
+        for label, line in lines_toplot.items():
+            ax.axvline(line, 0, 1, color="k", alpha=0.5, ls=":", zorder=1)
+        ax_bothticks(ax)
 
-    fig = ax.get_figure()
+    axs[0].set_yscale("log")
+    axs[0].set_ylabel(r"$P_{\rm e}(r) \; [{\rm keV \cdot cm^{-3}}]$")
+    axs[0].legend(frameon=False)
+
+    if has_compare:
+        axs[0].set_xticklabels([])
+        axs[1].set_ylabel("$\\Delta P / P$")
+        in_bins = np.logical_and(
+            r_range > model.r_bins[0], r_range < model.r_bins[-1]
+        )
+        max_offset = 1.5 * np.max(np.abs(perc[1] / P_compare - 1)[in_bins])
+        axs[1].set_ylim(-max_offset, max_offset)
+        fig.align_ylabels(axs)
+
     if filename is not None:
         fig.savefig(filename)
-    return fig, ax
+    return fig, axs
 
 
 def plot_data_model_residuals(
