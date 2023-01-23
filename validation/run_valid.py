@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 import scipy.stats as ss
-
+import json
 import sys
 
 sys.path.append("..")
@@ -204,7 +204,10 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         chains_clean, filename=f"{path}/mcmc_trace.png"
     )
     _ = p2.results.mcmc_corner_plot(
-        chains_clean, ppf=ppf, filename=f"{path}/mcmc_corner.pdf"
+        chains_clean,
+        ppf=ppf,
+        filename=f"{path}/mcmc_corner.pdf",
+        show_probs=False,
     )
     _ = p2.results.mcmc_matrices_plot(
         chains_clean, ppf, filename=f"{path}/mcmc_matrices.pdf"
@@ -257,6 +260,18 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
     )
     fig.subplots_adjust(top=0.85, right=0.95, bottom=0.15, left=0.15)
     fig.savefig(f"{path}/pressure_profile.pdf")
+
+    _, chi2, best_fit = p2.results.get_best_fit(chains_clean, ppf)
+    ndof = ppf.sz_map.size - len(ppf.model.indices)
+    best_fit["chi2"] = chi2
+    best_fit["ndof"] = ndof
+    print(
+        "Passes chi2 test:",
+        (chi2 > 1 - np.sqrt(2 * ndof) / ndof)
+        & (chi2 < 1 + np.sqrt(2 * ndof) / ndof),
+    )
+    with open(f"{path}/best_fit.json", "w") as f:
+        json.dump(best_fit, f)
 
 
 # =========================================================================== #

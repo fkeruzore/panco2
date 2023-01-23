@@ -117,6 +117,35 @@ def load_chains(out_chains_file, burn, discard, clip_percent=0, verbose=False):
     return pd.DataFrame(chains_clean)
 
 
+def get_best_fit(chains_clean, ppf):
+    """
+    Get best-fit from Markov chains.
+
+    Parameters
+    ----------
+    chains_clean : pd.DataFrame
+        Dataframe of the chains, produced by `clean_chains()`
+    ppf : panco2.PressureProfileFitter
+        The main `PressureProfileFitter` object created for the fit.
+        Used to compute the number of degrees of freedom.
+
+    Returns
+    -------
+    int
+        The index of the best-fit vector in `chains_clean`
+    float
+        The value of reduced chi2 for the best-fit
+    dict
+        The best-fitting parameters
+    """
+    ndof = ppf.sz_map.size - len(ppf.model.indices)
+    chi2 = -2.0 * chains_clean["lnlike"] / ndof
+    i_bf = np.argmin(chi2)
+    bf = dict(chains_clean.iloc[i_bf])
+    best_fit = {p: bf[p] for p in ppf.model.params}
+    return i_bf, chi2[i_bf], best_fit
+
+
 def _latexify_params(chains, ndof=None):
     """
     Makes parameter names fancy LaTeX in dictionnary keys
