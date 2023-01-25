@@ -1,0 +1,50 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Kéruzoré"
+  given-names: "F."
+  orcid: "https://orcid.org/0000-0002-9605-5588"
+- family-names: "Mayet"
+  given-names: "F."
+- family-names: "Artis"
+  given-names: "E."
+- family-names: "Macías-Pérez"
+  given-names: "J.-F."
+- family-names: "Muñoz-Echeverría"
+  given-names: "M."
+- family-names: "Perotto"
+  given-names: "L."
+- family-names: "Ruppin"
+  given-names: "F."
+title: "panco2: a Python library to measure intracluster medium pressure profiles from Sunyaev-Zeldovich observations"
+version: 1.0.0
+doi: 10.48550/arXiv.2212.01439
+date-released: 2022-12-02
+url: "https://github.com/fkeruzore/panco2"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Kéruzoré"
+    given-names: "F."
+    orcid: "https://orcid.org/0000-0002-9605-5588"
+  - family-names: "Mayet"
+    given-names: "F."
+  - family-names: "Artis"
+    given-names: "E."
+  - family-names: "Macías-Pérez"
+    given-names: "J.-F."
+  - family-names: "Muñoz-Echeverría"
+    given-names: "M."
+  - family-names: "Perotto"
+    given-names: "L."
+  - family-names: "Ruppin"
+    given-names: "F."
+  doi: "10.48550/arXiv.2212.01439"
+  journal: "The Open Journal of Astrophysics"
+  month: 1
+  start: 1 # First page number
+  end: 10 # Last page number
+  title: "panco2: a Python library to measure intracluster medium pressure profiles from Sunyaev-Zeldovich observations"
+  issue: 1
+  volume: 1
+  year: 2023
