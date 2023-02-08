@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 import scipy.stats as ss
-
+import json
 import sys
 
 sys.path.append("..")
@@ -204,7 +204,10 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         chains_clean, filename=f"{path}/mcmc_trace.png"
     )
     _ = p2.results.mcmc_corner_plot(
-        chains_clean, ppf=ppf, filename=f"{path}/mcmc_corner.pdf"
+        chains_clean,
+        ppf=ppf,
+        filename=f"{path}/mcmc_corner.pdf",
+        show_probs=False,
     )
     _ = p2.results.mcmc_matrices_plot(
         chains_clean, ppf, filename=f"{path}/mcmc_matrices.pdf"
@@ -246,22 +249,29 @@ def run_valid(cluster, instrument, n_bins_P, restore=False):
         np.log10(ppf.cluster.arcsec2kpc(ppf.map_size * 60 / np.sqrt(2))),
         100,
     )
-    fig, ax = p2.results.plot_profile(
+    fig, axs = p2.results.plot_profile(
         chains_clean,
         ppf,
         r_range=r_range,
         label="\\texttt{panco2}",
+        P_compare=p2.utils.gNFW(r_range, *ppf.cluster.A10_params),
+        kwargs_compare={"label": "Truth", "ls": "--", "color": "k"},
         color="tab:blue",
     )
-    ax.plot(
-        r_range,
-        p2.utils.gNFW(r_range, *ppf.cluster.A10_params),
-        "k--",
-        label="Truth",
-    )
-    ax.legend(frameon=False)
     fig.subplots_adjust(top=0.85, right=0.95, bottom=0.15, left=0.15)
     fig.savefig(f"{path}/pressure_profile.pdf")
+
+    _, chi2, best_fit = p2.results.get_best_fit(chains_clean, ppf)
+    ndof = ppf.sz_map.size - len(ppf.model.indices)
+    best_fit["chi2"] = chi2
+    best_fit["ndof"] = ndof
+    print(
+        "Passes chi2 test:",
+        (chi2 > 1 - np.sqrt(2 * ndof) / ndof)
+        & (chi2 < 1 + np.sqrt(2 * ndof) / ndof),
+    )
+    with open(f"{path}/best_fit.json", "w") as f:
+        json.dump(best_fit, f)
 
 
 # =========================================================================== #
@@ -272,7 +282,7 @@ if __name__ == "__main__":
             "text.usetex": True,
             "text.latex.preamble": "\\usepackage{txfonts}",
             "font.family": "serif",
-            "font.size": 16.0,
+            "font.size": 15.0,
         }
     )
     n_bins_P = 5

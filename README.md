@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation Status](https://readthedocs.org/projects/panco2/badge/?version=latest)](https://panco2.readthedocs.io/en/latest/?badge=latest)
 [![arXiv](https://img.shields.io/badge/arXiv-2212.01439-b31b1b.svg?style=flat)](https://arxiv.org/abs/2212.01439)
+<a href="https://ascl.net/2212.008"><img src="https://img.shields.io/badge/ascl-2212.008-blue.svg?colorB=262255" alt="ascl:2212.008" /></a>
 
 ``panco2`` is a Python library for pressure profile measurements in SZ observations of galaxy clusters.
 

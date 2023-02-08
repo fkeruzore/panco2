@@ -1,12 +1,9 @@
 import numpy as np
-from scipy.ndimage import gaussian_filter
-from scipy.interpolate import interp1d
 import astropy.units as u
 from astropy.constants import sigma_T, c, m_e
 from astropy.wcs.utils import skycoord_to_pixel
 from .shell_pl import shell_pl
 from . import utils
-import pdb
 from .filtering import Filter
 
 sz_fact = (sigma_T / (m_e * c**2)).to(u.cm**3 / u.keV / u.kpc).value
@@ -98,7 +95,7 @@ class Model:
         fluxes = par_vec[self.indices_ps]
         ps_map = np.zeros_like(self.radii["r_xy"])
         for i, f in enumerate(fluxes):
-            x, y =  self.ps_xymaps["x"][i], self.ps_xymaps["y"][i]
+            x, y = self.ps_xymaps["x"][i], self.ps_xymaps["y"][i]
             m = f * np.exp(
                 -0.5 * ((x / self.ps_size) ** 2 + (y / self.ps_size) ** 2)
             )
