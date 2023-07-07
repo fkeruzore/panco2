@@ -9,7 +9,7 @@ Welcome to panco2's documentation!
 panco2 is a Python library dedicated to extracting measurements of the pressure profile of the hot gas inside galaxy clusters from millimeter-wave observations.
 The extraction is performed using forward modeling the millimeter-wave signal of clusters and MCMC sampling of a posterior distribution for the parameters given the input data.
 Many characteristic features of millimeter-wave observations can be taken into account, such as filtering (both through PSF smearing and transfer functions), point source contamination, and correlated noise.
-``panco2`` is further described in :cite:`keruzore_panco2_2022`.
+``panco2`` is further described in :cite:`keruzore_panco2_2023`.
 
 Installation
 ============
@@ -46,22 +46,20 @@ License & Attribution
 
 Copyright 2022 Florian Kéruzoré and contributors.
 ``panco2`` is free software made available under the MIT License. For details see the ``LICENSE.md`` file in the ``git`` repository.
-If you use panco2 in your research, please cite :cite:`keruzore_panco2_2022`:
+If you use panco2 in your research, please cite :cite:`keruzore_panco2_2023`:
 
 .. code-block:: bib
 
-   @ARTICLE{2022arXiv221201439K,
-      author = {{K{\\'e}ruzor{\\'e}}, F. and {Mayet}, F. and {Artis}, E. and {Mac{\\'\\i}as\-P{\\'e}rez}, J. \-F. and {Mu{\\~n}oz\-Echeverr{\\'\\i}a}, M. and {Perotto}, L. and {Ruppin}, F.},
-      title = "{panco2: a Python library to measure intracluster medium pressure profiles from Sunyaev\-Zeldovich observations}",
-      journal = {arXiv e\-prints},
-      keywords = {Astrophysics \- Instrumentation and Methods for Astrophysics, Astrophysics \- Cosmology and Nongalactic Astrophysics},
-      year = 2022,
-      month = dec,
-      eid = {arXiv:2212.01439},
-      pages = {arXiv:2212.01439},
-      archivePrefix = {arXiv},
-      eprint = {2212.01439},
-      primaryClass = {astro-ph.IM},
-      adsurl = {https://ui.adsabs.harvard.edu/abs/2022arXiv221201439K},
-      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
-   }
+    @article{keruzore_panco2_2023,
+      title = {Panco2: A {{Python}} Library to Measure Intracluster Medium Pressure Profiles from {{Sunyaev-Zeldovich}} Observations},
+      shorttitle = {panco2},
+      author = {K{\'e}ruzor{\'e}, Florian and Mayet, Fr{\'e}d{\'e}ric and Artis, Emmanuel and {Mac{\'i}as-P{\'e}rez}, Juan-Francisco and {Mu{\~n}oz-Echeverr{\'i}a}, Miren and Perotto, Laurence and Ruppin, Florian},
+      year = {2023},
+      month = mar,
+      journal = {The Open Journal of Astrophysics},
+      volume = {6},
+      publisher = {{Maynooth Academic Publishing}},
+      doi = {10.21105/astro.2212.01439},
+      urldate = {2023-03-14},
+      langid = {english},
+    }
