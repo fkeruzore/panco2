@@ -11,7 +11,7 @@ where :math:`y(\theta)` is the Compton parameter at the position :math:`\theta` 
 
 Through this dependence, we can infer the distribution of the electron pressure of the ICM from a mapping of the tSZ effect towards a cluster.
 This is what ``panco2`` was designed to do, using forward modeling and MCMC sampling.
-Here we give a brief description of the methodology; more details can be found in :cite:`keruzore_panco2_2022`.
+Here we give a brief description of the methodology; more details can be found in :cite:`keruzore_panco2_2023`.
 
 .. _sec_fwmod:
 
