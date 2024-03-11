@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="panco2",
-    version="0.1.0",
+    version="0.1.1",
     description="panco2: pressure profile fitter from tSZ observations",
     author="Florian Keruzore",
     author_email="fkeruzore@anl.gov",
@@ -17,6 +17,6 @@ setup(
         "tqdm",
         "dill",
         "chainconsumer",
-        "sklearn",
+        "scikit-learn",
     ],
 )
