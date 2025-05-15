@@ -1,9 +1,9 @@
 import numpy as np
-import scipy as sp
 import scipy.special as sps
 from . import reduce_integrals as ri
 
 # https://github.com/CharlesERomero/MCMC_ICM_PP/blob/master/integrations/shell_pl.py
+
 
 def shell_pl(
     epsnot, sindex, rmin, rmax, radarr, c=1.0, ff=1e-3, epsatrmin=0, narm=False
@@ -94,7 +94,9 @@ def shell_pl(
                 scase = 1
                 epsatrmin = 1
             else:
-                print("You made a mistake: rmin > rmax; sending to infty integration.")
+                print(
+                    "You made a mistake: rmin > rmax; sending to infty integration."
+                )
                 # If a mistake is possible, it will happen, eventually.
                 scase = 3
 
@@ -135,17 +137,21 @@ def plsphere(p, rmin, rmax, radarr):
     #    c1 = np.where(radarr<=rmax)     # condition 1
     #    c2 = np.where(radarr>rmax)      # condition 2
     sir = radarr[c1] / rmax  # scaled radii
-    isni = (2.0 * p == np.floor(2.0 * p)) and (p <= 1)  # Special cases -> "method 2"
+    isni = (2.0 * p == np.floor(2.0 * p)) and (
+        p <= 1
+    )  # Special cases -> "method 2"
     if isni:
-        tmax = np.arctan(np.sqrt(1.0 - sir ** 2) / sir)  # Theta max
+        tmax = np.arctan(np.sqrt(1.0 - sir**2) / sir)  # Theta max
         plint = (
-            ri.myredcosine(tmax, 2.0 * p - 2.0) * (sir ** (1.0 - 2.0 * p)) * 2.0
+            ri.myredcosine(tmax, 2.0 * p - 2.0)
+            * (sir ** (1.0 - 2.0 * p))
+            * 2.0
         )  # Integration + prefactors
     else:
         cbf = (sps.gamma(p - 0.5) * np.sqrt(np.pi)) / sps.gamma(
             p
         )  # complete beta function
-        ibir = ri.myrincbeta(sir ** 2, p - 0.5, 0.5)  # incomplete beta function
+        ibir = ri.myrincbeta(sir**2, p - 0.5, 0.5)  # incomplete beta function
         plint = (
             (sir ** (1.0 - 2.0 * p)) * (1.0 - ibir) * cbf
         )  # Apply appropriate "pre"-factors
@@ -163,14 +169,20 @@ def plshell(p, rmin, rmax, radarr):
     #    c2 = np.where(radarr[c1]<rmin)  # condition 2
     sir = radarr[c1] / rmin  # scaled inner radii
     sor = radarr[c1] / rmax  # scaled outer radii
-    isni = (2.0 * p == np.floor(2.0 * p)) and (p <= 1)  # Special cases -> "method 2"
+    isni = (2.0 * p == np.floor(2.0 * p)) and (
+        p <= 1
+    )  # Special cases -> "method 2"
     myres = radarr * 0  # Just make my array (unecessary?)
     if isni:
-        tmxo = np.arctan(np.sqrt(1.0 - sor ** 2) / sor)  # Theta max...outer circle
+        tmxo = np.arctan(
+            np.sqrt(1.0 - sor**2) / sor
+        )  # Theta max...outer circle
         tmxi = np.arctan(
             np.sqrt(1.0 - sir[c2] ** 2) / sir[c2]
         )  # Theta max...inner circle
-        plint = ri.myredcosine(tmxo, 2.0 * p - 2.0)  # Integrate for outer circle.
+        plint = ri.myredcosine(
+            tmxo, 2.0 * p - 2.0
+        )  # Integrate for outer circle.
         plint[c2] -= ri.myredcosine(
             tmxi, 2.0 * p - 2.0
         )  # Integrate and subtract inner circle
@@ -183,14 +195,20 @@ def plshell(p, rmin, rmax, radarr):
         cbf = (sps.gamma(p - 0.5) * np.sqrt(np.pi)) / sps.gamma(
             p
         )  # complete beta function
-        ibir = ri.myrincbeta(sir[c2] ** 2, p - 0.5, 0.5)  # Inc. Beta for inn. rad.
-        ibor = ri.myrincbeta(sor ** 2, p - 0.5, 0.5)  # Inc. Beta for out. rad.
+        ibir = ri.myrincbeta(
+            sir[c2] ** 2, p - 0.5, 0.5
+        )  # Inc. Beta for inn. rad.
+        ibor = ri.myrincbeta(sor**2, p - 0.5, 0.5)  # Inc. Beta for out. rad.
         plinn = sir ** (1.0 - 2.0 * p)  # Power law term for inner radii
-        myres[c1] = plinn * (1.0 - ibor) * cbf  # Define values for the enclosed circle
+        myres[c1] = (
+            plinn * (1.0 - ibor) * cbf
+        )  # Define values for the enclosed circle
         #      import pdb;pdb.set_trace()
         #      myres[c1[c2]]=plinn[c2]*(ibir-ibor[c2])*cbf # Correct the values for the
         # ===== Changed this March 9, 2018: ===== #
-        myres[c3] = plinn[c2] * (ibir - ibor[c2]) * cbf  # Correct the values for the
+        myres[c3] = (
+            plinn[c2] * (ibir - ibor[c2]) * cbf
+        )  # Correct the values for the
         # inner circle
     return myres * rmin  # The results we want
 
@@ -209,7 +227,9 @@ def plsphole(p, rmin, rmax, radarr):
         cbf = (sps.gamma(p - 0.5) * np.sqrt(np.pi)) / sps.gamma(
             p
         )  # complete beta function
-        ibor = ri.myrincbeta(sr[c1] ** 2, p - 0.5, 0.5)  # Inc. Beta for out. rad.
+        ibor = ri.myrincbeta(
+            sr[c1] ** 2, p - 0.5, 0.5
+        )  # Inc. Beta for out. rad.
         plt = sr ** (1.0 - 2.0 * p)  # Power law term
         myres = radarr * 0  # Just make my array (unecessary?)
         myres[c1] = plt[c1] * ibor * cbf  # Define values for R < RMIN
@@ -219,7 +239,9 @@ def plsphole(p, rmin, rmax, radarr):
 
 def plinfty(p, rmin, rmax, radarr):
     sr = radarr  # scaled radii
-    cbf = (sps.gamma(p - 0.5) * np.sqrt(np.pi)) / sps.gamma(p)  # complete beta function
+    cbf = (sps.gamma(p - 0.5) * np.sqrt(np.pi)) / sps.gamma(
+        p
+    )  # complete beta function
     plt = sr ** (1.0 - 2.0 * p)  # Power law term
 
     # There is no scaling to be done: RMIN=0; RMAX=infinity...
